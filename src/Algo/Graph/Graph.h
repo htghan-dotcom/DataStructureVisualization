@@ -1,17 +1,20 @@
 #pragma once
+
+#include "Edge.h"
+#include "Node.h"
 #include "../../config/Common.h"
-#include"Node.h"
-#include"Edge.h"
-class Graph{
-    private:
-    std::vector<Node> nodes;
-    std::vector<Edge> edges;
-    public:
-    Graph()=default;
-    void addNode(int id,float x=0,float y=0);
-    void addEdge(int from,int to,int weight);
+
+class Graph {
+public:
+    void clear();
+    void addNode(int id, float x, float y);
+    void addEdge(int from, int to, int weight);
+    bool setNodePosition(int id, float x, float y);
+
     const std::vector<Node>& getNodes() const;
     const std::vector<Edge>& getEdges() const;
 
+private:
+    std::vector<Node> nodes_;
+    std::vector<Edge> edges_;
 };
-

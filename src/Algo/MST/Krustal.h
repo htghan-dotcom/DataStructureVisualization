@@ -1,10 +1,10 @@
 #pragma once
-#include "../../config//Common.h"
-#include "../Graph/Graph.h"
-#include "../Graph/Edge.h"
-#include"DSU.h"
 
-class Kruskal {
+#include "../../Algo/Graph/Graph.h"
+#include "../../core/Step.h"
+#include "../../config/Common.h"
+
+class Krustal {
 public:
-    static std::vector<Edge> run(const Graph& g);
+    static std::vector<Step> buildSteps(const Graph& graph);
 };

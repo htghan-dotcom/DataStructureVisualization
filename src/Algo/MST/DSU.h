@@ -1,11 +1,23 @@
 #pragma once
+
 #include "../../config/Common.h"
 
+struct DSUStepMeta {
+    int u = -1;
+    int v = -1;
+    int rootU = -1;
+    int rootV = -1;
+    bool merged = false;
+};
+
 class DSU {
-    private:
-    std::vector<int> parent;
-    public:
-    DSU(int n);
+public:
+    explicit DSU(int n);
+
     int find(int i);
-    bool unite(int i,int j); 
+    DSUStepMeta inspectAndUnite(int u, int v);
+
+private:
+    std::vector<int> parent_;
+    std::vector<int> rank_;
 };

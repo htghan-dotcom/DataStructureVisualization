@@ -1,0 +1,98 @@
+[
+{
+  "directory": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp -g -std=c++17 -o CMakeFiles\\DataStructureVisualization.dir\\src\\Algo\\AlgorithmFactory.cpp.obj -c D:\\study\\HK2\\Project\\DataStructureVisualization\\DataStructureVisualization\\src\\Algo\\AlgorithmFactory.cpp",
+  "file": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/Algo/AlgorithmFactory.cpp",
+  "output": "CMakeFiles/DataStructureVisualization.dir/src/Algo/AlgorithmFactory.cpp.obj"
+},
+{
+  "directory": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp -g -std=c++17 -o CMakeFiles\\DataStructureVisualization.dir\\src\\Algo\\Graph\\Graph.cpp.obj -c D:\\study\\HK2\\Project\\DataStructureVisualization\\DataStructureVisualization\\src\\Algo\\Graph\\Graph.cpp",
+  "file": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/Algo/Graph/Graph.cpp",
+  "output": "CMakeFiles/DataStructureVisualization.dir/src/Algo/Graph/Graph.cpp.obj"
+},
+{
+  "directory": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp -g -std=c++17 -o CMakeFiles\\DataStructureVisualization.dir\\src\\Algo\\MST\\DSU.cpp.obj -c D:\\study\\HK2\\Project\\DataStructureVisualization\\DataStructureVisualization\\src\\Algo\\MST\\DSU.cpp",
+  "file": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/Algo/MST/DSU.cpp",
+  "output": "CMakeFiles/DataStructureVisualization.dir/src/Algo/MST/DSU.cpp.obj"
+},
+{
+  "directory": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp -g -std=c++17 -o CMakeFiles\\DataStructureVisualization.dir\\src\\Algo\\MST\\Krustal.cpp.obj -c D:\\study\\HK2\\Project\\DataStructureVisualization\\DataStructureVisualization\\src\\Algo\\MST\\Krustal.cpp",
+  "file": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/Algo/MST/Krustal.cpp",
+  "output": "CMakeFiles/DataStructureVisualization.dir/src/Algo/MST/Krustal.cpp.obj"
+},
+{
+  "directory": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp -g -std=c++17 -o CMakeFiles\\DataStructureVisualization.dir\\src\\Algo\\MST\\Prim.cpp.obj -c D:\\study\\HK2\\Project\\DataStructureVisualization\\DataStructureVisualization\\src\\Algo\\MST\\Prim.cpp",
+  "file": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/Algo/MST/Prim.cpp",
+  "output": "CMakeFiles/DataStructureVisualization.dir/src/Algo/MST/Prim.cpp.obj"
+},
+{
+  "directory": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp -g -std=c++17 -o CMakeFiles\\DataStructureVisualization.dir\\src\\UI\\Visualizer.cpp.obj -c D:\\study\\HK2\\Project\\DataStructureVisualization\\DataStructureVisualization\\src\\UI\\Visualizer.cpp",
+  "file": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/Visualizer.cpp",
+  "output": "CMakeFiles/DataStructureVisualization.dir/src/UI/Visualizer.cpp.obj"
+},
+{
+  "directory": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp -g -std=c++17 -o CMakeFiles\\DataStructureVisualization.dir\\src\\UI\\components\\Button.cpp.obj -c D:\\study\\HK2\\Project\\DataStructureVisualization\\DataStructureVisualization\\src\\UI\\components\\Button.cpp",
+  "file": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/components/Button.cpp",
+  "output": "CMakeFiles/DataStructureVisualization.dir/src/UI/components/Button.cpp.obj"
+},
+{
+  "directory": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp -g -std=c++17 -o CMakeFiles\\DataStructureVisualization.dir\\src\\UI\\components\\Slider.cpp.obj -c D:\\study\\HK2\\Project\\DataStructureVisualization\\DataStructureVisualization\\src\\UI\\components\\Slider.cpp",
+  "file": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/components/Slider.cpp",
+  "output": "CMakeFiles/DataStructureVisualization.dir/src/UI/components/Slider.cpp.obj"
+},
+{
+  "directory": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp -g -std=c++17 -o CMakeFiles\\DataStructureVisualization.dir\\src\\UI\\renders\\EdgeRender.cpp.obj -c D:\\study\\HK2\\Project\\DataStructureVisualization\\DataStructureVisualization\\src\\UI\\renders\\EdgeRender.cpp",
+  "file": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/renders/EdgeRender.cpp",
+  "output": "CMakeFiles/DataStructureVisualization.dir/src/UI/renders/EdgeRender.cpp.obj"
+},
+{
+  "directory": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp -g -std=c++17 -o CMakeFiles\\DataStructureVisualization.dir\\src\\UI\\renders\\NodeRender.cpp.obj -c D:\\study\\HK2\\Project\\DataStructureVisualization\\DataStructureVisualization\\src\\UI\\renders\\NodeRender.cpp",
+  "file": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/renders/NodeRender.cpp",
+  "output": "CMakeFiles/DataStructureVisualization.dir/src/UI/renders/NodeRender.cpp.obj"
+},
+{
+  "directory": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp -g -std=c++17 -o CMakeFiles\\DataStructureVisualization.dir\\src\\UI\\renders\\Renderer.cpp.obj -c D:\\study\\HK2\\Project\\DataStructureVisualization\\DataStructureVisualization\\src\\UI\\renders\\Renderer.cpp",
+  "file": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/renders/Renderer.cpp",
+  "output": "CMakeFiles/DataStructureVisualization.dir/src/UI/renders/Renderer.cpp.obj"
+},
+{
+  "directory": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp -g -std=c++17 -o CMakeFiles\\DataStructureVisualization.dir\\src\\core\\Animation.cpp.obj -c D:\\study\\HK2\\Project\\DataStructureVisualization\\DataStructureVisualization\\src\\core\\Animation.cpp",
+  "file": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/core/Animation.cpp",
+  "output": "CMakeFiles/DataStructureVisualization.dir/src/core/Animation.cpp.obj"
+},
+{
+  "directory": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp -g -std=c++17 -o CMakeFiles\\DataStructureVisualization.dir\\src\\data\\GraphLoader.cpp.obj -c D:\\study\\HK2\\Project\\DataStructureVisualization\\DataStructureVisualization\\src\\data\\GraphLoader.cpp",
+  "file": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/data/GraphLoader.cpp",
+  "output": "CMakeFiles/DataStructureVisualization.dir/src/data/GraphLoader.cpp.obj"
+},
+{
+  "directory": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp -g -std=c++17 -o CMakeFiles\\DataStructureVisualization.dir\\src\\input\\InputHandler.cpp.obj -c D:\\study\\HK2\\Project\\DataStructureVisualization\\DataStructureVisualization\\src\\input\\InputHandler.cpp",
+  "file": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/input/InputHandler.cpp",
+  "output": "CMakeFiles/DataStructureVisualization.dir/src/input/InputHandler.cpp.obj"
+},
+{
+  "directory": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp -g -std=c++17 -o CMakeFiles\\DataStructureVisualization.dir\\src\\main.cpp.obj -c D:\\study\\HK2\\Project\\DataStructureVisualization\\DataStructureVisualization\\src\\main.cpp",
+  "file": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/main.cpp",
+  "output": "CMakeFiles/DataStructureVisualization.dir/src/main.cpp.obj"
+},
+{
+  "directory": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build",
+  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp -g -std=c++17 -o CMakeFiles\\DataStructureVisualization.dir\\src\\utils\\MathUtils.cpp.obj -c D:\\study\\HK2\\Project\\DataStructureVisualization\\DataStructureVisualization\\src\\utils\\MathUtils.cpp",
+  "file": "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/utils/MathUtils.cpp",
+  "output": "CMakeFiles/DataStructureVisualization.dir/src/utils/MathUtils.cpp.obj"
+}
+]

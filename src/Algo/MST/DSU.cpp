@@ -1,24 +1,43 @@
-#include"DSU.h"
-DSU::DSU(int n) {
-    parent.resize(n);
-    for (int i = 0; i < n; i++) {
-        parent[i] = i; 
+#include "DSU.h"
+
+DSU::DSU(int n) : parent_(n), rank_(n, 0) {
+    for (int i = 0; i < n; ++i) {
+        parent_[i] = i;
     }
 }
 
-int DSU::find(int i) { 
-    if (parent[i] == i)
+int DSU::find(int i) {
+    if (parent_[i] == i) {
         return i;
-    return parent[i] = find(parent[i]); 
+    }
+    parent_[i] = find(parent_[i]);
+    return parent_[i];
 }
 
-bool DSU::unite(int i, int j) {
-    int root_i = find(i);
-    int root_j = find(j);
+DSUStepMeta DSU::inspectAndUnite(int u, int v) {
+    const int rootU = find(u);
+    const int rootV = find(v);
 
-    if (root_i != root_j) {
-        parent[root_i] = root_j; 
-        return true;
+    DSUStepMeta meta;
+    meta.u = u;
+    meta.v = v;
+    meta.rootU = rootU;
+    meta.rootV = rootV;
+
+    if (rootU == rootV) {
+        meta.merged = false;
+        return meta;
     }
-    return false; 
+
+    if (rank_[rootU] < rank_[rootV]) {
+        parent_[rootU] = rootV;
+    } else if (rank_[rootU] > rank_[rootV]) {
+        parent_[rootV] = rootU;
+    } else {
+        parent_[rootV] = rootU;
+        ++rank_[rootU];
+    }
+
+    meta.merged = true;
+    return meta;
 }

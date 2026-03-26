@@ -1,46 +1,96 @@
 #include "Prim.h"
 
+namespace {
+Step makeBaseStep(int index, StepEvent event, const std::string& description) {
+    Step step;
+    step.index = index;
+    step.structure = StructureKind::MST;
+    step.event = event;
+    step.description = description;
+    return step;
+}
+}  // namespace
 
-std::vector<Edge> Prim::run(const Graph& g, int startNode) {
-    std::vector<Edge> resultMST;
-    int numNodes = g.getNodes().size();
-    if (numNodes == 0) return resultMST;
+std::vector<Step> Prim::buildSteps(const Graph& graph, int startNode) {
+    std::vector<Step> steps;
+    const auto& nodes = graph.getNodes();
+    const auto& edges = graph.getEdges();
 
-    std::vector<std::vector<std::pair<int, int>>> adj(numNodes);
-    for (const auto& e : g.getEdges()) {
-        adj[e.from].push_back({e.to, e.weight});
-        adj[e.to].push_back({e.from, e.weight});
+    if (nodes.empty()) {
+        return steps;
     }
 
-    using Path = std::pair<int, std::pair<int, int>>;
-    std::priority_queue<Path, std::vector<Path>, std::greater<Path>> pq;
-
-    std::vector<bool> visited(numNodes, false);
-
-    visited[startNode] = true;
-    for (const auto& neighbor : adj[startNode]) {
-        pq.push({neighbor.second, {startNode, neighbor.first}});
+    int n = static_cast<int>(nodes.size());
+    if (startNode < 0 || startNode >= n) {
+        startNode = 0;
     }
 
-    while (!pq.empty() && resultMST.size() < numNodes - 1) {
-        auto top = pq.top();
+    std::vector<std::vector<Edge>> adj(n);
+    for (const auto& e : edges) {
+        adj[e.from].push_back(e);
+        adj[e.to].push_back(Edge{e.to, e.from, e.weight});
+    }
+
+    std::vector<bool> inTree(n, false);
+    using Item = std::pair<int, Edge>;  // weight, edge
+    auto cmp = [](const Item& a, const Item& b) { return a.first > b.first; };
+    std::priority_queue<Item, std::vector<Item>, decltype(cmp)> pq(cmp);
+
+    Step start = makeBaseStep(0, StepEvent::Visit, "Prim start from node " + std::to_string(startNode));
+    start.highlightedNodes.push_back(startNode);
+    start.pseudocodeLines = {1};
+    steps.push_back(start);
+
+    inTree[startNode] = true;
+    for (const auto& e : adj[startNode]) {
+        pq.push({e.weight, e});
+    }
+
+    std::vector<Edge> accepted;
+    while (!pq.empty() && static_cast<int>(accepted.size()) < n - 1) {
+        Edge e = pq.top().second;
         pq.pop();
 
-        int weight = top.first;
-        int u = top.second.first;
-        int v = top.second.second;
+        Step candidate = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Candidate,
+                                      "Pick lightest frontier edge " + std::to_string(e.from) + "-" +
+                                          std::to_string(e.to) + " (w=" + std::to_string(e.weight) + ")");
+        candidate.highlightedEdges = accepted;
+        candidate.candidateEdges.push_back(Edge{e.from, e.to, e.weight});
+        candidate.pseudocodeLines = {2, 3};
+        steps.push_back(candidate);
 
-        if (visited[v]) continue;
+        if (inTree[e.to]) {
+            Step reject = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Reject,
+                                       "Reject edge: destination already in tree");
+            reject.highlightedEdges = accepted;
+            reject.candidateEdges.push_back(Edge{e.from, e.to, e.weight});
+            reject.pseudocodeLines = {4};
+            steps.push_back(reject);
+            continue;
+        }
 
-        visited[v] = true;
-        resultMST.push_back(Edge(u, v, weight));
+        inTree[e.to] = true;
+        accepted.push_back(Edge{e.from, e.to, e.weight});
 
-        for (const auto& neighbor : adj[v]) {
-            if (!visited[neighbor.first]) {
-                pq.push({neighbor.second, {v, neighbor.first}});
+        Step accept = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Accept,
+                                   "Accept edge and expand frontier");
+        accept.highlightedEdges = accepted;
+        accept.highlightedNodes.push_back(e.to);
+        accept.pseudocodeLines = {5, 6};
+        steps.push_back(accept);
+
+        for (const auto& next : adj[e.to]) {
+            if (!inTree[next.to]) {
+                pq.push({next.weight, next});
             }
         }
     }
 
-    return resultMST;
+    Step end = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Complete,
+                            "Prim complete: MST edges selected");
+    end.highlightedEdges = accepted;
+    end.pseudocodeLines = {7};
+    steps.push_back(end);
+
+    return steps;
 }

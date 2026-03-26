@@ -1,8 +1,10 @@
 #pragma once
+
+#include "../../Algo/Graph/Graph.h"
+#include "../../core/Step.h"
 #include "../../config/Common.h"
-#include "../Graph/Graph.h"
 
 class Prim {
 public:
-    static std::vector<Edge> run(const Graph& g, int startNode = 0);
+    static std::vector<Step> buildSteps(const Graph& graph, int startNode = 0);
 };

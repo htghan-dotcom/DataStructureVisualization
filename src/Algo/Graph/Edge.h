@@ -1,15 +1,21 @@
 #pragma once
 
-struct Edge{
+struct Edge {
     int from;
     int to;
     int weight;
-    Edge(int u,int v,int w){
-        from=u;
-        to=v;
-        weight=w;
+
+    bool operator<(const Edge& other) const {
+        if (weight != other.weight) {
+            return weight < other.weight;
+        }
+        if (from != other.from) {
+            return from < other.from;
+        }
+        return to < other.to;
     }
-    bool operator < (const Edge& other) const{
-        return weight < other.weight;
+
+    bool operator==(const Edge& other) const {
+        return from == other.from && to == other.to && weight == other.weight;
     }
 };
