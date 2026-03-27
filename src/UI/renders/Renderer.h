@@ -17,6 +17,7 @@ struct RenderViewModel {
     std::vector<Edge> highlightedEdges;
     std::vector<Edge> candidateEdges;
     std::vector<int> highlightedNodes;
+    int selectedNodeId = -1;
 };
 
 class Renderer {

@@ -24,8 +24,13 @@ std::vector<Step> Krustal::buildSteps(const Graph& graph) {
     start.pseudocodeLines = {1};
     steps.push_back(start);
 
+    int maxId = -1;
+    for (const auto& node : graph.getNodes()) {
+        maxId = std::max(maxId, node.id);
+    }
+
     std::vector<Edge> accepted;
-    DSU dsu(static_cast<int>(graph.getNodes().size()));
+    DSU dsu(maxId + 1);
 
     for (const auto& edge : sorted) {
         Step candidate = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Candidate,

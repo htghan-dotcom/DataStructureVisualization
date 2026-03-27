@@ -1,6 +1,8 @@
 #include "Slider.h"
 
 #include <algorithm>
+#include <iomanip>
+#include <sstream>
 
 Slider::Slider(float x, float y, float width, float minValue, float maxValue, float initial, const sf::Font& font)
     : minValue_(minValue), maxValue_(maxValue), value_(initial) {
@@ -59,6 +61,8 @@ void Slider::updateKnobPosition() {
     float x = track_.getPosition().x + t * track_.getSize().x;
     knob_.setPosition(x - knob_.getRadius(), track_.getPosition().y - 6.f);
 
-    label_.setString("Speed: " + std::to_string(static_cast<int>(value_ * 10.f) / 10.0f));
+    std::ostringstream ss;
+    ss << std::fixed << std::setprecision(1) << value_;
+    label_.setString("Speed: " + ss.str());
     label_.setPosition(track_.getPosition().x, track_.getPosition().y + 10.f);
 }

@@ -20,18 +20,37 @@ std::vector<Step> Prim::buildSteps(const Graph& graph, int startNode) {
         return steps;
     }
 
-    int n = static_cast<int>(nodes.size());
-    if (startNode < 0 || startNode >= n) {
-        startNode = 0;
+    int maxId = -1;
+    for (const auto& node : nodes) {
+        maxId = std::max(maxId, node.id);
+    }
+    if (maxId < 0) {
+        return steps;
     }
 
-    std::vector<std::vector<Edge>> adj(n);
+    const int activeCount = static_cast<int>(nodes.size());
+    std::vector<bool> active(static_cast<size_t>(maxId + 1), false);
+    for (const auto& node : nodes) {
+        active[static_cast<size_t>(node.id)] = true;
+    }
+
+    if (startNode < 0 || startNode > maxId || !active[static_cast<size_t>(startNode)]) {
+        startNode = nodes.front().id;
+    }
+
+    std::vector<std::vector<Edge>> adj(static_cast<size_t>(maxId + 1));
     for (const auto& e : edges) {
-        adj[e.from].push_back(e);
-        adj[e.to].push_back(Edge{e.to, e.from, e.weight});
+        if (e.from < 0 || e.to < 0 || e.from > maxId || e.to > maxId) {
+            continue;
+        }
+        if (!active[static_cast<size_t>(e.from)] || !active[static_cast<size_t>(e.to)]) {
+            continue;
+        }
+        adj[static_cast<size_t>(e.from)].push_back(e);
+        adj[static_cast<size_t>(e.to)].push_back(Edge{e.to, e.from, e.weight});
     }
 
-    std::vector<bool> inTree(n, false);
+    std::vector<bool> inTree(static_cast<size_t>(maxId + 1), false);
     using Item = std::pair<int, Edge>;  // weight, edge
     auto cmp = [](const Item& a, const Item& b) { return a.first > b.first; };
     std::priority_queue<Item, std::vector<Item>, decltype(cmp)> pq(cmp);
@@ -47,7 +66,7 @@ std::vector<Step> Prim::buildSteps(const Graph& graph, int startNode) {
     }
 
     std::vector<Edge> accepted;
-    while (!pq.empty() && static_cast<int>(accepted.size()) < n - 1) {
+    while (!pq.empty() && static_cast<int>(accepted.size()) < activeCount - 1) {
         Edge e = pq.top().second;
         pq.pop();
 
@@ -79,8 +98,9 @@ std::vector<Step> Prim::buildSteps(const Graph& graph, int startNode) {
         accept.pseudocodeLines = {5, 6};
         steps.push_back(accept);
 
-        for (const auto& next : adj[e.to]) {
-            if (!inTree[next.to]) {
+        for (const auto& next : adj[static_cast<size_t>(e.to)]) {
+            if (next.to >= 0 && next.to <= maxId && active[static_cast<size_t>(next.to)] &&
+                !inTree[static_cast<size_t>(next.to)]) {
                 pq.push({next.weight, next});
             }
         }

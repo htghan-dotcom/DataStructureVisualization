@@ -1,5 +1,7 @@
 #include "Renderer.h"
 
+#include <algorithm>
+
 #include "EdgeRender.h"
 #include "NodeRender.h"
 #include "../../config/Config.h"
@@ -19,6 +21,9 @@ void Renderer::draw(sf::RenderWindow& window, const RenderViewModel& vm, const s
 
     EdgeRender::draw(window, *vm.graph, vm.highlightedEdges, vm.candidateEdges, font);
     for (const auto& node : vm.graph->getNodes()) {
-        NodeRender::draw(window, node, config::kNodeRadius, font);
+        const bool isActive = std::find(vm.highlightedNodes.begin(), vm.highlightedNodes.end(), node.id) !=
+                              vm.highlightedNodes.end();
+        const bool isSelected = node.id == vm.selectedNodeId;
+        NodeRender::draw(window, node, config::kNodeRadius, font, isSelected, isActive);
     }
 }

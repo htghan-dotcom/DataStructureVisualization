@@ -5,5 +5,10 @@
 
 class NodeRender {
 public:
-    static void draw(sf::RenderWindow& window, const Node& node, float radius, const sf::Font& font);
+    static void draw(sf::RenderWindow& window,
+                     const Node& node,
+                     float radius,
+                     const sf::Font& font,
+                     bool isSelected,
+                     bool isActive);
 };

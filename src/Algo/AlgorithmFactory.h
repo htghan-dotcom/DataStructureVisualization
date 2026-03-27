@@ -12,7 +12,7 @@ enum class AlgorithmType {
 
 class AlgorithmFactory {
 public:
-    static std::vector<Step> buildSteps(AlgorithmType type, const Graph& graph);
+    static std::vector<Step> buildSteps(AlgorithmType type, const Graph& graph, int startNode = 0);
 
     // Backward-compatible output for legacy rendering paths.
     static std::vector<Edge> run(AlgorithmType type, const Graph& graph);
