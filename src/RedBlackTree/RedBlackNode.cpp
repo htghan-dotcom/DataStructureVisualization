@@ -7,11 +7,12 @@ RedBlackNode::RedBlackNode(int val){
     mpLeft = nullptr;
     mpRight = nullptr;
     mpParent = nullptr;
+    mIsDummy = false;
 }
 
-int RedBlackNode::getVal() const{return mVal;}
+int RedBlackNode::getVal() const {return mVal;}
 
-Color RedBlackNode::getColor() const{return mColor;}
+Color RedBlackNode::getColor() const {return mColor;}
 
 RedBlackNode *RedBlackNode::getLeft() const {return mpLeft;}
 
@@ -41,4 +42,12 @@ void RedBlackNode::setParent(RedBlackNode *parent){
 
 bool RedBlackNode::isRed() const {
     return mColor == Color::RED;
+}
+
+bool RedBlackNode::isDummy() const {
+    return mIsDummy;
+}
+
+void RedBlackNode::setDummy(bool dummy){
+    mIsDummy = dummy;
 }

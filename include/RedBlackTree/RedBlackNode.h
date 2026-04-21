@@ -7,6 +7,7 @@ private:
     int mVal;
     Color mColor;
     RedBlackNode *mpLeft, *mpRight, *mpParent;
+    bool mIsDummy;
     
 public:
     RedBlackNode(int val);
@@ -24,4 +25,7 @@ public:
     void setParent(RedBlackNode *parent);
     
     bool isRed() const;
+    
+    bool isDummy() const;
+    void setDummy(bool dummy);
 };

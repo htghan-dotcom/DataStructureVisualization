@@ -1,26 +1,36 @@
 #pragma once
-#include "Common.h"
 #include "RedBlackNode.h"
+#include <string>
+#include <vector>
+
+struct NodeSnapshot{
+    int val;
+    bool isRed;
+    int leftVal;
+    int rightVal;
+    int parentVal;
+    bool isDummy;
+};
 
 struct StepState{
-    string description;
-    vector<int> treeData;
-    vector<string> nodeColors;
+    std::string description;
+    std::vector<int> treeData;
+    std::vector<std::string> nodeColors;
     int highlightedNode;
+    
+    std::vector<NodeSnapshot> nodes;
 };
 
 class RedBlackTree{
 private:
     RedBlackNode *mpRoot;
-    vector<StepState> mStepHistory;
+    std::vector<StepState> mStepHistory;
     int mCurrentStep;
     int mVisualizationSpeed;
     
-    // Rotate operations
     void rotateLeft(RedBlackNode *x);
     void rotateRight(RedBlackNode *x);
     
-    // Fix violations
     void fixInsertion(RedBlackNode *node);
     void fixDeletion(RedBlackNode *node);
     
@@ -30,49 +40,51 @@ private:
     void transplant(RedBlackNode *x, RedBlackNode *y);
         
     void clearTree(RedBlackNode *root);
-    void inorderCollect(RedBlackNode *root, vector<int>& data, vector<string>& colors);
+    void collectSnapshot(RedBlackNode *node, std::vector<NodeSnapshot>& nodes);
+    void inorderCollect(RedBlackNode *root, std::vector<int>& data, std::vector<std::string>& colors);
     int getHeight(RedBlackNode *root);
     int getSize(RedBlackNode *root);
     
-    void saveStep(string description, int highlightedNode = -1);
+    void saveStep(std::string description, int highlightedNode = -1);
+    
+    RedBlackNode *mpBackupRoot;
+    RedBlackNode *cloneNode(RedBlackNode *node, RedBlackNode *parent);
 
 public:
     RedBlackTree();
     ~RedBlackTree();
     
-    // Initialization methods
     void initialize();
-    void initializeFromFile(string filename);
+    void initializeFromFile(std::string filename);
     void initializeRandom(int count, int minVal, int maxVal);
     
-    // Core operations
     bool insert(int val);
     bool remove(int val);
     bool update(int oldVal, int newVal);
     bool search(int val);
     
-    // Visualization controls
+    void setCurrentStep(int step);
     void nextStep();
     void previousStep();
     void goToFinalStep();
     void runAtOnce();
     void setVisualizationSpeed(int speed);
     
-    // Display methods (for debugging only)
     void display();
     void displayCurrentStep();
     void displayStepInfo();
     
-    // Utility methods
     bool isEmpty();
     int getRootData();
     int getTreeHeight();
     int getNodeCount();
-    vector<StepState> getStepHistory();
+    std::vector<StepState> getStepHistory();
     int getCurrentStep();
     int getVisualizationSpeed();
     
     bool validateRBTree();
-    
-    string exportToJSON();
+        
+    void resetHistory(std::string initialMessage);
+    void backup();
+    void restore();
 };
