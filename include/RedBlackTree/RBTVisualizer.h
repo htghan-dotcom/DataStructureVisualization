@@ -1,35 +1,29 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-#include "GUI.h"
+#include "AppLayout.h"
 #include "RedBlackTree.h"
 #include <optional>
 #include <map>
 #include <string>
 
-class RBTVisualizer{
+class RBTVisualizer {
 private:
     sf::RenderWindow* mWindow;
     sf::Font mFontRegular;
     sf::Font mFontBold;
     RedBlackTree mTree;
+    
+    AppLayout mLayout;
 
-    sf::RectangleShape mBackground;
-    sf::RectangleShape mFooter;
-    sf::RectangleShape mDescriptionBox;
-
-    sf::Text mHeaderText;
     sf::Text mTitleNum;
     sf::Text mTitleRed;
     sf::Text mTitleBlack;
     sf::Text mTitleTree;
-    sf::Text mDescriptionText;
     
-    sf::Texture mHomeTex;
     sf::Texture mSkipBackTex;
     sf::Texture mPauseTex;
     sf::Texture mSkipForwardTex;
 
-    ImageButton mHomeBtn;
     ImageButton mSkipBackBtn;
     ImageButton mPauseBtn;
     ImageButton mSkipForwardBtn;
@@ -51,7 +45,6 @@ private:
     
     SpeedSlider mSpeedSlider;
 
-    std::string mActiveAction = "";
     bool mGoHome = false;
     float mTransitionProgress = 1.0f;
     
@@ -111,4 +104,5 @@ public:
     void generateRandomTree();
     bool isEmpty();
     void setTransitionProgress(float p){mTransitionProgress = p;}
+    void resetPlayUI();
 };

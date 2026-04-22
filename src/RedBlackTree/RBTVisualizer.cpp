@@ -4,10 +4,10 @@
 
 RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     : mWindow(&window),
-      mHeaderText(mFontBold), mTitleNum(mFontBold),
-      mTitleRed(mFontBold), mTitleBlack(mFontBold), mTitleTree(mFontBold), mDescriptionText(mFontRegular),
-
+      mTitleNum(mFontBold),
+      mTitleRed(mFontBold), mTitleBlack(mFontBold), mTitleTree(mFontBold),
       mStepText(mFontRegular),
+
       mClearBtn(mFontRegular, "Clear tree", 70.f, 176.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
       mNewBtn(mFontRegular, "New tree", 251.f, 176.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
       mInsertBtn(mFontRegular, "Insert", 70.f, 230.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
@@ -47,33 +47,25 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
         cerr << "Cannot load font!" << endl;
     }
     
-    if (!mHomeTex.loadFromFile("assets/images/homeButton.png")){cerr << "Cannot load homeButton.png" << endl;}
     if (!mSkipBackTex.loadFromFile("assets/images/skipbackButton.png")){cerr << "Cannot load skipbackButton.png" << endl;}
     if (!mPauseTex.loadFromFile("assets/images/pauseButton.png")){cerr << "Cannot load pauseButton.png" << endl; }
     if (!mSkipForwardTex.loadFromFile("assets/images/skipforwardButton.png")){cerr << "Cannot load skipforwardButton.png" << endl;}
     if (!mStartTex.loadFromFile("assets/images/startButton.png")){cerr << "Loi load startButton.png" << endl;}
 
-    mHomeTex.setSmooth(true);
     mSkipBackTex.setSmooth(true);
     mPauseTex.setSmooth(true);
     mSkipForwardTex.setSmooth(true);
     mStartTex.setSmooth(true);
     
-    mHomeTex.generateMipmap();
     mSkipBackTex.generateMipmap();
     mPauseTex.generateMipmap();
     mSkipForwardTex.generateMipmap();
     mStartTex.generateMipmap();
     
-    mHomeBtn.setup(mHomeTex, 67.f, 62.f, 48.f, 48.f);
     mSkipBackBtn.setup(mSkipBackTex, 333.f, 897.f, 48.f, 48.f);
     mPauseBtn.setup(mPauseTex, 397.f, 897.f, 48.f, 48.f);
     mSkipForwardBtn.setup(mSkipForwardTex, 461.f, 897.f, 48.f, 48.f);
     mStartBtn.setup(mStartTex, 134.f, 897.f, 48.f, 48.f);
-
-    mHomeBtn.setCallback([this](){
-        mGoHome = true;
-    });
     
     mPauseBtn.setCallback([this](){
         mIsPaused = true;
@@ -161,18 +153,6 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     mSearchCursorLine.setSize(sf::Vector2f(2.f, 24.f));
     mSearchCursorLine.setFillColor(sf::Color::Black);
 
-    mBackground.setSize({1440.f, 960.f});
-    mBackground.setFillColor(sf::Color(245, 245, 240));
-
-    mFooter.setSize({1440.f, 78.f});
-    mFooter.setPosition({0.f, 882.f});
-    mFooter.setFillColor(sf::Color(217, 217, 217));
-
-    mHeaderText.setString("Data Structure Visualization");
-    mHeaderText.setCharacterSize(30);
-    mHeaderText.setFillColor(sf::Color::Black);
-    mHeaderText.setPosition({130.f, 68.f});
-
     mTitleNum.setString("03");
     mTitleNum.setCharacterSize(30);
     mTitleNum.setFillColor(sf::Color::Black);
@@ -214,26 +194,19 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     mStepText.setOrigin(sf::Vector2f(0.f, 0.f));
     mStepText.setPosition(sf::Vector2f(192.f, 906.f));
 
-    mDescriptionBox.setSize({400.f, 150.f});
-    mDescriptionBox.setFillColor(sf::Color(217, 217, 217));
-    mDescriptionBox.setPosition({1018.f, 165.f});
 
-    mDescriptionText.setString("Step State Description");
-    mDescriptionText.setCharacterSize(20);
-    mDescriptionText.setFillColor(sf::Color::Black);
-    mDescriptionText.setPosition({1040.f, 185.f});
 
     mClearBtn.setCallback([this](){
         mTree.backup();
         mTree.initialize();
         mTree.resetHistory("Tree cleared");
-        mDescriptionText.setString("Tree cleared.");
+        mLayout.setDescription("Tree cleared.");
         mShowUndoBtn = true;
     });
     
     mUndoBtn.setCallback([this](){
         mTree.restore();
-        mDescriptionText.setString("Tree restored.");
+        mLayout.setDescription("Tree restored.");
         mShowUndoBtn = false;
     });
       
@@ -254,6 +227,12 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
     sf::Vector2f worldPos = mWindow->mapPixelToCoords(sf::Mouse::getPosition(*mWindow));
     sf::Vector2i mousePos(static_cast<int>(worldPos.x), static_cast<int>(worldPos.y));
     
+    mLayout.update(mousePos);
+    if (mLayout.mGoHome){
+        mGoHome = true;
+        mLayout.mGoHome = false;
+    }
+    
     if (mShowUndoBtn){
         mUndoBtn.update(mousePos);
     } else {
@@ -267,13 +246,11 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
     mSpeedSlider.update(mousePos);
         
     float speedMult = mSpeedSlider.getSpeed();
-    
     if (speedMult > 0.0f){
         int speedMs = static_cast<int>(500.f / speedMult);
         mTree.setVisualizationSpeed(speedMs);
     }
     
-    mHomeBtn.update(mousePos);
     mSkipBackBtn.update(mousePos);
     mSkipForwardBtn.update(mousePos);
     
@@ -293,8 +270,8 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
     }
 
     if (event){
-        if (const auto* mouseEvent = event -> getIf<sf::Event::MouseButtonPressed>()){
-            if (mouseEvent -> button == sf::Mouse::Button::Left){
+        if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()){
+            if (mouseEvent->button == sf::Mouse::Button::Left){
                 bool clickedInsideAnyForm = false;
                 
                 if (!mIsNewExpanded and sf::FloatRect(sf::Vector2f(251.f, 176.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
@@ -302,6 +279,7 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                     mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false;
                     clickedInsideAnyForm = true;
                 }
+                
                 else if (mIsNewExpanded and sf::FloatRect(sf::Vector2f(251.f, 176.f), sf::Vector2f(160.f, 161.f)).contains(worldPos)){
                     clickedInsideAnyForm = true;
                     if (sf::FloatRect(sf::Vector2f(254.f, 233.f), sf::Vector2f(154.f, 39.f)).contains(worldPos)){
@@ -310,27 +288,19 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                         mIsNewExpanded = false;
                         mShowUndoBtn = false;
                     }
+                    
                     else if (sf::FloatRect(sf::Vector2f(254.f, 287.f), sf::Vector2f(154.f, 39.f)).contains(worldPos)){
                         mTree.backup();
-
                         const char* filterPatterns[1] = { "*.txt" };
-                        const char* filePath = tinyfd_openFileDialog("Chọn file dữ liệu Red-Black Tree",
-                                                                     "",
-                                                                     1,
-                                                                     filterPatterns,
-                                                                     "Text Files (*.txt)",
-                                                                     0
-                                                                     );
-                                                
+                        const char* filePath = tinyfd_openFileDialog("Choose Red-Black Tree data file", "", 1, filterPatterns, "Text Files (*.txt)", 0);
                         if (filePath != nullptr){
                             mTree.initializeFromFile(filePath);
                             mTree.resetHistory("Tree loaded from file");
-                            mDescriptionText.setString("Tree loaded from file!");
+                            mLayout.setDescription("Tree loaded from file!");
                             mShowUndoBtn = false;
                         } else {
-                            mDescriptionText.setString("Cancel load file.");
+                            mLayout.setDescription("Cancel load file.");
                         }
-                        
                         mIsNewExpanded = false;
                     }
                 }
@@ -342,149 +312,172 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                     clickedInsideAnyForm = true;
                 }
                 
-                else if (mIsInsertExpanded && sf::FloatRect(sf::Vector2f(70.f, 230.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
+                else if (mIsInsertExpanded and sf::FloatRect(sf::Vector2f(70.f, 230.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
                     clickedInsideAnyForm = true;
-                    if (sf::FloatRect(sf::Vector2f(254.f, 233.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) && !mInputValue.empty()){
+                    if (sf::FloatRect(sf::Vector2f(254.f, 233.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) and !mInputValue.empty()){
                         int val = stoi(mInputValue);
-                        mTree.backup(); mTree.resetHistory("Create new node " + to_string(val) + " (RED)");
-                        mTree.insert(val); mTree.setCurrentStep(0);
+                        mTree.backup();
+                        mTree.resetHistory("Create new node " + to_string(val) + " (RED)");
+                        mTree.insert(val);
+                        mTree.setCurrentStep(0);
                         mIsInsertExpanded = false;
                         mInputValue = "";
-                        mIsPaused = false;
-                        mShowUndoBtn = false;
-                        mSkipBackBtn.setup(mSkipBackTex, 333.f, 897.f, 48.f, 48.f);
-                        mSkipForwardBtn.setup(mSkipForwardTex, 461.f, 897.f, 48.f, 48.f);
-                        mAutoPlayClock.restart();
+                        resetPlayUI();
                     }
-                    else if (sf::FloatRect(sf::Vector2f(205.f, 237.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)) {
+                    
+                    else if (sf::FloatRect(sf::Vector2f(205.f, 237.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)){
                         mInputValue = to_string(rand() % 99 + 1);
                     }
                 }
 
-                else if (!mIsDeleteExpanded && sf::FloatRect(sf::Vector2f(70.f, 284.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)) {
+                else if (!mIsDeleteExpanded and sf::FloatRect(sf::Vector2f(70.f, 284.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
                     mIsDeleteExpanded = true; mIsNewExpanded = false; mIsInsertExpanded = false; mIsSearchExpanded = false;
-                    mInputValue = ""; clickedInsideAnyForm = true;
-                }
-                else if (mIsDeleteExpanded && sf::FloatRect(sf::Vector2f(70.f, 284.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)) {
+                    mInputValue = "";
                     clickedInsideAnyForm = true;
-                    if (sf::FloatRect(sf::Vector2f(254.f, 287.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) && !mInputValue.empty()) {
+                }
+                
+                else if (mIsDeleteExpanded and sf::FloatRect(sf::Vector2f(70.f, 284.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
+                    clickedInsideAnyForm = true;
+                    if (sf::FloatRect(sf::Vector2f(254.f, 287.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) and !mInputValue.empty()){
                         int val = stoi(mInputValue);
-                        mTree.backup(); mTree.resetHistory("Start to Remove " + to_string(val));
-                        mTree.remove(val); mTree.setCurrentStep(0);
-                        mIsDeleteExpanded = false; mInputValue = ""; mIsPaused = false;
-                        mShowUndoBtn = false;
-                        mSkipBackBtn.setup(mSkipBackTex, 333.f, 897.f, 48.f, 48.f);
-                        mSkipForwardBtn.setup(mSkipForwardTex, 461.f, 897.f, 48.f, 48.f);
-                        mAutoPlayClock.restart();
+                        mTree.backup();
+                        mTree.resetHistory("Start to Remove " + to_string(val));
+                        mTree.remove(val);
+                        mTree.setCurrentStep(0);
+                        mIsDeleteExpanded = false;
+                        mInputValue = "";
+                        resetPlayUI();
                     }
-                    else if (sf::FloatRect(sf::Vector2f(205.f, 291.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)) {
+                    
+                    else if (sf::FloatRect(sf::Vector2f(205.f, 291.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)){
                         mInputValue = to_string(rand() % 99 + 1);
                     }
                 }
-                else if (!mIsSearchExpanded && sf::FloatRect(sf::Vector2f(70.f, 338.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)) {
+                
+                else if (!mIsSearchExpanded and sf::FloatRect(sf::Vector2f(70.f, 338.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
                     mIsSearchExpanded = true; mIsNewExpanded = false; mIsInsertExpanded = false; mIsDeleteExpanded = false;
-                    mInputValue = ""; clickedInsideAnyForm = true;
-                }
-                else if (mIsSearchExpanded && sf::FloatRect(sf::Vector2f(70.f, 338.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)) {
+                    mInputValue = "";
                     clickedInsideAnyForm = true;
-                    if (sf::FloatRect(sf::Vector2f(254.f, 341.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) && !mInputValue.empty()) {
+                }
+                
+                else if (mIsSearchExpanded and sf::FloatRect(sf::Vector2f(70.f, 338.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
+                    clickedInsideAnyForm = true;
+                    if (sf::FloatRect(sf::Vector2f(254.f, 341.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) and !mInputValue.empty()){
                         int val = stoi(mInputValue);
                         mTree.resetHistory("Start to Search for " + to_string(val));
-                        mTree.search(val); mTree.setCurrentStep(0);
-                        mIsSearchExpanded = false; mInputValue = ""; mIsPaused = false;
-                        mShowUndoBtn = false;
-                        mSkipBackBtn.setup(mSkipBackTex, 333.f, 897.f, 48.f, 48.f);
-                        mSkipForwardBtn.setup(mSkipForwardTex, 461.f, 897.f, 48.f, 48.f);
-                        mAutoPlayClock.restart();
+                        mTree.search(val);
+                        mTree.setCurrentStep(0);
+                        mIsSearchExpanded = false;
+                        mInputValue = "";
+                        resetPlayUI();
                     }
-                    else if (sf::FloatRect(sf::Vector2f(205.f, 345.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)) {
+                    
+                    else if (sf::FloatRect(sf::Vector2f(205.f, 345.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)){
                         mInputValue = to_string(rand() % 99 + 1);
                     }
                 }
 
-                if (!clickedInsideAnyForm) {
+                if (!clickedInsideAnyForm){
                     mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false; mIsNewExpanded = false;
                 }
             }
         }
          
-        else if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()) {
-            if (keyEvent->code == sf::Keyboard::Key::Z && (keyEvent->system || keyEvent->control)) {
+        else if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()){
+            if (keyEvent->code == sf::Keyboard::Key::Z and (keyEvent->system or keyEvent->control)){
                 mTree.restore();
-                mDescriptionText.setString("Undo successfully.");
-                mShowUndoBtn = false; mIsPaused = true;
-                mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false; mIsNewExpanded = false;
+                mLayout.setDescription("Undo successfully.");
+                mShowUndoBtn = false;
+                mIsPaused = true;
+                
+                mIsNewExpanded = false;
+                mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false;
                 mInputValue = "";
             }
-             
-            else if (!mIsInsertExpanded && !mIsDeleteExpanded && !mIsSearchExpanded){
-                if (keyEvent->code == sf::Keyboard::Key::I){
-                    mIsInsertExpanded = true; mIsNewExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false;
-                }
-                else if (keyEvent->code == sf::Keyboard::Key::D){
-                    mIsDeleteExpanded = true; mIsNewExpanded = false; mIsInsertExpanded = false; mIsSearchExpanded = false;
-                }
-                else if (keyEvent->code == sf::Keyboard::Key::S){
-                    mIsSearchExpanded = true; mIsNewExpanded = false; mIsInsertExpanded = false; mIsDeleteExpanded = false;
-                }
-                else if (keyEvent->code == sf::Keyboard::Key::N){
-                    mIsNewExpanded = !mIsNewExpanded; mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false;
-                }
-                else if (keyEvent->code == sf::Keyboard::Key::R){
+                    
+            else if (keyEvent->code == sf::Keyboard::Key::I){
+                mIsNewExpanded = false;
+                mIsInsertExpanded = true; mIsDeleteExpanded = false; mIsSearchExpanded = false;
+                mInputValue = "";
+            }
+            
+            else if (keyEvent->code == sf::Keyboard::Key::D){
+                mIsNewExpanded = false;
+                mIsInsertExpanded = false; mIsDeleteExpanded = true; mIsSearchExpanded = false;
+                mInputValue = "";
+            }
+            
+            else if (keyEvent->code == sf::Keyboard::Key::S){
+                mIsNewExpanded = false;
+                mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = true;
+                mInputValue = "";
+            }
+            
+            else if (keyEvent->code == sf::Keyboard::Key::N){
+                mIsNewExpanded = !mIsNewExpanded;
+                mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false;
+                mInputValue = "";
+            }
+            
+            else if (keyEvent->code == sf::Keyboard::Key::Space){
+                mIsPaused = !mIsPaused;
+            }
+                    
+            else if (keyEvent->code == sf::Keyboard::Key::R){
+                if (mIsInsertExpanded or mIsDeleteExpanded or mIsSearchExpanded){
+                    mInputValue = to_string(rand() % 99 + 1);
+                } else {
                     mTree.backup();
                     generateRandomTree();
                     mShowUndoBtn = false;
                     mIsNewExpanded = false;
                 }
-                else if (keyEvent->code == sf::Keyboard::Key::Space){
-                    mIsPaused = !mIsPaused;
-                }
             }
-            
-            else if (mIsInsertExpanded || mIsDeleteExpanded || mIsSearchExpanded) {
-                if (keyEvent->code == sf::Keyboard::Key::Backspace && !mInputValue.empty()){
+                    
+            else if (mIsInsertExpanded or mIsDeleteExpanded or mIsSearchExpanded){
+                if (keyEvent->code == sf::Keyboard::Key::Backspace and !mInputValue.empty()){
                     mInputValue.pop_back();
                 }
-                else if (keyEvent->code == sf::Keyboard::Key::Enter && !mInputValue.empty()){
+                
+                else if (keyEvent->code == sf::Keyboard::Key::Enter and !mInputValue.empty()){
                     int val = stoi(mInputValue);
-                    
-                    if (mIsInsertExpanded) {
-                        mTree.backup(); mTree.resetHistory("Create new node " + to_string(val) + " (RED)");
+                            
+                    if (mIsInsertExpanded){
+                        mTree.backup();
+                        mTree.resetHistory("Create new node " + to_string(val) + " (RED)");
                         mTree.insert(val);
                     }
-                    else if (mIsDeleteExpanded) {
-                        mTree.backup(); mTree.resetHistory("Start to Remove " + to_string(val));
+                    
+                    else if (mIsDeleteExpanded){
+                        mTree.backup();
+                        mTree.resetHistory("Start to Remove " + to_string(val));
                         mTree.remove(val);
                     }
-                    else if (mIsSearchExpanded) {
+                    
+                    else if (mIsSearchExpanded){
                         mTree.resetHistory("Start to Search for " + to_string(val));
                         mTree.search(val);
                     }
-                        
+                                
                     mTree.setCurrentStep(0);
                     mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false;
-                    mInputValue = ""; mIsPaused = false;
+                    mInputValue = "";
+                    resetPlayUI();
+                }
+                
+                else {
+                    int digit = -1;
+                    if (keyEvent->code >= sf::Keyboard::Key::Num0 and keyEvent->code <= sf::Keyboard::Key::Num9){
+                        digit = static_cast<int>(keyEvent->code) - static_cast<int>(sf::Keyboard::Key::Num0);
+                    }
                     
-                    mShowUndoBtn = false;
-                        
-                    mSkipBackBtn.setup(mSkipBackTex, 333.f, 897.f, 48.f, 48.f);
-                    mSkipForwardBtn.setup(mSkipForwardTex, 461.f, 897.f, 48.f, 48.f);
-                    mAutoPlayClock.restart();
-                }
-                else if (keyEvent->code >= sf::Keyboard::Key::Num0 && keyEvent->code <= sf::Keyboard::Key::Num9){
-                    if (mInputValue.length() < 3){
-                        int digit = static_cast<int>(keyEvent->code) - static_cast<int>(sf::Keyboard::Key::Num0);
+                    else if (keyEvent->code >= sf::Keyboard::Key::Numpad0 and keyEvent->code <= sf::Keyboard::Key::Numpad9){
+                        digit = static_cast<int>(keyEvent->code) - static_cast<int>(sf::Keyboard::Key::Numpad0);
+                    }
+                    
+                    if (digit != -1 and mInputValue.length() < 3){
                         mInputValue += to_string(digit);
                     }
-                }
-                else if (keyEvent->code >= sf::Keyboard::Key::Numpad0 && keyEvent->code <= sf::Keyboard::Key::Numpad9){
-                    if (mInputValue.length() < 3){
-                        int digit = static_cast<int>(keyEvent->code) - static_cast<int>(sf::Keyboard::Key::Numpad0);
-                        mInputValue += to_string(digit);
-                    }
-                }
-                else if (keyEvent->code == sf::Keyboard::Key::R) {
-                    mInputValue = to_string(rand() % 99 + 1);
                 }
             }
         }
@@ -571,7 +564,7 @@ void RBTVisualizer::drawAnimatedTree(const StepState& stepA, const StepState& st
             highlightCirc.setOrigin(sf::Vector2f(outerR, outerR));
             highlightCirc.setPosition(p);
             highlightCirc.setFillColor(sf::Color::Yellow);
-            mWindow -> draw(highlightCirc);
+            mWindow->draw(highlightCirc);
         }
         
         sf::CircleShape circle(R);
@@ -654,13 +647,11 @@ void RBTVisualizer::render(bool showUI){
         sf::Vector2f worldPos = mWindow->mapPixelToCoords(sf::Mouse::getPosition(*mWindow));
         
         if (cur >= 0 and cur < static_cast<int>(history.size())){
-            mDescriptionText.setString(history[cur].description);
+            mLayout.setDescription(history[cur].description);
         }
         
-        mWindow->draw(mFooter);
-        mWindow->draw(mDescriptionBox);
-        mWindow->draw(mDescriptionText);
-        mWindow->draw(mHeaderText);
+        mLayout.draw(*mWindow);
+        
         mWindow->draw(mTitleNum);
         mWindow->draw(mTitleRed);
         mWindow->draw(mTitleBlack);
@@ -768,7 +759,6 @@ void RBTVisualizer::render(bool showUI){
         
         mSpeedSlider.draw(*mWindow);
         
-        mHomeBtn.draw(*mWindow);
         mSkipBackBtn.draw(*mWindow);
         mSkipForwardBtn.draw(*mWindow);
         
@@ -777,7 +767,6 @@ void RBTVisualizer::render(bool showUI){
             mWindow->draw(mStepBgRight);
             mWindow->draw(mStepBgCenter);
             
-            int total = static_cast<int>(history.size());
             if (total == 0){
                 mStepText.setString("Step 0 / 0");
             } else {
@@ -795,7 +784,9 @@ void RBTVisualizer::render(bool showUI){
 }
 
 std::map<int, sf::Vector2f> RBTVisualizer::computeLayout(const std::vector<NodeSnapshot>& nodes){
-    if (nodes.empty()){return {};}
+    if (nodes.empty()){
+        return {};
+    }
 
     map<int, const NodeSnapshot*> byVal;
     set<int> allVals, hasParent;
@@ -891,4 +882,12 @@ bool RBTVisualizer::isEmpty(){
         return history[cur].nodes.empty();
     }
     return true;
+}
+
+void RBTVisualizer::resetPlayUI(){
+    mIsPaused = false;
+    mShowUndoBtn = false;
+    mSkipBackBtn.setup(mSkipBackTex, 333.f, 897.f, 48.f, 48.f);
+    mSkipForwardBtn.setup(mSkipForwardTex, 461.f, 897.f, 48.f, 48.f);
+    mAutoPlayClock.restart();
 }

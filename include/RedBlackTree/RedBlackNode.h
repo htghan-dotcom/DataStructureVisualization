@@ -2,7 +2,7 @@
 
 enum class Color { RED, BLACK };
 
-class RedBlackNode{
+class RedBlackNode {
 private:
     int mVal;
     Color mColor;

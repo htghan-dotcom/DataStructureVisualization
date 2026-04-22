@@ -58,11 +58,11 @@ std::optional<int> MainMenu::update(const sf::RenderWindow& window){
         if (static_cast<int>(i) == mActiveIdx){
             float targetY = mWindowHeight * 0.65f;
             mCards[i].textYPos += (targetY - mCards[i].textYPos) * 0.15f;
-            mCards[i].elementsAlpha = std::min(255.f, mCards[i].elementsAlpha + 15.f);
+            mCards[i].elementsAlpha = min(255.f, mCards[i].elementsAlpha + 15.f);
         } else {
             float targetY = mWindowHeight * 0.45f;
             mCards[i].textYPos += (targetY - mCards[i].textYPos) * 0.15f;
-            mCards[i].elementsAlpha = std::max(0.f, mCards[i].elementsAlpha - 15.f);
+            mCards[i].elementsAlpha = max(0.f, mCards[i].elementsAlpha - 15.f);
         }
     }
     

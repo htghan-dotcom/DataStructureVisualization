@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-struct NodeSnapshot{
+struct NodeSnapshot {
     int val;
     bool isRed;
     int leftVal;
@@ -12,7 +12,7 @@ struct NodeSnapshot{
     bool isDummy;
 };
 
-struct StepState{
+struct StepState {
     std::string description;
     std::vector<int> treeData;
     std::vector<std::string> nodeColors;
@@ -21,7 +21,7 @@ struct StepState{
     std::vector<NodeSnapshot> nodes;
 };
 
-class RedBlackTree{
+class RedBlackTree {
 private:
     RedBlackNode *mpRoot;
     std::vector<StepState> mStepHistory;
@@ -35,15 +35,12 @@ private:
     void fixDeletion(RedBlackNode *node);
     
     RedBlackNode *findMin(RedBlackNode *root);
-    RedBlackNode *findMax(RedBlackNode *root);
     RedBlackNode *searchNode(int val);
     void transplant(RedBlackNode *x, RedBlackNode *y);
         
     void clearTree(RedBlackNode *root);
     void collectSnapshot(RedBlackNode *node, std::vector<NodeSnapshot>& nodes);
     void inorderCollect(RedBlackNode *root, std::vector<int>& data, std::vector<std::string>& colors);
-    int getHeight(RedBlackNode *root);
-    int getSize(RedBlackNode *root);
     
     void saveStep(std::string description, int highlightedNode = -1);
     
@@ -56,7 +53,6 @@ public:
     
     void initialize();
     void initializeFromFile(std::string filename);
-    void initializeRandom(int count, int minVal, int maxVal);
     
     bool insert(int val);
     bool remove(int val);
@@ -67,22 +63,13 @@ public:
     void nextStep();
     void previousStep();
     void goToFinalStep();
-    void runAtOnce();
     void setVisualizationSpeed(int speed);
-    
-    void display();
-    void displayCurrentStep();
-    void displayStepInfo();
-    
+        
     bool isEmpty();
-    int getRootData();
-    int getTreeHeight();
-    int getNodeCount();
     std::vector<StepState> getStepHistory();
     int getCurrentStep();
     int getVisualizationSpeed();
     
-    bool validateRBTree();
         
     void resetHistory(std::string initialMessage);
     void backup();

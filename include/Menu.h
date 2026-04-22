@@ -4,7 +4,7 @@
 #include <string>
 #include <optional>
 
-struct MenuCard{
+struct MenuCard {
     std::string number;
     std::string name;
     sf::Color bgColor;
@@ -47,7 +47,7 @@ struct MenuCard{
     MenuCard& operator=(const MenuCard&) = delete;
 };
 
-class MainMenu{
+class MainMenu {
 private:
     std::vector<MenuCard> mCards;
     sf::Font mFont;
@@ -60,11 +60,11 @@ public:
     std::optional<int> update(const sf::RenderWindow& window);
     void draw(sf::RenderTarget& target);
     
-    sf::FloatRect getCardBounds(int index) const{
+    sf::FloatRect getCardBounds(int index) const {
         return mCards[index].bgShape.getGlobalBounds();
     }
     
-    sf::Color getCardColor(int index) const{
+    sf::Color getCardColor(int index) const {
         return mCards[index].bgColor;
     }
     
@@ -72,7 +72,7 @@ public:
         return mActiveIdx;
     }
 
-    sf::FloatRect getThumbnailBounds(int index) const{
+    sf::FloatRect getThumbnailBounds(int index) const {
         float cardX = mCards[index].bgShape.getPosition().x;
         return sf::FloatRect({cardX + 20.f, 60.f}, {mCards[index].currentWidth - 40.f, mWindowHeight * 0.5f});
     }
