@@ -2,11 +2,11 @@
 #include "Common.h"
 
 MainMenu::MainMenu(float w, float h)
-: mWindowWidth(w), mWindowHeight(h), mActiveIdx(-1)
+    : mWindowWidth(w),
+      mWindowHeight(h),
+      mActiveIdx(-1)
 {
-    if (!mFont.openFromFile("/System/Library/Fonts/Helvetica.ttc")){
-        cerr << "Could not load font" << endl;
-    }
+    if (!mFont.openFromFile("assets/fonts/Inter-Bold.ttf")){cerr << "Could not load font" << endl;}
     
     vector<string> nums = {"01", "02", "03", "04"};
     vector<string> names = {"Doubly\nLinked List", "Hash\nTable", "Red - Black\nTree", "Graph"};
@@ -22,11 +22,22 @@ MainMenu::MainMenu(float w, float h)
     for (size_t i = 0; i < names.size(); i++){
         mCards.emplace_back(nums[i], names[i], colors[i], defWidth, mWindowHeight, mFont);
     }
+    
+    if (!mExitTex.loadFromFile("assets/images/exitButton.png")){cerr << "Cannot load exitButton.png" << endl;}
+    mExitTex.setSmooth(true);
+    mExitTex.generateMipmap();
+    
+    mExitBtn.setup(mExitTex, 43.f, 62.f, 48.f, 48.f);
+    mExitBtn.setCallback([this](){
+        mGoBack = true;
+    });
 }
 
 std::optional<int> MainMenu::update(const sf::RenderWindow& window){
     sf::Vector2f worldPos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
     sf::Vector2i mousePos(static_cast<int>(worldPos.x), static_cast<int>(worldPos.y));
+    
+    mExitBtn.update(mousePos);
 
     float currentX = 0;
     int hoveredIdx = -1;
@@ -42,11 +53,10 @@ std::optional<int> MainMenu::update(const sf::RenderWindow& window){
 
     optional<int> clickedDS = nullopt;
     if (mActiveIdx != -1 and sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)){
-        float paddingX = 40.f;
-        float btnW = 140.f;
-        float btnH = 40.f;
-        float btnX = mActiveIdx * mCards[mActiveIdx].currentWidth + paddingX;
-        float btnY = mCards[mActiveIdx].textYPos + mCards[mActiveIdx].nameText.getLocalBounds().size.y + 40.f;
+        float btnW = 230.f;
+        float btnH = 67.f;
+        float btnX = mActiveIdx * mCards[mActiveIdx].currentWidth + 65.f;
+        float btnY = 842.f;
 
         sf::FloatRect btnBounds(sf::Vector2f(btnX, btnY), sf::Vector2f(btnW, btnH));
         if (btnBounds.contains(sf::Vector2f(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)))){
@@ -95,11 +105,11 @@ void MainMenu::draw(sf::RenderTarget& target){
         target.draw(card.nameText);
 
         if (card.elementsAlpha > 5.f){
-            float btnW = 140.f;
-            float btnH = 40.f;
+            float btnW = 230.f;
+            float btnH = 67.f;
             float radius = btnH / 2.f;
-            float btnX = drawX + paddingX;
-            float btnY = card.textYPos + card.nameText.getLocalBounds().size.y + 40.f;
+            float btnX = drawX + 65.f;
+            float btnY = 842.f;
             
             sf::Color btnColor(220, 220, 220, static_cast<uint8_t>(card.elementsAlpha));
             
@@ -114,7 +124,7 @@ void MainMenu::draw(sf::RenderTarget& target){
             sf::RectangleShape centerRect(sf::Vector2f(btnW - btnH, btnH));
             centerRect.setPosition(sf::Vector2f(btnX + radius, btnY));
             centerRect.setFillColor(btnColor);
-                   
+                    
             target.draw(leftCircle);
             target.draw(rightCircle);
             target.draw(centerRect);
@@ -123,11 +133,13 @@ void MainMenu::draw(sf::RenderTarget& target){
             card.viewMoreText.setFillColor(sf::Color(30, 30, 30, static_cast<uint8_t>(card.elementsAlpha)));
             card.viewMoreText.setPosition(sf::Vector2f(
                 btnX + (btnW - viewBounds.size.x) / 2.f,
-                btnY + (btnH - viewBounds.size.y) / 2.f - 4.f
+                btnY + (btnH - viewBounds.size.y) / 2.f - 5.f
             ));
             target.draw(card.viewMoreText);
         }
         
         drawX += card.currentWidth;
     }
+    
+    mExitBtn.draw(target);
 }

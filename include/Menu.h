@@ -1,4 +1,5 @@
 #pragma once
+#include "GUI.h"
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <string>
@@ -28,16 +29,15 @@ struct MenuCard {
         bgShape.setFillColor(bgColor);
         
         numText.setString(number);
-        numText.setCharacterSize(16);
+        numText.setCharacterSize(25);
         numText.setFillColor(sf::Color::Black);
         
         nameText.setString(name);
-        nameText.setCharacterSize(38);
+        nameText.setCharacterSize(50);
         nameText.setFillColor(sf::Color::Black);
-        nameText.setStyle(sf::Text::Bold);
         
         viewMoreText.setString("View more >");
-        viewMoreText.setCharacterSize(16);
+        viewMoreText.setCharacterSize(25);
         viewMoreText.setFillColor(sf::Color::Black);
     }
 
@@ -54,8 +54,13 @@ private:
     float mWindowWidth;
     float mWindowHeight;
     int mActiveIdx;
+    
+    sf::Texture mExitTex;
 
 public:
+    ImageButton mExitBtn;
+    bool mGoBack = false;
+    
     MainMenu(float w, float h);
     std::optional<int> update(const sf::RenderWindow& window);
     void draw(sf::RenderTarget& target);
