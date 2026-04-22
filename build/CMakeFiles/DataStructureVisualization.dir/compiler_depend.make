@@ -2480,6 +2480,7 @@ CMakeFiles/DataStructureVisualization.dir/src/UI/renders/EdgeRender.cpp.obj: D:/
   D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/Algo/Graph/Node.h \
   D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/config/Common.h \
   D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/config/Config.h \
+  D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/core/Step.h \
   D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/renders/EdgeRender.h
 
 CMakeFiles/DataStructureVisualization.dir/src/UI/renders/NodeRender.cpp.obj: D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/renders/NodeRender.cpp \
