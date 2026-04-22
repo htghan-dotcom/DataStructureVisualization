@@ -60,6 +60,7 @@ private:
     bool mIsInsertExpanded = false;
     bool mIsDeleteExpanded = false;
     bool mIsSearchExpanded = false;
+    bool mIsNewExpanded = false;
     
     std::string mInputValue = "";
     sf::Clock mCursorClock;
@@ -92,6 +93,12 @@ private:
     ImageButton mSearchDiceBtn;
     sf::Text mSearchInputText;
     sf::RectangleShape mSearchCursorLine;
+    
+    RoundedButton mNewHoverStroke;
+    RoundedButton mNewExpandedStroke;
+    RoundedButton mNewExpandedBg;
+    RoundedButton mRandomBtn;
+    RoundedButton mUploadBtn;
 
     void drawAnimatedTree(const StepState& stepA, const StepState& stepB, float animP);
     std::map<int, sf::Vector2f> computeLayout(const std::vector<NodeSnapshot>& nodes);
