@@ -28,6 +28,7 @@ private:
     void setupDefaultGraph();
     void syncAdjacencyMatrixFromGraph();
     void rebuildGraphFromAdjacencyMatrix();
+    void pushUndoState();
     void rebuildTimeline();
     void buildPseudocode();
     bool isInsideGraphViewport(const sf::Vector2f& mousePos) const;
@@ -40,6 +41,7 @@ private:
     void onActionSample();
     void onActionNewGraph();
     void onActionRandom();
+    void onActionUndo();
     void onActionAddNode();
     void onActionAddEdgeMode();
     void onActionRemoveNode();
@@ -74,6 +76,13 @@ private:
     std::vector<std::string> pseudocode_;
     std::vector<std::vector<int>> adjacencyMatrix_;
     std::vector<bool> nodeAlive_;
+    struct GraphSnapshot {
+        Graph graph;
+        std::vector<std::vector<int>> adjacency;
+        std::vector<bool> alive;
+        int selectedNodeId = -1;
+    };
+    std::vector<GraphSnapshot> undoStack_;
     int selectedNodeId_ = -1;
     bool placingNode_ = false;
     bool deletingNodeMode_ = false;
@@ -86,5 +95,8 @@ private:
     int draggingNodeId_ = -1;
     MstCanvasMode canvasMode_ = MstCanvasMode::Graph;
     bool timelineDirty_ = false;
+    bool showLeftActions_ = true;
+    bool showRightStepPanel_ = true;
+    bool showRightPseudocodePanel_ = true;
 };
 

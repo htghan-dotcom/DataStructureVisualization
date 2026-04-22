@@ -8,14 +8,14 @@ Slider::Slider(float x, float y, float width, float minValue, float maxValue, fl
     : minValue_(minValue), maxValue_(maxValue), value_(initial) {
     track_.setPosition(x, y);
     track_.setSize(sf::Vector2f(width, 4.f));
-    track_.setFillColor(sf::Color(110, 110, 120));
+    track_.setFillColor(sf::Color(186, 191, 196));
 
     knob_.setRadius(8.f);
-    knob_.setFillColor(sf::Color(230, 230, 240));
+    knob_.setFillColor(sf::Color(113, 145, 163));
 
     label_.setFont(font);
     label_.setCharacterSize(13);
-    label_.setFillColor(sf::Color::White);
+    label_.setFillColor(sf::Color(54, 66, 76));
 
     updateKnobPosition();
 }

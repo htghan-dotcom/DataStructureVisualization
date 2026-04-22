@@ -24,20 +24,25 @@ void NodeRender::draw(sf::RenderWindow& window,
     circle.setOrigin(radius, radius);
     circle.setPosition(graphToScreen(node.x, node.y));
 
+    sf::Color nodeColor = config::kNodeFillColor;
+
     if (isSelected) {
-        circle.setFillColor(sf::Color(255, 170, 40));
+        nodeColor = sf::Color(245, 216, 224);
     } else if (isActive) {
-        circle.setFillColor(sf::Color(255, 210, 70));
-    } else {
-        circle.setFillColor(config::kNodeFillColor);
+        nodeColor = sf::Color(252, 235, 176);
     }
+
+    circle.setFillColor(nodeColor);
 
     circle.setOutlineColor(config::kNodeOutlineColor);
     circle.setOutlineThickness(2.4f);
     window.draw(circle);
 
     sf::Text idText(std::to_string(node.id), font, 13);
-    idText.setFillColor(sf::Color::White);
-    idText.setPosition(circle.getPosition().x - 5.f, circle.getPosition().y - 9.f);
+    const int luminance = static_cast<int>(nodeColor.r) + static_cast<int>(nodeColor.g) + static_cast<int>(nodeColor.b);
+    idText.setFillColor(luminance > 440 ? sf::Color(36, 42, 48) : sf::Color(245, 245, 245));
+    const sf::FloatRect textBounds = idText.getLocalBounds();
+    idText.setPosition(circle.getPosition().x - textBounds.width * 0.5f - textBounds.left,
+                       circle.getPosition().y - textBounds.height * 0.5f - textBounds.top);
     window.draw(idText);
 }

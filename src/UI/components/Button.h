@@ -24,6 +24,7 @@ public:
     void flash();
     void setSelected(bool selected);
     bool contains(const sf::Vector2f& point) const;
+    sf::FloatRect bounds() const;
     void draw(sf::RenderWindow& window);
 
 private:

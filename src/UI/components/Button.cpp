@@ -66,14 +66,14 @@ void drawRoundedBox(sf::RenderWindow& window,
 
 Button::Button(const std::string& label, const sf::Font& font) {
     background_.setSize(sf::Vector2f(180.f, 34.f));
-    background_.setFillColor(sf::Color(35, 40, 52));
+    background_.setFillColor(sf::Color(95, 131, 151));
     background_.setOutlineThickness(1.f);
-    background_.setOutlineColor(sf::Color(90, 90, 100));
+    background_.setOutlineColor(sf::Color(84, 116, 134));
 
     text_.setFont(font);
     text_.setString(label);
     text_.setCharacterSize(14);
-    text_.setFillColor(sf::Color::White);
+    text_.setFillColor(sf::Color(238, 244, 247));
 
     alignText();
 }
@@ -117,48 +117,54 @@ bool Button::contains(const sf::Vector2f& point) const {
     return enabled_ && background_.getGlobalBounds().contains(point);
 }
 
+sf::FloatRect Button::bounds() const {
+    return background_.getGlobalBounds();
+}
+
 void Button::draw(sf::RenderWindow& window) {
     sf::RectangleShape background = background_;
     sf::Text text = text_;
 
     const bool flashing = flashFrames_ > 0;
     if (!enabled_) {
-        background.setFillColor(sf::Color(45, 50, 58));
-        background.setOutlineColor(sf::Color(85, 85, 90));
-        text.setFillColor(sf::Color(155, 155, 160));
+        background.setFillColor(sf::Color(202, 208, 214));
+        background.setOutlineColor(sf::Color(176, 184, 191));
+        text.setFillColor(sf::Color(146, 154, 162));
     } else {
-        sf::Color fill(35, 40, 52);
-        sf::Color outline(90, 90, 100);
-        sf::Color foreground = sf::Color::White;
+        sf::Color fill(95, 131, 151);
+        sf::Color outline(84, 116, 134);
+        sf::Color foreground(238, 244, 247);
 
         if (styleRole_ == StyleRole::Play) {
-            fill = sf::Color(44, 120, 66);
-            outline = sf::Color(95, 185, 122);
+            fill = sf::Color(110, 154, 91);
+            outline = sf::Color(86, 126, 68);
+            foreground = sf::Color(250, 250, 250);
         } else if (styleRole_ == StyleRole::Danger) {
-            fill = sf::Color(45, 40, 52);
-            outline = sf::Color(98, 76, 76);
+            fill = sf::Color(217, 176, 176);
+            outline = sf::Color(175, 118, 118);
+            foreground = sf::Color(70, 34, 34);
         }
 
         if (selected_) {
             if (styleRole_ == StyleRole::Algorithm) {
-                fill = sf::Color(255, 171, 64);
-                outline = sf::Color(190, 110, 34);
-                foreground = sf::Color(25, 25, 25);
+                fill = sf::Color(245, 170, 70);
+                outline = sf::Color(188, 124, 44);
+                foreground = sf::Color(245, 247, 250);
             } else if (styleRole_ == StyleRole::Danger) {
-                fill = sf::Color(186, 64, 64);
-                outline = sf::Color(220, 108, 108);
-                foreground = sf::Color(250, 245, 245);
+                fill = sf::Color(197, 100, 100);
+                outline = sf::Color(164, 74, 74);
+                foreground = sf::Color(255, 247, 247);
             } else {
-                fill = sf::Color(255, 221, 92);
-                outline = sf::Color(130, 106, 16);
-                foreground = sf::Color(30, 30, 30);
+                fill = sf::Color(114, 149, 170);
+                outline = sf::Color(84, 116, 134);
+                foreground = sf::Color(245, 247, 250);
             }
         }
 
         if (flashing) {
-            fill = sf::Color(255, 221, 92);
-            outline = sf::Color(130, 106, 16);
-            foreground = sf::Color(30, 30, 30);
+            fill = sf::Color(114, 149, 170);
+            outline = sf::Color(84, 116, 134);
+            foreground = sf::Color(245, 247, 250);
         }
 
         background.setFillColor(fill);
@@ -172,7 +178,7 @@ void Button::draw(sf::RenderWindow& window) {
                                background.getSize().y);
     drawRoundedBox(window,
                    bounds,
-                   6.0f,
+                   std::clamp(bounds.height * 0.45f, 6.0f, 14.0f),
                    background.getOutlineThickness(),
                    background.getFillColor(),
                    background.getOutlineColor());

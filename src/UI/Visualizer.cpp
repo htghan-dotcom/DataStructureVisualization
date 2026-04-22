@@ -33,6 +33,17 @@ constexpr float kBottomPanelY = 628.0f;
 constexpr float kBottomPanelW = 1256.0f;
 constexpr float kBottomPanelH = 80.0f;
 
+constexpr float kLeftCollapseBtnX = 14.0f;
+constexpr float kLeftCollapseBtnY = 112.0f;
+constexpr float kLeftCollapseBtnS = 34.0f;
+
+constexpr float kRightToggleBtnX = 1228.0f;
+constexpr float kRightToggleBtnW = 40.0f;
+constexpr float kRightStepBtnY = 24.0f;
+constexpr float kRightStepBtnH = 166.0f;
+constexpr float kRightPseudoBtnY = 210.0f;
+constexpr float kRightPseudoBtnH = 350.0f;
+
 constexpr float kGraphMinX = 274.0f;
 constexpr float kGraphMaxX = 934.0f;
 constexpr float kGraphMinY = 110.0f;
@@ -125,6 +136,19 @@ bool loadFontFromCandidates(sf::Font& font, const std::vector<std::string>& cand
             continue;
         }
         if (font.loadFromFile(path)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool loadTextureFromCandidates(sf::Texture& texture, const std::vector<std::string>& candidates) {
+    for (const auto& path : candidates) {
+        std::error_code ec;
+        if (!std::filesystem::exists(path, ec) || ec) {
+            continue;
+        }
+        if (texture.loadFromFile(path)) {
             return true;
         }
     }
@@ -272,6 +296,18 @@ void Visualizer::syncAdjacencyMatrixFromGraph() {
     }
 }
 
+void Visualizer::pushUndoState() {
+    GraphSnapshot snap;
+    snap.graph = graph_;
+    snap.adjacency = adjacencyMatrix_;
+    snap.alive = nodeAlive_;
+    snap.selectedNodeId = selectedNodeId_;
+    undoStack_.push_back(std::move(snap));
+    if (undoStack_.size() > 64) {
+        undoStack_.erase(undoStack_.begin());
+    }
+}
+
 void Visualizer::rebuildGraphFromAdjacencyMatrix() {
     const int n = static_cast<int>(adjacencyMatrix_.size());
     if (static_cast<int>(nodeAlive_.size()) < n) {
@@ -363,6 +399,8 @@ bool Visualizer::handleAdjacencyMatrixClick(const sf::Vector2f& mousePos) {
         return false;
     }
 
+    pushUndoState();
+
     int& weightCell = adjacencyMatrix_[static_cast<size_t>(row)][static_cast<size_t>(col)];
     if (weightCell > 0) {
         weightCell = 0;
@@ -414,6 +452,7 @@ void Visualizer::buildPseudocode() {
 }
 
 void Visualizer::onActionNewGraph() {
+    pushUndoState();
     graph_.clear();
     adjacencyMatrix_.clear();
     nodeAlive_.clear();
@@ -500,6 +539,7 @@ void Visualizer::onActionSample() {
 }
 
 void Visualizer::onActionRandom() {
+    pushUndoState();
     const int nodeCount = 5 + (std::rand() % 10);  // 5..14 nodes
     graph_ = GraphLoader::createRandomGraph(nodeCount, 30);
     selectedNodeId_ = -1;
@@ -515,6 +555,35 @@ void Visualizer::onActionRandom() {
     enteringEdgeWeight_ = false;
     edgeWeightInput_.clear();
     rebuildTimeline();
+}
+
+void Visualizer::onActionUndo() {
+    if (undoStack_.empty() || playing_) {
+        return;
+    }
+
+    GraphSnapshot snap = undoStack_.back();
+    undoStack_.pop_back();
+
+    graph_ = std::move(snap.graph);
+    adjacencyMatrix_ = std::move(snap.adjacency);
+    nodeAlive_ = std::move(snap.alive);
+    selectedNodeId_ = snap.selectedNodeId;
+
+    placingNode_ = false;
+    deletingNodeMode_ = false;
+    addingEdgeMode_ = false;
+    pendingEdgeFrom_ = -1;
+    pendingEdgeTo_ = -1;
+    enteringEdgeWeight_ = false;
+    edgeWeightInput_.clear();
+    draggingNode_ = false;
+    draggingNodeId_ = -1;
+
+    animation_.clear();
+    playing_ = false;
+    state_ = AppState::Paused;
+    timelineDirty_ = true;
 }
 
 void Visualizer::onActionAddNode() {
@@ -671,6 +740,25 @@ void Visualizer::run() {
         return;
     }
 
+    sf::Texture homeIconTex;
+    sf::Texture playIconTex;
+    sf::Texture pauseIconTex;
+    sf::Texture skipBackIconTex;
+    sf::Texture skipForwardIconTex;
+
+    const auto makeIconCandidates = [](const std::string& file) {
+        return std::vector<std::string>{
+            "assets/images/" + file,
+            "../assets/images/" + file,
+            "../../assets/images/" + file};
+    };
+
+    loadTextureFromCandidates(homeIconTex, makeIconCandidates("homeButton.png"));
+    loadTextureFromCandidates(playIconTex, makeIconCandidates("startButton.png"));
+    loadTextureFromCandidates(pauseIconTex, makeIconCandidates("pauseButton.png"));
+    loadTextureFromCandidates(skipBackIconTex, makeIconCandidates("skipbackButton.png"));
+    loadTextureFromCandidates(skipForwardIconTex, makeIconCandidates("skipforwardButton.png"));
+
     menuButtons_ = {
         Button("Doubly Linked List", font_),
         Button("Hash Table", font_),
@@ -689,6 +777,7 @@ void Visualizer::run() {
         Button("Step Forward", font_),
         Button("Skip Forward", font_),
         Button("New Graph", font_),
+        Button("Undo", font_),
         Button("Add Node", font_),
         Button("Delete Node", font_),
         Button("Add/Modify Edges", font_),
@@ -699,8 +788,9 @@ void Visualizer::run() {
         Button("Prim", font_)};
 
     backButton_ = Button("Back To Menu", font_);
-    backButton_.setSize(220.f, 28.f);
-    backButton_.setPosition(26.f, 22.f);
+    backButton_.setLabel("");
+    backButton_.setSize(44.f, 44.f);
+    backButton_.setPosition(24.f, 18.f);
 
     const float buttonW = 220.f;
     const float buttonH = 24.f;
@@ -723,12 +813,14 @@ void Visualizer::run() {
     controlButtons_[10].setPosition(leftX, graphSetupY + graphGap * 5.f);
     controlButtons_[11].setSize(buttonW, buttonH);
     controlButtons_[11].setPosition(leftX, graphSetupY + graphGap * 6.f);
+    controlButtons_[12].setSize(buttonW, buttonH);
+    controlButtons_[12].setPosition(leftX, graphSetupY + graphGap * 7.f);
 
     // Left panel: Algorithms controls.
-    controlButtons_[12].setSize(buttonW, buttonH);
-    controlButtons_[12].setPosition(leftX, 338.f);
     controlButtons_[13].setSize(buttonW, buttonH);
-    controlButtons_[13].setPosition(leftX, 368.f);
+    controlButtons_[13].setPosition(leftX, 360.f);
+    controlButtons_[14].setSize(buttonW, buttonH);
+    controlButtons_[14].setPosition(leftX, 390.f);
 
     // Bottom panel: Playback bar controls.
     const float pbY = 642.f;
@@ -740,12 +832,18 @@ void Visualizer::run() {
         controlButtons_[i].setPosition(pbStartX + static_cast<float>(i) * (pbW + pbGap), pbY);
     }
 
-    speedSlider_ = Slider(760.f, 650.f, 480.f, 1.f, 10.f, 2.f, font_);
+    controlButtons_[0].setLabel("");
+    controlButtons_[1].setLabel("Step back");
+    controlButtons_[2].setLabel("");
+    controlButtons_[3].setLabel("Step forward");
+    controlButtons_[4].setLabel("");
+
+    speedSlider_ = Slider(940.f, 650.f, 280.f, 1.f, 10.f, 2.f, font_);
 
     controlButtons_[2].setStyleRole(Button::StyleRole::Play);
-    controlButtons_[7].setStyleRole(Button::StyleRole::Danger);
-    controlButtons_[12].setStyleRole(Button::StyleRole::Algorithm);
+    controlButtons_[8].setStyleRole(Button::StyleRole::Danger);
     controlButtons_[13].setStyleRole(Button::StyleRole::Algorithm);
+    controlButtons_[14].setStyleRole(Button::StyleRole::Algorithm);
 
     sf::RenderWindow window(sf::VideoMode(config::kWindowWidth, config::kWindowHeight),
                             "Data Structure Visualization");
@@ -787,7 +885,29 @@ void Visualizer::run() {
                     }
 
                     if (isMstSelected()) {
-                        if (speedSlider_.contains(mousePos)) {
+                        const sf::FloatRect leftCollapseBtn(kLeftCollapseBtnX, kLeftCollapseBtnY, kLeftCollapseBtnS, kLeftCollapseBtnS);
+                        const sf::FloatRect rightStepBtn(kRightToggleBtnX, kRightStepBtnY, kRightToggleBtnW, kRightStepBtnH);
+                        const sf::FloatRect rightPseudoBtn(kRightToggleBtnX,
+                                                           kRightPseudoBtnY,
+                                                           kRightToggleBtnW,
+                                                           kRightPseudoBtnH);
+
+                        if (leftCollapseBtn.contains(mousePos)) {
+                            showLeftActions_ = !showLeftActions_;
+                            continue;
+                        }
+
+                        if (rightStepBtn.contains(mousePos)) {
+                            showRightStepPanel_ = !showRightStepPanel_;
+                            continue;
+                        }
+
+                        if (rightPseudoBtn.contains(mousePos)) {
+                            showRightPseudocodePanel_ = !showRightPseudocodePanel_;
+                            continue;
+                        }
+
+                        if (playing_ && speedSlider_.contains(mousePos)) {
                             speedSlider_.setActive(true);
                             speedSlider_.onMouseMoved(mousePos);
                             speed_ = speedSlider_.getValue();
@@ -815,17 +935,18 @@ void Visualizer::run() {
                                 case 3: onActionNext(); break;
                                 case 4: onActionEnd(); break;
                                 case 5: onActionNewGraph(); break;
-                                case 6: onActionAddNode(); break;
-                                case 7: onActionRemoveNode(); break;
-                                case 8: onActionAddEdgeMode(); break;
-                                case 9: onActionRandom(); break;
-                                case 10: onActionBuild(); break;
-                                case 11:
+                                case 6: onActionUndo(); break;
+                                case 7: onActionAddNode(); break;
+                                case 8: onActionRemoveNode(); break;
+                                case 9: onActionAddEdgeMode(); break;
+                                case 10: onActionRandom(); break;
+                                case 11: onActionBuild(); break;
+                                case 12:
                                     canvasMode_ = (canvasMode_ == MstCanvasMode::Graph) ? MstCanvasMode::Matrix
                                                                                          : MstCanvasMode::Graph;
                                     break;
-                                case 12: onActionKruskal(); break;
-                                case 13: onActionPrim(); break;
+                                case 13: onActionKruskal(); break;
+                                case 14: onActionPrim(); break;
                                 default: break;
                             }
                             consumed = true;
@@ -839,6 +960,7 @@ void Visualizer::run() {
 
                         if (!consumed && !enteringEdgeWeight_ && canvasMode_ == MstCanvasMode::Graph) {
                             if (placingNode_ && isInsideGraphViewport(mousePos)) {
+                                pushUndoState();
                                 const sf::Vector2f npos = screenToGraphNormalized(mousePos);
                                 const int n = static_cast<int>(adjacencyMatrix_.size());
                                 for (auto& row : adjacencyMatrix_) {
@@ -866,6 +988,7 @@ void Visualizer::run() {
                                 if (hitNode > 0 && aliveCount > 1 && hitNode < static_cast<int>(adjacencyMatrix_.size()) &&
                                     hitNode < static_cast<int>(nodeAlive_.size()) &&
                                     nodeAlive_[static_cast<size_t>(hitNode)]) {
+                                    pushUndoState();
                                     nodeAlive_[static_cast<size_t>(hitNode)] = false;
                                     for (int i = 0; i < static_cast<int>(adjacencyMatrix_.size()); ++i) {
                                         adjacencyMatrix_[static_cast<size_t>(hitNode)][static_cast<size_t>(i)] = 0;
@@ -919,10 +1042,12 @@ void Visualizer::run() {
                     const float prevSpeed = speed_;
                     const sf::Vector2f mousePos =
                         window.mapPixelToCoords(sf::Vector2i(event.mouseMove.x, event.mouseMove.y));
-                    speedSlider_.onMouseMoved(mousePos);
-                    speed_ = speedSlider_.getValue();
-                    if (playing_ && std::abs(speed_ - prevSpeed) > 0.001f) {
-                        playClock_.restart();
+                    if (playing_) {
+                        speedSlider_.onMouseMoved(mousePos);
+                        speed_ = speedSlider_.getValue();
+                        if (std::abs(speed_ - prevSpeed) > 0.001f) {
+                            playClock_.restart();
+                        }
                     }
 
                     if (canvasMode_ == MstCanvasMode::Graph && draggingNode_ && draggingNodeId_ >= 0 && !playing_) {
@@ -955,6 +1080,7 @@ void Visualizer::run() {
                     const int n = static_cast<int>(adjacencyMatrix_.size());
                     if (pendingEdgeFrom_ >= 0 && pendingEdgeTo_ >= 0 && pendingEdgeFrom_ < n && pendingEdgeTo_ < n &&
                         pendingEdgeFrom_ != pendingEdgeTo_) {
+                        pushUndoState();
                         adjacencyMatrix_[static_cast<size_t>(pendingEdgeFrom_)][static_cast<size_t>(pendingEdgeTo_)] = w;
                         adjacencyMatrix_[static_cast<size_t>(pendingEdgeTo_)][static_cast<size_t>(pendingEdgeFrom_)] = w;
                         rebuildGraphFromAdjacencyMatrix();
@@ -984,6 +1110,11 @@ void Visualizer::run() {
                 enteringEdgeWeight_ = false;
                 edgeWeightInput_.clear();
             }
+
+            if (event.type == sf::Event::KeyPressed && currentScreen_ == Screen::Visualization && isMstSelected() &&
+                !enteringEdgeWeight_ && event.key.control && event.key.code == sf::Keyboard::Z) {
+                onActionUndo();
+            }
         }
 
         if (currentScreen_ == Screen::Visualization && isMstSelected() && playing_ && !animation_.empty() &&
@@ -1004,33 +1135,64 @@ void Visualizer::run() {
             const int n = static_cast<int>(graph_.getNodes().size());
             const bool canDeleteAny = n > 1;
 
+            // Bottom task bar morphs between compact run mode and detailed pause mode.
+            if (playing_) {
+                controlButtons_[0].setSize(54.f, 28.f);
+                controlButtons_[0].setPosition(352.f, 642.f);
+                controlButtons_[2].setSize(54.f, 28.f);
+                controlButtons_[2].setPosition(416.f, 642.f);
+                controlButtons_[4].setSize(54.f, 28.f);
+                controlButtons_[4].setPosition(480.f, 642.f);
+                controlButtons_[1].setEnabled(false);
+                controlButtons_[3].setEnabled(false);
+                controlButtons_[1].setPosition(-500.f, -500.f);
+                controlButtons_[3].setPosition(-500.f, -500.f);
+            } else {
+                controlButtons_[0].setSize(54.f, 28.f);
+                controlButtons_[0].setPosition(342.f, 642.f);
+                controlButtons_[2].setSize(54.f, 28.f);
+                controlButtons_[2].setPosition(406.f, 642.f);
+                controlButtons_[1].setSize(156.f, 28.f);
+                controlButtons_[1].setPosition(490.f, 642.f);
+                controlButtons_[3].setSize(156.f, 28.f);
+                controlButtons_[3].setPosition(656.f, 642.f);
+                controlButtons_[4].setSize(54.f, 28.f);
+                controlButtons_[4].setPosition(826.f, 642.f);
+            }
+
             controlButtons_[0].setEnabled(!timelineDirty_ && hasTimeline && !atStart);          // Skip Back
-            controlButtons_[1].setEnabled(!timelineDirty_ && hasTimeline && !atStart && !playing_); // Step Back
+            controlButtons_[1].setEnabled(!timelineDirty_ && hasTimeline && !atStart && !playing_);  // Step Back
             controlButtons_[2].setEnabled(!timelineDirty_ && hasTimeline);                      // Play/Pause
-            controlButtons_[3].setEnabled(!timelineDirty_ && hasTimeline && !atEnd && !playing_);    // Step Forward
+            controlButtons_[3].setEnabled(!timelineDirty_ && hasTimeline && !atEnd && !playing_);  // Step Forward
             controlButtons_[4].setEnabled(!timelineDirty_ && hasTimeline && !atEnd);            // Skip Forward
-            controlButtons_[2].setLabel(playing_ ? "Pause" : "Play");
 
             controlButtons_[5].setEnabled(!playing_);    // New Graph
             controlButtons_[6].setEnabled(!playing_);    // Add Node
-            controlButtons_[7].setEnabled(!playing_ && canDeleteAny); // Delete Node
-            controlButtons_[8].setEnabled(!playing_ && canvasMode_ == MstCanvasMode::Graph); // Add/Modify
-            controlButtons_[9].setEnabled(!playing_);    // Random
-            controlButtons_[10].setEnabled(!playing_);   // Build
-            controlButtons_[11].setEnabled(!playing_);   // View
-            controlButtons_[12].setEnabled(!playing_);   // Kruskal
-            controlButtons_[13].setEnabled(!playing_);   // Prim
+            controlButtons_[6].setEnabled(!playing_ && !undoStack_.empty()); // Undo
+            controlButtons_[8].setEnabled(!playing_ && canDeleteAny); // Delete Node
+            controlButtons_[9].setEnabled(!playing_ && canvasMode_ == MstCanvasMode::Graph); // Add/Modify
+            controlButtons_[10].setEnabled(!playing_);   // Random
+            controlButtons_[11].setEnabled(!playing_);   // Build
+            controlButtons_[12].setEnabled(!playing_);   // View
+            controlButtons_[13].setEnabled(!playing_);   // Kruskal
+            controlButtons_[14].setEnabled(!playing_);   // Prim
 
-            controlButtons_[11].setLabel(canvasMode_ == MstCanvasMode::Graph ? "View: Matrix" : "View: Graph");
-            controlButtons_[10].setLabel(timelineDirty_ ? "Build *" : "Build");
+            if (!showLeftActions_) {
+                for (int i = 5; i <= 14; ++i) {
+                    controlButtons_[i].setEnabled(false);
+                }
+            }
 
-            controlButtons_[6].setSelected(placingNode_);
-            controlButtons_[10].setSelected(timelineDirty_);
-            controlButtons_[7].setSelected(deletingNodeMode_);
-            controlButtons_[8].setSelected(addingEdgeMode_ || enteringEdgeWeight_ || pendingEdgeFrom_ >= 0);
-            controlButtons_[11].setSelected(canvasMode_ == MstCanvasMode::Matrix);
-            controlButtons_[12].setSelected(algorithmType_ == algo::AlgorithmType::Kruskal);
-            controlButtons_[13].setSelected(algorithmType_ == algo::AlgorithmType::Prim);
+            controlButtons_[12].setLabel(canvasMode_ == MstCanvasMode::Graph ? "View: Matrix" : "View: Graph");
+            controlButtons_[11].setLabel(timelineDirty_ ? "Build *" : "Build");
+
+            controlButtons_[7].setSelected(placingNode_);
+            controlButtons_[11].setSelected(timelineDirty_);
+            controlButtons_[8].setSelected(deletingNodeMode_);
+            controlButtons_[9].setSelected(addingEdgeMode_ || enteringEdgeWeight_ || pendingEdgeFrom_ >= 0);
+            controlButtons_[12].setSelected(canvasMode_ == MstCanvasMode::Matrix);
+            controlButtons_[13].setSelected(algorithmType_ == algo::AlgorithmType::Kruskal);
+            controlButtons_[14].setSelected(algorithmType_ == algo::AlgorithmType::Prim);
         }
 
         window.clear(config::kBackgroundColor);
@@ -1038,7 +1200,7 @@ void Visualizer::run() {
         if (currentScreen_ == Screen::Menu) {
             sf::Text title("Choose Data Structure", font_, 34);
             title.setPosition(430.f, 130.f);
-            title.setFillColor(sf::Color(240, 240, 245));
+            title.setFillColor(sf::Color(48, 66, 80));
             window.draw(title);
 
             for (auto& b : menuButtons_) {
@@ -1050,7 +1212,7 @@ void Visualizer::run() {
                 topStatus.setString("Animation Completed");
             }
             topStatus.setPosition(20.f, 116.f);
-            topStatus.setFillColor(sf::Color(55, 55, 60));
+            topStatus.setFillColor(sf::Color(72, 84, 94));
             window.draw(topStatus);
 
             backButton_.draw(window);
@@ -1069,106 +1231,195 @@ void Visualizer::run() {
             }
 
             if (isMstSelected()) {
-                const float rightTextMax = kRightPanelW - 24.0f;
+                const float rightContentW = kRightToggleBtnX - kRightPanelX - 8.0f;
+                const float rightTextMax = rightContentW - 24.0f;
+                const sf::FloatRect rightStepBox(kRightPanelX, kRightPanelY, rightContentW, 186.0f);
+                const sf::FloatRect rightPseudoBox(kRightPanelX, kRightPanelY + 198.0f, rightContentW, kRightPanelH - 198.0f);
 
-                drawRoundedBox(window,
-                               sf::FloatRect(kLeftPanelX, kLeftPanelY, kLeftPanelW, kLeftPanelH),
-                               10.0f,
-                               1.0f,
-                               sf::Color(20, 24, 33, 220),
-                               sf::Color(70, 78, 96));
+                if (showLeftActions_) {
+                    drawRoundedBox(window,
+                                   sf::FloatRect(kLeftPanelX, kLeftPanelY, kLeftPanelW, kLeftPanelH),
+                                   18.0f,
+                                   1.0f,
+                                   sf::Color(46, 64, 86, 240),
+                                   sf::Color(33, 49, 69));
+                }
 
-                drawRoundedBox(window,
-                               sf::FloatRect(kRightPanelX, kRightPanelY, kRightPanelW, kRightPanelH),
-                               10.0f,
-                               1.0f,
-                               sf::Color(20, 24, 33, 220),
-                               sf::Color(70, 78, 96));
+                if (showRightStepPanel_) {
+                    drawRoundedBox(window,
+                                   rightStepBox,
+                                   18.0f,
+                                   1.0f,
+                                   sf::Color(95, 131, 151, 238),
+                                   sf::Color(74, 108, 129));
+                }
+
+                if (showRightPseudocodePanel_) {
+                    drawRoundedBox(window,
+                                   rightPseudoBox,
+                                   18.0f,
+                                   1.0f,
+                                   sf::Color(95, 131, 151, 238),
+                                   sf::Color(74, 108, 129));
+                }
 
                 drawRoundedBox(window,
                                sf::FloatRect(kBottomPanelX, kBottomPanelY, kBottomPanelW, kBottomPanelH),
-                               10.0f,
+                               14.0f,
                                1.0f,
-                               sf::Color(20, 24, 33, 220),
-                               sf::Color(70, 78, 96));
+                               sf::Color(223, 224, 227, 244),
+                               sf::Color(197, 199, 203));
 
-                for (auto& b : controlButtons_) {
-                    b.draw(window);
+                for (size_t i = 0; i < controlButtons_.size(); ++i) {
+                    if (!showLeftActions_ && i >= 5 && i <= 14) {
+                        continue;
+                    }
+                    if (playing_ && (i == 1 || i == 3)) {
+                        continue;
+                    }
+                    controlButtons_[i].draw(window);
                 }
-                speedSlider_.draw(window);
+                if (playing_) {
+                    speedSlider_.draw(window);
+                }
 
-                sf::Text setupTitle("Graph Setup", font_, 16);
-                setupTitle.setPosition(26.f, 56.f);
-                setupTitle.setFillColor(sf::Color(236, 236, 240));
-                window.draw(setupTitle);
+                if (!playing_) {
+                    sf::Text stepIndicator("Step " + std::to_string(animation_.currentIndex()) + " / " +
+                                               std::to_string(std::max(0, animation_.totalSteps() - 1)),
+                                           monoFont_,
+                                           13);
+                    stepIndicator.setPosition(454.f, 649.f);
+                    stepIndicator.setFillColor(sf::Color(70, 84, 94));
+                    window.draw(stepIndicator);
+                }
 
-                sf::Text algoTitle("Algorithms", font_, 16);
-                algoTitle.setPosition(26.f, 312.f);
-                algoTitle.setFillColor(sf::Color(236, 236, 240));
-                window.draw(algoTitle);
+                // Left collapse control.
+                drawRoundedBox(window,
+                               sf::FloatRect(kLeftCollapseBtnX, kLeftCollapseBtnY, kLeftCollapseBtnS, kLeftCollapseBtnS),
+                               16.0f,
+                               1.0f,
+                               sf::Color(95, 131, 151),
+                               sf::Color(73, 106, 125));
+                sf::Text collapseLabel(showLeftActions_ ? "<" : ">", monoFont_, 18);
+                const sf::FloatRect collapseBounds = collapseLabel.getLocalBounds();
+                collapseLabel.setPosition(kLeftCollapseBtnX + (kLeftCollapseBtnS - collapseBounds.width) * 0.5f - collapseBounds.left,
+                                          kLeftCollapseBtnY + (kLeftCollapseBtnS - collapseBounds.height) * 0.5f - collapseBounds.top - 1.f);
+                collapseLabel.setFillColor(sf::Color(240, 245, 248));
+                window.draw(collapseLabel);
+
+                // Right side toggles: step info and pseudocode visibility.
+                drawRoundedBox(window,
+                               sf::FloatRect(kRightToggleBtnX, kRightStepBtnY, kRightToggleBtnW, kRightStepBtnH),
+                               14.0f,
+                               1.0f,
+                               showRightStepPanel_ ? sf::Color(83, 117, 136) : sf::Color(124, 150, 165),
+                               sf::Color(65, 95, 111));
+                sf::Text stepToggle(">", monoFont_, 24);
+                stepToggle.setFillColor(sf::Color(238, 244, 247));
+                stepToggle.setPosition(kRightToggleBtnX + 12.f, kRightStepBtnY + kRightStepBtnH * 0.5f - 14.f);
+                window.draw(stepToggle);
+
+                drawRoundedBox(window,
+                               sf::FloatRect(kRightToggleBtnX, kRightPseudoBtnY, kRightToggleBtnW, kRightPseudoBtnH),
+                               14.0f,
+                               1.0f,
+                               showRightPseudocodePanel_ ? sf::Color(83, 117, 136) : sf::Color(124, 150, 165),
+                               sf::Color(65, 95, 111));
+                sf::Text pseudoToggle(">", monoFont_, 24);
+                pseudoToggle.setFillColor(sf::Color(238, 244, 247));
+                pseudoToggle.setPosition(kRightToggleBtnX + 12.f, kRightPseudoBtnY + kRightPseudoBtnH * 0.5f - 14.f);
+                window.draw(pseudoToggle);
+
+                // Icon overlays for image-enhanced controls.
+                auto drawIconInButton = [&](const sf::Texture& tex, const Button& btn, const sf::Color& tint) {
+                    if (tex.getSize().x == 0 || tex.getSize().y == 0) {
+                        return;
+                    }
+                    const sf::FloatRect rect = btn.bounds();
+                    sf::Sprite sp(tex);
+                    const float targetH = std::max(12.0f, rect.height * 0.62f);
+                    const float scale = targetH / static_cast<float>(tex.getSize().y);
+                    sp.setScale(scale, scale);
+                    const float w = static_cast<float>(tex.getSize().x) * scale;
+                    const float h = static_cast<float>(tex.getSize().y) * scale;
+                    sp.setPosition(rect.left + (rect.width - w) * 0.5f, rect.top + (rect.height - h) * 0.5f);
+                    sp.setColor(tint);
+                    window.draw(sp);
+                };
+
+                drawIconInButton(skipBackIconTex, controlButtons_[0], sf::Color(28, 32, 36));
+                drawIconInButton(playing_ ? pauseIconTex : playIconTex, controlButtons_[2], sf::Color(28, 32, 36));
+                drawIconInButton(skipForwardIconTex, controlButtons_[4], sf::Color(28, 32, 36));
+                drawIconInButton(homeIconTex, backButton_, sf::Color(201, 63, 88));
+
+                if (showLeftActions_) {
+                    sf::Text setupTitle("Graph Setup", font_, 16);
+                    setupTitle.setPosition(26.f, 56.f);
+                    setupTitle.setFillColor(sf::Color(219, 233, 241));
+                    window.draw(setupTitle);
+
+                    sf::Text algoTitle("Algorithms", font_, 16);
+                    algoTitle.setPosition(26.f, 312.f);
+                    algoTitle.setFillColor(sf::Color(219, 233, 241));
+                    window.draw(algoTitle);
+                }
 
                 sf::Text playTitle("Playback", font_, 16);
                 playTitle.setPosition(24.f, 590.f);
-                playTitle.setFillColor(sf::Color(236, 236, 240));
+                playTitle.setFillColor(sf::Color(70, 84, 94));
                 window.draw(playTitle);
 
-                sf::Text status("Step: " + std::to_string(animation_.currentIndex()) + " / " +
-                                    std::to_string(std::max(0, animation_.totalSteps() - 1)),
-                                monoFont_,
-                                13);
-                status.setPosition(960.f, 24.f);
-                status.setFillColor(sf::Color::White);
-                clampTextToWidth(status, rightTextMax);
-                window.draw(status);
+                if (showRightStepPanel_) {
+                    sf::Text status("Step: " + std::to_string(animation_.currentIndex()) + " / " +
+                                        std::to_string(std::max(0, animation_.totalSteps() - 1)),
+                                    monoFont_,
+                                    13);
+                    status.setPosition(960.f, 24.f);
+                    status.setFillColor(sf::Color(231, 240, 245));
+                    clampTextToWidth(status, rightTextMax);
+                    window.draw(status);
 
-                float rightInfoY = 44.f;
-                sf::Text buildInfo(timelineDirty_ ? "Build is required to update visualization steps."
-                                                  : "Build: regenerate algorithm steps after graph edits.",
-                                  monoFont_,
-                                  13);
-                buildInfo.setFillColor(timelineDirty_ ? sf::Color(255, 221, 92) : sf::Color(180, 185, 190));
-                const auto buildInfoLines = wrapTextToWidth(monoFont_, buildInfo.getString().toAnsiString(), 13, rightTextMax);
-                for (size_t i = 0; i < std::min<size_t>(2, buildInfoLines.size()); ++i) {
-                    sf::Text line(buildInfoLines[i], monoFont_, 13);
-                    line.setPosition(960.f, rightInfoY + static_cast<float>(i) * 16.f);
-                    line.setFillColor(timelineDirty_ ? sf::Color(255, 221, 92) : sf::Color(180, 185, 190));
-                    window.draw(line);
-                }
-                rightInfoY += static_cast<float>(std::min<size_t>(2, buildInfoLines.size())) * 16.f + 4.f;
+                    float rightInfoY = 44.f;
+                    sf::Text buildInfo(timelineDirty_ ? "Build is required to update visualization steps."
+                                                      : "Build: regenerate algorithm steps after graph edits.",
+                                      monoFont_,
+                                      13);
+                    buildInfo.setFillColor(timelineDirty_ ? sf::Color(252, 213, 172) : sf::Color(214, 230, 238));
+                    const auto buildInfoLines =
+                        wrapTextToWidth(monoFont_, buildInfo.getString().toAnsiString(), 13, rightTextMax);
+                    for (size_t i = 0; i < std::min<size_t>(2, buildInfoLines.size()); ++i) {
+                        sf::Text line(buildInfoLines[i], monoFont_, 13);
+                        line.setPosition(960.f, rightInfoY + static_cast<float>(i) * 16.f);
+                        line.setFillColor(timelineDirty_ ? sf::Color(252, 213, 172) : sf::Color(214, 230, 238));
+                        window.draw(line);
+                    }
+                    rightInfoY += static_cast<float>(std::min<size_t>(2, buildInfoLines.size())) * 16.f + 4.f;
 
-                if (timelineDirty_) {
-                    sf::Text dirtyHint("Graph changed. Press Build.", monoFont_, 13);
-                    dirtyHint.setPosition(960.f, rightInfoY);
-                    dirtyHint.setFillColor(sf::Color(255, 221, 92));
-                    clampTextToWidth(dirtyHint, rightTextMax);
-                    window.draw(dirtyHint);
+                    sf::Text workflowHint("Workflow: New Graph -> Add Node", monoFont_, 12);
+                    workflowHint.setPosition(960.f, rightInfoY);
+                    workflowHint.setFillColor(sf::Color(227, 239, 245));
+                    clampTextToWidth(workflowHint, rightTextMax);
+                    window.draw(workflowHint);
+                    rightInfoY += 16.f;
+
+                    sf::Text workflowHint2("-> Add/Modify Edges -> Build", monoFont_, 12);
+                    workflowHint2.setPosition(960.f, rightInfoY);
+                    workflowHint2.setFillColor(sf::Color(227, 239, 245));
+                    clampTextToWidth(workflowHint2, rightTextMax);
+                    window.draw(workflowHint2);
                     rightInfoY += 18.f;
+
+                    sf::Text selectedNodeText(
+                        "Selected Node: " + std::string(selectedNodeId_ >= 0 ? std::to_string(selectedNodeId_) : "None"),
+                        monoFont_,
+                        13);
+                    selectedNodeText.setPosition(960.f, rightInfoY);
+                    selectedNodeText.setFillColor(sf::Color(231, 240, 245));
+                    clampTextToWidth(selectedNodeText, rightTextMax);
+                    window.draw(selectedNodeText);
                 }
 
-                sf::Text workflowHint("Workflow: New Graph -> Add Node", monoFont_, 12);
-                workflowHint.setPosition(960.f, rightInfoY);
-                workflowHint.setFillColor(sf::Color(255, 221, 92));
-                clampTextToWidth(workflowHint, rightTextMax);
-                window.draw(workflowHint);
-                rightInfoY += 16.f;
-
-                sf::Text workflowHint2("-> Add/Modify Edges -> Build", monoFont_, 12);
-                workflowHint2.setPosition(960.f, rightInfoY);
-                workflowHint2.setFillColor(sf::Color(255, 221, 92));
-                clampTextToWidth(workflowHint2, rightTextMax);
-                window.draw(workflowHint2);
-                rightInfoY += 18.f;
-
-                sf::Text selectedNodeText("Selected Node: " +
-                                              std::string(selectedNodeId_ >= 0 ? std::to_string(selectedNodeId_) : "None"),
-                                          monoFont_,
-                                          13);
-                selectedNodeText.setPosition(960.f, rightInfoY);
-                selectedNodeText.setFillColor(sf::Color(220, 220, 220));
-                clampTextToWidth(selectedNodeText, rightTextMax);
-                window.draw(selectedNodeText);
-
-                if (algorithmType_ == algo::AlgorithmType::Prim) {
+                if (showLeftActions_ && algorithmType_ == algo::AlgorithmType::Prim) {
                     float hintY = 404.f;
                     const auto drawHintWrapped = [&](const std::string& text, const sf::Color& color, unsigned int size) {
                         const auto lines = wrapTextToWidth(monoFont_, text, size, kLeftPanelW - 24.0f);
@@ -1184,35 +1435,35 @@ void Visualizer::run() {
 
                     drawHintWrapped("Prim Start Node: " +
                                         std::string(selectedNodeId_ >= 0 ? std::to_string(selectedNodeId_) : "0 (default)"),
-                                    sf::Color(255, 221, 92),
+                                    sf::Color(74, 108, 129),
                                     14);
-                    drawHintWrapped("Tip: click a node, then Build to run Prim from that node", sf::Color(255, 221, 92), 13);
+                    drawHintWrapped("Tip: click a node, then Build to run Prim from that node", sf::Color(74, 108, 129), 13);
 
                     if (placingNode_) {
-                        drawHintWrapped("Add Node mode: click graph area to place new node", sf::Color(255, 221, 92), 13);
+                        drawHintWrapped("Add Node mode: click graph area to place new node", sf::Color(74, 108, 129), 13);
                     }
 
                     if (deletingNodeMode_) {
-                        drawHintWrapped("Delete mode: click node ID > 0 (node 0 is protected)", sf::Color(255, 221, 92), 13);
+                        drawHintWrapped("Delete mode: click node ID > 0 (node 0 is protected)", sf::Color(74, 108, 129), 13);
                     }
 
                     if (addingEdgeMode_) {
-                        drawHintWrapped("Add/Modify mode: click two nodes", sf::Color(255, 221, 92), 13);
+                        drawHintWrapped("Add/Modify mode: click two nodes", sf::Color(74, 108, 129), 13);
                         if (pendingEdgeFrom_ >= 0) {
-                            drawHintWrapped("From node: " + std::to_string(pendingEdgeFrom_), sf::Color(255, 221, 92), 13);
+                            drawHintWrapped("From node: " + std::to_string(pendingEdgeFrom_), sf::Color(74, 108, 129), 13);
                         }
                     }
 
                     if (enteringEdgeWeight_) {
-                        drawHintWrapped("Edge weight 1-999 then Enter:", sf::Color(255, 230, 145), 13);
+                        drawHintWrapped("Edge weight 1-999 then Enter:", sf::Color(138, 98, 64), 13);
                         sf::Text valueLine("> " + (edgeWeightInput_.empty() ? std::string("_") : edgeWeightInput_), monoFont_, 14);
                         valueLine.setPosition(26.f, hintY);
-                        valueLine.setFillColor(sf::Color(255, 245, 170));
+                        valueLine.setFillColor(sf::Color(116, 84, 58));
                         window.draw(valueLine);
                     }
                 }
 
-                if (algorithmType_ != algo::AlgorithmType::Prim) {
+                if (showLeftActions_ && algorithmType_ != algo::AlgorithmType::Prim) {
                     float hintY = 404.f;
                     const auto drawHintWrapped = [&](const std::string& text, const sf::Color& color, unsigned int size) {
                         const auto lines = wrapTextToWidth(monoFont_, text, size, kLeftPanelW - 24.0f);
@@ -1227,25 +1478,25 @@ void Visualizer::run() {
                     };
 
                     if (placingNode_) {
-                        drawHintWrapped("Add Node mode: click graph area to place new node", sf::Color(255, 221, 92), 13);
+                        drawHintWrapped("Add Node mode: click graph area to place new node", sf::Color(74, 108, 129), 13);
                     }
 
                     if (deletingNodeMode_) {
-                        drawHintWrapped("Delete mode: click node ID > 0 (node 0 is protected)", sf::Color(255, 221, 92), 13);
+                        drawHintWrapped("Delete mode: click node ID > 0 (node 0 is protected)", sf::Color(74, 108, 129), 13);
                     }
 
                     if (addingEdgeMode_) {
-                        drawHintWrapped("Add/Modify mode: click two nodes", sf::Color(255, 221, 92), 13);
+                        drawHintWrapped("Add/Modify mode: click two nodes", sf::Color(74, 108, 129), 13);
                         if (pendingEdgeFrom_ >= 0) {
-                            drawHintWrapped("From node: " + std::to_string(pendingEdgeFrom_), sf::Color(255, 221, 92), 13);
+                            drawHintWrapped("From node: " + std::to_string(pendingEdgeFrom_), sf::Color(74, 108, 129), 13);
                         }
                     }
 
                     if (enteringEdgeWeight_) {
-                        drawHintWrapped("Edge weight 1-999 then Enter:", sf::Color(255, 230, 145), 13);
+                        drawHintWrapped("Edge weight 1-999 then Enter:", sf::Color(138, 98, 64), 13);
                         sf::Text valueLine("> " + (edgeWeightInput_.empty() ? std::string("_") : edgeWeightInput_), monoFont_, 14);
                         valueLine.setPosition(26.f, hintY);
-                        valueLine.setFillColor(sf::Color(255, 245, 170));
+                        valueLine.setFillColor(sf::Color(116, 84, 58));
                         window.draw(valueLine);
                     }
                 }
@@ -1257,7 +1508,7 @@ void Visualizer::run() {
                 if (canvasMode_ == MstCanvasMode::Matrix) {
                     sf::Text matrixHelp("Adjacency Matrix: click a cell to toggle edge", font_, 14);
                     matrixHelp.setPosition(matrixOrigin.x, matrixOrigin.y - 34.f);
-                    matrixHelp.setFillColor(sf::Color(210, 210, 210));
+                    matrixHelp.setFillColor(sf::Color(72, 90, 106));
                     clampTextToWidth(matrixHelp, kGraphMaxX - matrixOrigin.x - 8.0f);
                     window.draw(matrixHelp);
 
@@ -1274,7 +1525,7 @@ void Visualizer::run() {
                                               monoFont_,
                                               12);
                         matrixLegend.setPosition(matrixOrigin.x, matrixOrigin.y - 16.f);
-                        matrixLegend.setFillColor(sf::Color(220, 120, 120));
+                        matrixLegend.setFillColor(sf::Color(170, 96, 96));
                         clampTextToWidth(matrixLegend, kGraphMaxX - matrixOrigin.x - 8.0f);
                         window.draw(matrixLegend);
                     }
@@ -1289,37 +1540,37 @@ void Visualizer::run() {
                                 const bool inactiveHeader =
                                     (r == -1 && c >= 0 && c < n && c < static_cast<int>(nodeAlive_.size()) && !nodeAlive_[static_cast<size_t>(c)]) ||
                                     (c == -1 && r >= 0 && r < n && r < static_cast<int>(nodeAlive_.size()) && !nodeAlive_[static_cast<size_t>(r)]);
-                                cell.setFillColor(inactiveHeader ? sf::Color(50, 36, 36) : sf::Color(55, 60, 72));
+                                cell.setFillColor(inactiveHeader ? sf::Color(220, 196, 196) : sf::Color(183, 192, 201));
                             } else if (r == c) {
                                 const bool inactive = r < static_cast<int>(nodeAlive_.size()) && !nodeAlive_[static_cast<size_t>(r)];
-                                cell.setFillColor(inactive ? sf::Color(50, 36, 36) : sf::Color(38, 42, 50));
+                                cell.setFillColor(inactive ? sf::Color(220, 196, 196) : sf::Color(199, 206, 213));
                             } else {
                                 const bool inactive =
                                     r < static_cast<int>(nodeAlive_.size()) && c < static_cast<int>(nodeAlive_.size()) &&
                                     (!nodeAlive_[static_cast<size_t>(r)] || !nodeAlive_[static_cast<size_t>(c)]);
                                 if (inactive) {
-                                    cell.setFillColor(sf::Color(42, 32, 32));
+                                    cell.setFillColor(sf::Color(224, 208, 208));
                                 } else {
                                     cell.setFillColor(adjacencyMatrix_[static_cast<size_t>(r)][static_cast<size_t>(c)] > 0
-                                                          ? sf::Color(50, 95, 55)
-                                                          : sf::Color(36, 40, 48));
+                                                          ? sf::Color(173, 204, 166)
+                                                          : sf::Color(216, 221, 225));
                                 }
                             }
                             window.draw(cell);
 
                             sf::Text t("", font_, 13);
-                            t.setFillColor(sf::Color(232, 232, 232));
+                            t.setFillColor(sf::Color(56, 70, 82));
                             if (r == -1 && c >= 0) {
                                 if (c < static_cast<int>(nodeAlive_.size()) && !nodeAlive_[static_cast<size_t>(c)]) {
                                     t.setString("x");
-                                    t.setFillColor(sf::Color(220, 120, 120));
+                                    t.setFillColor(sf::Color(170, 96, 96));
                                 } else {
                                     t.setString(std::to_string(c));
                                 }
                             } else if (c == -1 && r >= 0) {
                                 if (r < static_cast<int>(nodeAlive_.size()) && !nodeAlive_[static_cast<size_t>(r)]) {
                                     t.setString("x");
-                                    t.setFillColor(sf::Color(220, 120, 120));
+                                    t.setFillColor(sf::Color(170, 96, 96));
                                 } else {
                                     t.setString(std::to_string(r));
                                 }
@@ -1327,7 +1578,7 @@ void Visualizer::run() {
                                 if ((r < static_cast<int>(nodeAlive_.size()) && !nodeAlive_[static_cast<size_t>(r)]) ||
                                     (c < static_cast<int>(nodeAlive_.size()) && !nodeAlive_[static_cast<size_t>(c)])) {
                                     t.setString("-");
-                                    t.setFillColor(sf::Color(180, 120, 120));
+                                    t.setFillColor(sf::Color(154, 106, 106));
                                 } else {
                                     t.setString(std::to_string(adjacencyMatrix_[static_cast<size_t>(r)][static_cast<size_t>(c)]));
                                 }
@@ -1339,64 +1590,44 @@ void Visualizer::run() {
                 }
 
                 if (step != nullptr) {
-                    // Center status box: keep current algorithm update near graph focus area.
-                    const float centerInfoW = (kGraphMaxX - kGraphMinX) - 80.f;
-                    const float centerInfoX = kGraphMinX + ((kGraphMaxX - kGraphMinX) - centerInfoW) * 0.5f;
-                    const float centerInfoY = 66.f;
-                    const auto descLines = wrapTextToWidth(monoFont_, step->description, 20, centerInfoW - 28.f);
-                    const size_t shownDescLines = std::min<size_t>(2, descLines.size());
-                    const float centerInfoH = 16.f + static_cast<float>(shownDescLines) * 26.f;
-
-                    drawRoundedBox(window,
-                                   sf::FloatRect(centerInfoX, centerInfoY, centerInfoW, centerInfoH),
-                                   12.0f,
-                                   1.0f,
-                                   sf::Color(20, 24, 33, 220),
-                                   sf::Color(70, 78, 96));
-
-                    drawRoundedFill(window,
-                                    sf::FloatRect(centerInfoX + 10.f, centerInfoY + 6.f, centerInfoW - 20.f, 3.f),
-                                    1.5f,
-                                    sf::Color(255, 214, 107, 210));
-
-                    for (size_t i = 0; i < shownDescLines; ++i) {
-                        sf::Text desc(descLines[i], monoFont_, 20);
-                        desc.setPosition(centerInfoX + 14.f, centerInfoY + 8.f + static_cast<float>(i) * 26.f);
-                        desc.setFillColor(sf::Color(220, 220, 220));
-                        window.draw(desc);
+                    if (showRightStepPanel_) {
+                        const auto descLines = wrapTextToWidth(monoFont_, step->description, 16, rightTextMax);
+                        const size_t shownDescLines = std::min<size_t>(3, descLines.size());
+                        for (size_t i = 0; i < shownDescLines; ++i) {
+                            sf::Text desc(descLines[i], monoFont_, 16);
+                            desc.setPosition(960.f, 120.f + static_cast<float>(i) * 22.f);
+                            desc.setFillColor(sf::Color(240, 247, 250));
+                            window.draw(desc);
+                        }
                     }
 
-                    const float pseudoX = 960.f;
-                    const float pseudoY = 184.f;
+                    if (showRightPseudocodePanel_) {
+                        const float rightInnerX = 960.f;
+                        const float pseudoY = kRightPanelY + 212.0f;
+                        sf::Text pseudoTitle("Pseudocode", monoFont_, 17);
+                        pseudoTitle.setPosition(rightInnerX, pseudoY);
+                        pseudoTitle.setFillColor(sf::Color(233, 243, 248));
+                        clampTextToWidth(pseudoTitle, rightTextMax);
+                        window.draw(pseudoTitle);
 
-                    sf::RectangleShape divider(sf::Vector2f(kRightPanelW - 20.f, 1.f));
-                    divider.setPosition(kRightPanelX + 10.f, pseudoY - 14.f);
-                    divider.setFillColor(sf::Color(70, 78, 96));
-                    window.draw(divider);
+                        float pseudoLineY = pseudoY + 30.f;
+                        for (size_t i = 0; i < pseudocode_.size(); ++i) {
+                            const int lineNumber = static_cast<int>(i + 1);
+                            bool highlighted =
+                                std::find(step->pseudocodeLines.begin(), step->pseudocodeLines.end(), lineNumber) !=
+                                step->pseudocodeLines.end();
 
-                    sf::Text pseudoTitle("Pseudocode", monoFont_, 17);
-                    pseudoTitle.setPosition(pseudoX, pseudoY);
-                    pseudoTitle.setFillColor(sf::Color(240, 240, 245));
-                    clampTextToWidth(pseudoTitle, rightTextMax);
-                    window.draw(pseudoTitle);
-
-                    float pseudoLineY = pseudoY + 28.f;
-                    for (size_t i = 0; i < pseudocode_.size(); ++i) {
-                        const int lineNumber = static_cast<int>(i + 1);
-                        bool highlighted =
-                            std::find(step->pseudocodeLines.begin(), step->pseudocodeLines.end(), lineNumber) !=
-                            step->pseudocodeLines.end();
-
-                        const auto wrappedPseudo = wrapTextToWidth(monoFont_, pseudocode_[i], 13, rightTextMax);
-                        for (size_t w = 0; w < wrappedPseudo.size(); ++w) {
-                            const std::string rendered = (w == 0) ? wrappedPseudo[w] : ("   " + wrappedPseudo[w]);
-                            sf::Text line(rendered, monoFont_, 13);
-                            line.setPosition(pseudoX, pseudoLineY);
-                            line.setFillColor(highlighted ? sf::Color(255, 215, 0) : sf::Color(185, 185, 190));
-                            window.draw(line);
-                            pseudoLineY += 20.f;
+                            const auto wrappedPseudo = wrapTextToWidth(monoFont_, pseudocode_[i], 13, rightTextMax);
+                            for (size_t w = 0; w < wrappedPseudo.size(); ++w) {
+                                const std::string rendered = (w == 0) ? wrappedPseudo[w] : ("   " + wrappedPseudo[w]);
+                                sf::Text line(rendered, monoFont_, 13);
+                                line.setPosition(rightInnerX, pseudoLineY);
+                                line.setFillColor(highlighted ? sf::Color(44, 78, 96) : sf::Color(76, 98, 114));
+                                window.draw(line);
+                                pseudoLineY += 20.f;
+                            }
+                            pseudoLineY += 4.f;
                         }
-                        pseudoLineY += 4.f;
                     }
                 }
             } else {
@@ -1411,7 +1642,7 @@ void Visualizer::run() {
 
                 sf::Text selectedTitle(selectedName, font_, 28);
                 selectedTitle.setPosition(430.f, 18.f);
-                selectedTitle.setFillColor(sf::Color(240, 240, 245));
+                selectedTitle.setFillColor(sf::Color(58, 78, 94));
                 window.draw(selectedTitle);
             }
         }
