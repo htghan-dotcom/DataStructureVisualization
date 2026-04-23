@@ -55,7 +55,9 @@ std::vector<Step> Prim::buildSteps(const Graph& graph, int startNode) {
     auto cmp = [](const Item& a, const Item& b) { return a.first > b.first; };
     std::priority_queue<Item, std::vector<Item>, decltype(cmp)> pq(cmp);
 
-    Step start = makeBaseStep(0, StepEvent::Visit, "Prim start from node " + std::to_string(startNode));
+    Step start = makeBaseStep(0, StepEvent::Visit,
+                              "Start Prim at node " + std::to_string(startNode) +
+                                  ": add node to tree and push its edges");
     start.highlightedNodes.push_back(startNode);
     start.pseudocodeLines = {1};
     steps.push_back(start);
@@ -71,7 +73,7 @@ std::vector<Step> Prim::buildSteps(const Graph& graph, int startNode) {
         pq.pop();
 
         Step candidate = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Candidate,
-                                      "Pick lightest frontier edge " + std::to_string(e.from) + "-" +
+                                      "Pick minimum frontier edge " + std::to_string(e.from) + "-" +
                                           std::to_string(e.to) + " (w=" + std::to_string(e.weight) + ")");
         candidate.highlightedEdges = accepted;
         candidate.candidateEdges.push_back(Edge{e.from, e.to, e.weight});
@@ -80,7 +82,8 @@ std::vector<Step> Prim::buildSteps(const Graph& graph, int startNode) {
 
         if (inTree[e.to]) {
             Step reject = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Reject,
-                                       "Reject edge: destination already in tree");
+                                       "Reject " + std::to_string(e.from) + "-" + std::to_string(e.to) +
+                                           ": destination already in tree");
             reject.highlightedEdges = accepted;
             reject.candidateEdges.push_back(Edge{e.from, e.to, e.weight});
             reject.pseudocodeLines = {4};
@@ -92,7 +95,8 @@ std::vector<Step> Prim::buildSteps(const Graph& graph, int startNode) {
         accepted.push_back(Edge{e.from, e.to, e.weight});
 
         Step accept = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Accept,
-                                   "Accept edge and expand frontier");
+                                   "Accept " + std::to_string(e.from) + "-" + std::to_string(e.to) +
+                                       ": add node " + std::to_string(e.to) + " and expand frontier");
         accept.highlightedEdges = accepted;
         accept.highlightedNodes.push_back(e.to);
         accept.pseudocodeLines = {5, 6};
@@ -107,7 +111,7 @@ std::vector<Step> Prim::buildSteps(const Graph& graph, int startNode) {
     }
 
     Step end = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Complete,
-                            "Prim complete: MST edges selected");
+                            "Prim complete: selected MST edges");
     end.highlightedEdges = accepted;
     end.pseudocodeLines = {7};
     steps.push_back(end);

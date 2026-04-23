@@ -19,11 +19,17 @@ void Renderer::draw(sf::RenderWindow& window, const RenderViewModel& vm, const s
         return;
     }
 
-    EdgeRender::draw(window, *vm.graph, vm.highlightedEdges, vm.candidateEdges, font);
+    EdgeRender::draw(window,
+                     *vm.graph,
+                     vm.graphViewport,
+                     vm.highlightedEdges,
+                     vm.candidateEdges,
+                     vm.currentStepEvent,
+                     font);
     for (const auto& node : vm.graph->getNodes()) {
         const bool isActive = std::find(vm.highlightedNodes.begin(), vm.highlightedNodes.end(), node.id) !=
                               vm.highlightedNodes.end();
         const bool isSelected = node.id == vm.selectedNodeId;
-        NodeRender::draw(window, node, config::kNodeRadius, font, isSelected, isActive);
+        NodeRender::draw(window, node, vm.graphViewport, config::kNodeRadius, font, isSelected, isActive);
     }
 }

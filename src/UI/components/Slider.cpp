@@ -26,6 +26,11 @@ bool Slider::contains(const sf::Vector2f& point) const {
     return expanded.contains(point);
 }
 
+void Slider::setPosition(float x, float y) {
+    track_.setPosition(x, y);
+    updateKnobPosition();
+}
+
 void Slider::setActive(bool active) {
     active_ = active;
 }
@@ -52,7 +57,20 @@ float Slider::getValue() const {
 
 void Slider::draw(sf::RenderWindow& window) const {
     window.draw(track_);
-    window.draw(knob_);
+
+    const float t = std::clamp((value_ - minValue_) / (maxValue_ - minValue_), 0.0f, 1.0f);
+    sf::RectangleShape progress(sf::Vector2f(track_.getSize().x * t, track_.getSize().y));
+    progress.setPosition(track_.getPosition());
+    progress.setFillColor(sf::Color(static_cast<sf::Uint8>(70 + 40 * t),
+                                    static_cast<sf::Uint8>(140 + 70 * t),
+                                    static_cast<sf::Uint8>(85 + 10 * t)));
+    window.draw(progress);
+
+    sf::CircleShape knob = knob_;
+    knob.setFillColor(sf::Color(static_cast<sf::Uint8>(80 + 30 * t),
+                                static_cast<sf::Uint8>(150 + 70 * t),
+                                static_cast<sf::Uint8>(95 + 15 * t)));
+    window.draw(knob);
     window.draw(label_);
 }
 

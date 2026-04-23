@@ -8,6 +8,7 @@ public:
     Slider(float x, float y, float width, float minValue, float maxValue, float initial, const sf::Font& font);
 
     bool contains(const sf::Vector2f& point) const;
+    void setPosition(float x, float y);
     void setActive(bool active);
     void onMouseMoved(const sf::Vector2f& point);
     void setValue(float value);

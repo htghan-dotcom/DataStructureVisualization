@@ -2,15 +2,12 @@
 
 #include "../../config/Config.h"
 
-namespace {
-constexpr float kGraphMinX = 274.0f;
-constexpr float kGraphMaxX = 934.0f;
-constexpr float kGraphMinY = 110.0f;
-constexpr float kGraphMaxY = 560.0f;
+#include <functional>
 
-sf::Vector2f graphToScreen(float nx, float ny) {
-    return sf::Vector2f(kGraphMinX + nx * (kGraphMaxX - kGraphMinX),
-                        kGraphMinY + ny * (kGraphMaxY - kGraphMinY));
+namespace {
+sf::Vector2f graphToScreen(float nx, float ny, const sf::FloatRect& graphViewport) {
+    return sf::Vector2f(graphViewport.left + nx * graphViewport.width,
+                        graphViewport.top + ny * graphViewport.height);
 }
 
 std::string edgeKey(const Edge& e) {
@@ -32,18 +29,32 @@ void drawThickSegment(sf::RenderWindow& window,
 
     sf::RectangleShape seg(sf::Vector2f(len, thickness));
     seg.setOrigin(0.f, thickness * 0.5f);
-    seg.setPosition(a);
+    // Snap to half-pixel to reduce shimmering and keep lines visually crisp.
+    seg.setPosition(std::round(a.x) + 0.5f, std::round(a.y) + 0.5f);
     seg.setRotation(std::atan2(d.y, d.x) * 180.0f / 3.14159265f);
     seg.setFillColor(color);
     window.draw(seg);
+}
+
+void drawWeight(sf::RenderWindow& window, const sf::Font& font, const sf::Vector2f& center, int weight) {
+    sf::Text weightText(std::to_string(weight), font, 12);
+    weightText.setFillColor(sf::Color(22, 28, 38));
+    weightText.setOutlineColor(sf::Color(252, 252, 252)); // Bo viền trắng (Halo) quanh chữ
+    weightText.setOutlineThickness(2.5f);
+    const sf::FloatRect b = weightText.getLocalBounds();
+    weightText.setPosition(std::round(center.x - (b.width * 0.5f) - b.left),
+                           std::round(center.y - (b.height * 0.5f) - b.top));
+    window.draw(weightText);
 }
 
 }  // namespace
 
 void EdgeRender::draw(sf::RenderWindow& window,
                       const Graph& graph,
+                      const sf::FloatRect& graphViewport,
                       const std::vector<Edge>& accepted,
                       const std::vector<Edge>& candidates,
+                      StepEvent currentStepEvent,
                       const sf::Font& font) {
     std::unordered_map<std::string, int> acceptedMap;
     std::unordered_map<std::string, int> candidateMap;
@@ -64,7 +75,7 @@ void EdgeRender::draw(sf::RenderWindow& window,
     occupiedWeightBounds.reserve(graph.getEdges().size() + 8);
 
     auto intersectsExisting = [&occupiedWeightBounds](const sf::FloatRect& rect) {
-        sf::FloatRect expanded(rect.left - 3.f, rect.top - 2.f, rect.width + 6.f, rect.height + 4.f);
+        sf::FloatRect expanded(rect.left - 8.f, rect.top - 6.f, rect.width + 16.f, rect.height + 12.f);
         for (const auto& used : occupiedWeightBounds) {
             if (expanded.intersects(used)) {
                 return true;
@@ -83,8 +94,8 @@ void EdgeRender::draw(sf::RenderWindow& window,
         const Node& n1 = it1->second;
         const Node& n2 = it2->second;
 
-        const sf::Vector2f p0 = graphToScreen(n1.x, n1.y);
-        const sf::Vector2f p2 = graphToScreen(n2.x, n2.y);
+        const sf::Vector2f p0 = graphToScreen(n1.x, n1.y, graphViewport);
+        const sf::Vector2f p2 = graphToScreen(n2.x, n2.y, graphViewport);
         const sf::Vector2f mid((p0.x + p2.x) * 0.5f, (p0.y + p2.y) * 0.5f);
         const sf::Vector2f d(p2.x - p0.x, p2.y - p0.y);
         const float len = std::sqrt(d.x * d.x + d.y * d.y);
@@ -95,39 +106,44 @@ void EdgeRender::draw(sf::RenderWindow& window,
         const bool isCandidate = candidateMap.count(key) > 0;
 
         sf::Color edgeColor = config::kEdgeColor;
+        float edgeThickness = 4.0f;
         if (isAccepted) {
             edgeColor = config::kHighlightEdgeColor;
+            edgeThickness = 6.5f;
         } else if (isCandidate) {
-            edgeColor = config::kCandidateEdgeColor;
+            if (currentStepEvent == StepEvent::Reject) {
+                edgeColor = config::kRejectedEdgeColor;
+                edgeThickness = 3.5f;
+            } else {
+                edgeColor = config::kCandidateEdgeColor;
+                edgeThickness = 5.5f;
+            }
         }
 
         sf::Vector2f centerPoint = mid;
         sf::Vector2f labelNormal = normal;
-        drawThickSegment(window, p0, p2, 2.8f, edgeColor);
-
-        sf::Text weightText(std::to_string(e.weight), font, 12);
-        weightText.setFillColor(sf::Color(220, 220, 226));
+        const sf::Vector2f tangent = (len > 0.01f) ? sf::Vector2f(d.x / len, d.y / len) : sf::Vector2f(1.0f, 0.0f);
+        const float normalDir = ((std::hash<std::string>{}(key) & 1u) == 0u) ? 1.0f : -1.0f;
+        drawThickSegment(window, p0, p2, edgeThickness, edgeColor);
 
         bool placed = false;
-        for (int k = 0; k < 6; ++k) {
-            const float offset = 7.0f + static_cast<float>(k) * 5.0f;
-            const float dir = (k % 2 == 0) ? 1.0f : -1.0f;
-            const sf::Vector2f pos(centerPoint.x + labelNormal.x * offset * dir,
-                                   centerPoint.y + labelNormal.y * offset * dir);
-            weightText.setPosition(pos.x, pos.y);
-            const sf::FloatRect bounds = weightText.getGlobalBounds();
+        for (int k = 0; k < 8; ++k) { // Tăng số vòng quét tìm vị trí trống
+            const float offset = 14.0f + static_cast<float>(k) * 5.0f; // Bắt đầu xa tâm hơn
+            const float tangentShift = (k == 0) ? 0.0f : ((k % 2 == 0) ? 14.0f : -14.0f) * (1.0f + (k / 2) * 0.4f);
+            const sf::Vector2f pos(centerPoint.x + labelNormal.x * offset * normalDir + tangent.x * tangentShift,
+                                   centerPoint.y + labelNormal.y * offset * normalDir + tangent.y * tangentShift);
+            const sf::FloatRect bounds(pos.x - 12.0f, pos.y - 10.0f, 24.0f, 20.0f);
             if (!intersectsExisting(bounds)) {
                 occupiedWeightBounds.push_back(
                     sf::FloatRect(bounds.left - 2.f, bounds.top - 2.f, bounds.width + 4.f, bounds.height + 4.f));
-                window.draw(weightText);
+                drawWeight(window, font, pos, e.weight);
                 placed = true;
                 break;
             }
         }
 
         if (!placed) {
-            weightText.setPosition(centerPoint.x, centerPoint.y);
-            window.draw(weightText);
+            drawWeight(window, font, centerPoint, e.weight);
         }
     }
 }

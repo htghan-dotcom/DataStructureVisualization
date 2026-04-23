@@ -73,7 +73,7 @@ Button::Button(const std::string& label, const sf::Font& font) {
     text_.setFont(font);
     text_.setString(label);
     text_.setCharacterSize(14);
-    text_.setFillColor(sf::Color(238, 244, 247));
+    text_.setFillColor(sf::Color(18, 18, 18));
 
     alignText();
 }
@@ -129,42 +129,46 @@ void Button::draw(sf::RenderWindow& window) {
     if (!enabled_) {
         background.setFillColor(sf::Color(202, 208, 214));
         background.setOutlineColor(sf::Color(176, 184, 191));
-        text.setFillColor(sf::Color(146, 154, 162));
+        text.setFillColor(sf::Color(120, 124, 128));
     } else {
         sf::Color fill(95, 131, 151);
         sf::Color outline(84, 116, 134);
-        sf::Color foreground(238, 244, 247);
+        sf::Color foreground(18, 18, 18);
 
         if (styleRole_ == StyleRole::Play) {
             fill = sf::Color(110, 154, 91);
             outline = sf::Color(86, 126, 68);
-            foreground = sf::Color(250, 250, 250);
+            foreground = sf::Color(18, 18, 18);
+        } else if (styleRole_ == StyleRole::Algorithm) {
+            fill = sf::Color(108, 137, 170);
+            outline = sf::Color(80, 108, 138);
+            foreground = sf::Color(16, 20, 26);
         } else if (styleRole_ == StyleRole::Danger) {
             fill = sf::Color(217, 176, 176);
             outline = sf::Color(175, 118, 118);
-            foreground = sf::Color(70, 34, 34);
+            foreground = sf::Color(18, 18, 18);
         }
 
         if (selected_) {
             if (styleRole_ == StyleRole::Algorithm) {
-                fill = sf::Color(245, 170, 70);
-                outline = sf::Color(188, 124, 44);
-                foreground = sf::Color(245, 247, 250);
+                fill = sf::Color(241, 186, 88);
+                outline = sf::Color(182, 132, 55);
+                foreground = sf::Color(18, 18, 18);
             } else if (styleRole_ == StyleRole::Danger) {
                 fill = sf::Color(197, 100, 100);
                 outline = sf::Color(164, 74, 74);
-                foreground = sf::Color(255, 247, 247);
+                foreground = sf::Color(18, 18, 18);
             } else {
                 fill = sf::Color(114, 149, 170);
                 outline = sf::Color(84, 116, 134);
-                foreground = sf::Color(245, 247, 250);
+                foreground = sf::Color(18, 18, 18);
             }
         }
 
         if (flashing) {
             fill = sf::Color(114, 149, 170);
             outline = sf::Color(84, 116, 134);
-            foreground = sf::Color(245, 247, 250);
+            foreground = sf::Color(18, 18, 18);
         }
 
         background.setFillColor(fill);

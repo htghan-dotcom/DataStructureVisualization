@@ -6,6 +6,11 @@ void Graph::clear() {
 }
 
 void Graph::addNode(int id, float x, float y) {
+    for (const auto& node : nodes_) {
+        if (node.id == id) {
+            return;
+        }
+    }
     nodes_.push_back(Node{id, x, y});
 }
 
