@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <optional>
 
-class RoundedButton{
+class RoundedButton {
 private:
     sf::CircleShape mTopLeft, mTopRight, mBottomLeft, mBottomRight;
     sf::RectangleShape mHorizRect, mVertRect;
@@ -61,7 +61,7 @@ public:
         }
     }
 
-    void draw(sf::RenderTarget& target) const{
+    void draw(sf::RenderTarget& target) const {
         target.draw(mTopLeft); target.draw(mTopRight);
         target.draw(mBottomLeft); target.draw(mBottomRight);
         target.draw(mHorizRect); target.draw(mVertRect);
@@ -76,7 +76,7 @@ public:
     }
 };
 
-class SpeedSlider{
+class SpeedSlider {
 private:
     sf::RectangleShape mTrack;
     sf::RectangleShape mFill;
@@ -148,7 +148,7 @@ public:
         }
     }
 
-    void draw(sf::RenderTarget& target) const{
+    void draw(sf::RenderTarget& target) const {
         target.draw(mLabelText);
         target.draw(mValText);
         target.draw(mTrack);
@@ -156,7 +156,7 @@ public:
         target.draw(mThumb);
     }
     
-    float getSpeed() const{return mCurrentVal;}
+    float getSpeed() const {return mCurrentVal;}
 };
 
 class ImageButton {
@@ -179,7 +179,7 @@ public:
     }
 
     void update(const sf::Vector2i& mousePos){
-        if (!mSprite) return;
+        if (!mSprite){return;}
         
         sf::FloatRect bounds = mSprite->getGlobalBounds();
         if (bounds.contains(sf::Vector2f(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)))){
@@ -194,7 +194,7 @@ public:
         }
     }
 
-    void draw(sf::RenderTarget& target) const{
+    void draw(sf::RenderTarget& target) const {
         if (mSprite) target.draw(*mSprite);
     }
 

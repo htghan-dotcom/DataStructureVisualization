@@ -1,10 +1,11 @@
 #pragma once
+#include "GUI.h"
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <string>
 #include <optional>
 
-struct MenuCard{
+struct MenuCard {
     std::string number;
     std::string name;
     sf::Color bgColor;
@@ -28,16 +29,15 @@ struct MenuCard{
         bgShape.setFillColor(bgColor);
         
         numText.setString(number);
-        numText.setCharacterSize(16);
+        numText.setCharacterSize(25);
         numText.setFillColor(sf::Color::Black);
         
         nameText.setString(name);
-        nameText.setCharacterSize(38);
+        nameText.setCharacterSize(50);
         nameText.setFillColor(sf::Color::Black);
-        nameText.setStyle(sf::Text::Bold);
         
         viewMoreText.setString("View more >");
-        viewMoreText.setCharacterSize(16);
+        viewMoreText.setCharacterSize(25);
         viewMoreText.setFillColor(sf::Color::Black);
     }
 
@@ -47,24 +47,29 @@ struct MenuCard{
     MenuCard& operator=(const MenuCard&) = delete;
 };
 
-class MainMenu{
+class MainMenu {
 private:
     std::vector<MenuCard> mCards;
     sf::Font mFont;
     float mWindowWidth;
     float mWindowHeight;
     int mActiveIdx;
+    
+    sf::Texture mExitTex;
 
 public:
+    ImageButton mExitBtn;
+    bool mGoBack = false;
+    
     MainMenu(float w, float h);
     std::optional<int> update(const sf::RenderWindow& window);
     void draw(sf::RenderTarget& target);
     
-    sf::FloatRect getCardBounds(int index) const{
+    sf::FloatRect getCardBounds(int index) const {
         return mCards[index].bgShape.getGlobalBounds();
     }
     
-    sf::Color getCardColor(int index) const{
+    sf::Color getCardColor(int index) const {
         return mCards[index].bgColor;
     }
     
@@ -72,7 +77,7 @@ public:
         return mActiveIdx;
     }
 
-    sf::FloatRect getThumbnailBounds(int index) const{
+    sf::FloatRect getThumbnailBounds(int index) const {
         float cardX = mCards[index].bgShape.getPosition().x;
         return sf::FloatRect({cardX + 20.f, 60.f}, {mCards[index].currentWidth - 40.f, mWindowHeight * 0.5f});
     }

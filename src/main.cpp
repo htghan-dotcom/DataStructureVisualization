@@ -1,9 +1,10 @@
 #include <SFML/Graphics.hpp>
+#include "WelcomeScreen.h"
 #include "Menu.h"
-#include "Common.h"
 #include "RBTVisualizer.h"
+#include "Common.h"
 
-enum class AppState { MENU, EXPANDING, VISUALIZER, SHRINKING };
+enum class AppState { WELCOME, MENU, EXPANDING, VISUALIZER, SHRINKING };
 
 sf::View getLetterboxView(sf::View view, unsigned int windowWidth, unsigned int windowHeight){
     float windowRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
@@ -45,24 +46,45 @@ int main(){
     sf::View mainView(sf::FloatRect(sf::Vector2f(0.f, 0.f), sf::Vector2f(LOGIC_W, LOGIC_H)));
     mainView = getLetterboxView(mainView, window.getSize().x, window.getSize().y);
     window.setView(mainView);
-
+    
+    WelcomeScreen welcomeScreen;
     MainMenu mainMenu(LOGIC_W, LOGIC_H);
     RBTVisualizer rbtVisualizer(window);
     
-    AppState currentState = AppState::MENU;
+    AppState currentState = AppState::WELCOME;
+
     int activeDS = -1;
     float animProgress = 0.f;
     sf::FloatRect startRect;
     sf::FloatRect fullScreenRect(sf::Vector2f(0.f, 0.f), sf::Vector2f(LOGIC_W, LOGIC_H));
     sf::Color activeBgColor;
+    
 
     while (window.isOpen()){
+        sf::Vector2f worldPos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+        sf::Vector2i mousePos(static_cast<int>(worldPos.x), static_cast<int>(worldPos.y));
+        
         while (const optional event = window.pollEvent()){
-            if (event->is<sf::Event::Closed>()) window.close();
+            if (event->is<sf::Event::Closed>()){
+                window.close();
+            }
 
             if (const auto* resizeEvent = event->getIf<sf::Event::Resized>()){
                 mainView = getLetterboxView(mainView, resizeEvent->size.x, resizeEvent->size.y);
                 window.setView(mainView);
+            }
+            
+            if (currentState == AppState::MENU){
+                if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()){
+                    if (keyEvent->code == sf::Keyboard::Key::Escape){
+                        currentState = AppState::WELCOME;
+                        welcomeScreen.resetStart();
+                    }
+                }
+            }
+            
+            if (currentState == AppState::WELCOME){
+                welcomeScreen.update(mousePos, event);
             }
 
             if (currentState == AppState::VISUALIZER and activeDS == 2){
@@ -84,17 +106,36 @@ int main(){
                 }
             }
         }
-        
+
         window.clear(sf::Color(40, 40, 40));
         window.setView(mainView);
+        
+        if (currentState == AppState::WELCOME){
+            sf::RectangleShape welcomeBg(fullScreenRect.size);
+            welcomeBg.setFillColor(sf::Color::White);
+            window.draw(welcomeBg);
+            
+            welcomeScreen.update(mousePos, nullopt);
+            welcomeScreen.draw(window);
+            
+            if (welcomeScreen.isStartPressed()){
+                currentState = AppState::MENU;
+            }
+        }
 
-        if (currentState == AppState::MENU){
+        else if (currentState == AppState::MENU){
             sf::RectangleShape menuBg(fullScreenRect.size);
             menuBg.setFillColor(sf::Color(250, 250, 250));
             window.draw(menuBg);
 
             auto selected = mainMenu.update(window);
             mainMenu.draw(window);
+            
+            if (mainMenu.mGoBack){
+                currentState = AppState::WELCOME;
+                welcomeScreen.resetStart();
+                mainMenu.mGoBack = false;
+            }
                     
             if (mainMenu.getActiveDS() == 2){
                 rbtVisualizer.render(false);
@@ -110,13 +151,18 @@ int main(){
         }
         
         else if (currentState == AppState::EXPANDING or currentState == AppState::SHRINKING){
-            if (currentState == AppState::EXPANDING) animProgress += 0.04f;
-            else animProgress -= 0.04f;
+            if (currentState == AppState::EXPANDING){
+                animProgress += 0.04f;
+            } else {
+                animProgress -= 0.04f;
+            }
 
             if (animProgress >= 1.0f){
                 animProgress = 1.0f;
                 currentState = AppState::VISUALIZER;
-            } else if (animProgress <= 0.0f){
+            }
+            
+            else if (animProgress <= 0.0f){
                 animProgress = 0.0f;
                 currentState = AppState::MENU;
                 
