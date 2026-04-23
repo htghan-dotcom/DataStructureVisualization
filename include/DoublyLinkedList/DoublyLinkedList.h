@@ -31,7 +31,7 @@ public:
     
     bool deleteValue(int value); 
     
-    int search(int value) const; 
+    int search(int value);
     
     bool update(int oldValue, int newValue); 
     

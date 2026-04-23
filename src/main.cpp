@@ -2,6 +2,7 @@
 #include "WelcomeScreen.h"
 #include "Menu.h"
 #include "RBTVisualizer.h"
+#include "DLLVisualizer.h"
 #include "Common.h"
 
 enum class AppState { WELCOME, MENU, EXPANDING, VISUALIZER, SHRINKING };
@@ -50,6 +51,7 @@ int main(){
     WelcomeScreen welcomeScreen;
     MainMenu mainMenu(LOGIC_W, LOGIC_H);
     RBTVisualizer rbtVisualizer(window);
+    DLLVisualizer dllVisualizer(window);
     
     AppState currentState = AppState::WELCOME;
 
@@ -105,6 +107,31 @@ int main(){
                     startRect = mainMenu.getCardBounds(activeDS);
                 }
             }
+
+            if (currentState == AppState::VISUALIZER and activeDS == 0){
+                if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()){
+                    if (keyEvent->code == sf::Keyboard::Key::Escape){
+                        currentState = AppState::SHRINKING;
+                        animProgress = 1.0f;
+                        startRect = mainMenu.getCardBounds(activeDS);
+                        continue;
+                    }
+                }
+                dllVisualizer.update(event);
+            }
+        }
+
+        if (currentState == AppState::VISUALIZER and activeDS == 0) {
+        
+            // Cập nhật liên tục ở mỗi khung hình để chạy Animation / Auto-play
+            dllVisualizer.update(std::nullopt); 
+
+            // Kiểm tra xem user có bấm nút Home không
+            if (dllVisualizer.checkReturnHome()){
+                currentState = AppState::SHRINKING;
+                animProgress = 1.0f;
+                startRect = mainMenu.getCardBounds(activeDS);
+            }
         }
 
         window.clear(sf::Color(40, 40, 40));
@@ -141,8 +168,20 @@ int main(){
                 rbtVisualizer.render(false);
             }
             
+            if (mainMenu.getActiveDS() == 0){
+                dllVisualizer.render(false);
+            }
+            
             if (selected.has_value() and selected.value() == 2){
                 activeDS = 2;
+                startRect = mainMenu.getCardBounds(activeDS);
+                activeBgColor = mainMenu.getCardColor(activeDS);
+                currentState = AppState::EXPANDING;
+                animProgress = 0.f;
+            }
+
+            if (selected.has_value() and selected.value() == 0){
+                activeDS = 0;
                 startRect = mainMenu.getCardBounds(activeDS);
                 activeBgColor = mainMenu.getCardColor(activeDS);
                 currentState = AppState::EXPANDING;
@@ -169,9 +208,19 @@ int main(){
                 if (activeDS == 2 and rbtVisualizer.isEmpty()){
                     rbtVisualizer.generateRandomTree();
                 }
+
+                if (activeDS == 0 and dllVisualizer.isEmpty()){
+                    dllVisualizer.generateRandomList();
+                }
             }
                     
-            rbtVisualizer.setTransitionProgress(animProgress);
+            if (activeDS == 2){
+                rbtVisualizer.setTransitionProgress(animProgress);
+            }
+
+            if (activeDS == 0){
+                dllVisualizer.setTransitionProgress(animProgress);
+            }
             
             sf::FloatRect currentRect(
                 sf::Vector2f(smoothLerp(startRect.position.x, fullScreenRect.position.x, animProgress), smoothLerp(startRect.position.y, fullScreenRect.position.y, animProgress)),
@@ -187,7 +236,13 @@ int main(){
             animBg.setFillColor(activeBgColor);
             window.draw(animBg);
             
-            rbtVisualizer.render(false);
+            if (activeDS == 2){
+                rbtVisualizer.render(false);
+            }
+
+            if (activeDS == 0){
+                dllVisualizer.render(false);
+            }
         }
         
         else if (currentState == AppState::VISUALIZER){
@@ -195,7 +250,13 @@ int main(){
             fullBg.setFillColor(activeBgColor);
             window.draw(fullBg);
             
-            rbtVisualizer.render(true);
+            if (activeDS == 2){
+                rbtVisualizer.render(true);
+            }
+
+            if (activeDS == 0){
+                dllVisualizer.render(true);
+            }
         }
         
         window.display();

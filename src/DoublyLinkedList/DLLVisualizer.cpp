@@ -86,12 +86,12 @@ DLLVisualizer::DLLVisualizer(sf::RenderWindow& window)
     // Description box
     mDescriptionBox.setSize({400.f, 150.f});
     mDescriptionBox.setFillColor(sf::Color(217, 217, 217));
-    mDescriptionBox.setPosition({1018.f, 165.f});
+    mDescriptionBox.setPosition({1018.f, 100.f});
 
     mDescriptionText.setString("Ready to visualize");
     mDescriptionText.setCharacterSize(16);
     mDescriptionText.setFillColor(sf::Color::Black);
-    mDescriptionText.setPosition({1040.f, 185.f});
+    mDescriptionText.setPosition({1040.f, 120.f});
 
     // Step display background
     float bgX = 131.f, bgY = 890.f, bgW = 580.f, bgH = 61.f, bgR = 30.5f;
@@ -164,12 +164,52 @@ DLLVisualizer::DLLVisualizer(sf::RenderWindow& window)
         mIsPaused = false;
     });
 
-    mSkipForwardBtn.setCallback([this]() {
-        auto history = mList.getStepHistory();
-        if (!history.empty()) {
-            mList.setCurrentStep(static_cast<int>(history.size()) - 1);
+    mConfirmAddBtn.setCallback([this]() {
+        if (!mInputValue.empty()) {
+            int val = stoi(mInputValue);
+            mList.backup();
+            mList.resetHistory("Insert " + to_string(val));
+            mList.insertTail(val);
+            mList.setCurrentStep(0);
+            mIsInsertExpanded = false;
+            mInputValue = "";
+            mIsPaused = false;
+            mShowUndoBtn = false;
+            mAutoPlayClock.restart();
         }
-        mIsPaused = true;
+    });
+
+    mConfirmRemoveBtn.setCallback([this]() {
+        if (!mInputValue.empty()) {
+            int val = stoi(mInputValue);
+            mList.backup();
+            mList.resetHistory("Delete " + to_string(val));
+            mList.deleteValue(val);
+            mList.setCurrentStep(0);
+            mIsDeleteExpanded = false;
+            mInputValue = "";
+            mIsPaused = false;
+            mShowUndoBtn = false;
+            mAutoPlayClock.restart();
+        }
+    });
+
+    mConfirmSearchBtn.setCallback([this]() {
+        if (!mInputValue.empty()) {
+            int val = stoi(mInputValue);
+            mList.resetHistory("Search for " + to_string(val));
+            int idx = mList.search(val);
+            if (idx != -1) {
+                mDescriptionText.setString("Found at index: " + to_string(idx));
+            } else {
+                mDescriptionText.setString("Value not found");
+            }
+            mList.setCurrentStep(0);
+            mIsSearchExpanded = false;
+            mInputValue = "";
+            mIsPaused = false;
+            mAutoPlayClock.restart();
+        }
     });
 
     mClearBtn.refreshText();
@@ -254,8 +294,19 @@ void DLLVisualizer::initializeInputForms() {
     mSearchCursorLine.setFillColor(sf::Color::Black);
 
     mInsertDiceBtn.setup(mDiceTex, 205.f, 237.f, 30.f, 30.f);
+    mInsertDiceBtn.setCallback([this]() {
+        mInputValue = to_string(rand() % 99 + 1);
+    });
+    
     mDeleteDiceBtn.setup(mDiceTex, 205.f, 291.f, 30.f, 30.f);
+    mDeleteDiceBtn.setCallback([this]() {
+        mInputValue = to_string(rand() % 99 + 1);
+    });
+    
     mSearchDiceBtn.setup(mDiceTex, 205.f, 345.f, 30.f, 30.f);
+    mSearchDiceBtn.setCallback([this]() {
+        mInputValue = to_string(rand() % 99 + 1);
+    });
 }
 
 void DLLVisualizer::initializePseudoCodePanel() {
@@ -263,13 +314,13 @@ void DLLVisualizer::initializePseudoCodePanel() {
     mCodePanelBox.setFillColor(sf::Color(240, 240, 245));
     mCodePanelBox.setOutlineThickness(2.f);
     mCodePanelBox.setOutlineColor(sf::Color(100, 100, 100));
-    mCodePanelBox.setPosition({1020.f, 330.f});
+    mCodePanelBox.setPosition({1020.f, 260.f});
 
     mCodeTitleText.setFont(mFontBold);
     mCodeTitleText.setString("Step Code");
     mCodeTitleText.setCharacterSize(14);
     mCodeTitleText.setFillColor(sf::Color::Black);
-    mCodeTitleText.setPosition({1030.f, 340.f});
+    mCodeTitleText.setPosition({1030.f, 270.f});
 }
 
 void DLLVisualizer::update(const optional<sf::Event>& event) {
@@ -287,6 +338,21 @@ void DLLVisualizer::update(const optional<sf::Event>& event) {
     mInsertBtn.update(mousePos);
     mDeleteBtn.update(mousePos);
     mSearchBtn.update(mousePos);
+    
+    // Update confirmation buttons when forms are expanded
+    if (mIsInsertExpanded) {
+        mConfirmAddBtn.update(mousePos);
+        mInsertDiceBtn.update(mousePos);
+    }
+    if (mIsDeleteExpanded) {
+        mConfirmRemoveBtn.update(mousePos);
+        mDeleteDiceBtn.update(mousePos);
+    }
+    if (mIsSearchExpanded) {
+        mConfirmSearchBtn.update(mousePos);
+        mSearchDiceBtn.update(mousePos);
+    }
+    
     mSpeedSlider.update(mousePos);
     
     float speedMult = mSpeedSlider.getSpeed();
@@ -451,6 +517,8 @@ void DLLVisualizer::handleKeyInput(const sf::Event::KeyPressed& keyEvent) {
             mInputValue.pop_back();
         }
         else if (keyEvent.code == sf::Keyboard::Key::Enter && !mInputValue.empty()) {
+            // Logic moved to button callbacks
+            // This is kept for backward compatibility but buttons should be used instead
             int val = stoi(mInputValue);
             
             if (mIsInsertExpanded) {
@@ -489,8 +557,13 @@ void DLLVisualizer::handleKeyInput(const sf::Event::KeyPressed& keyEvent) {
 }
 
 void DLLVisualizer::render(bool showUI) {
-    mWindow->draw(mBackground);
-    mWindow->draw(mHeaderText);
+    if (showUI) {
+        mWindow->draw(mBackground);
+        mWindow->draw(mHeaderText);
+        mWindow->draw(mFooter);
+        mWindow->draw(mDescriptionBox);
+        mWindow->draw(mDescriptionText);
+    }
 
     auto history = mList.getStepHistory();
     int cur = mList.getCurrentStep();
@@ -500,16 +573,15 @@ void DLLVisualizer::render(bool showUI) {
         
         renderNodeVisualization(state);
         renderDoubleArrows(state);
-        renderPseudoCodePanel(state);
+        if (showUI) {
+            renderPseudoCodePanel(state);
+        }
         
         mDescriptionText.setString(state.description);
     }
 
     if (showUI) {
         mWindow->draw(mFooter);
-        mWindow->draw(mDescriptionBox);
-        mWindow->draw(mDescriptionText);
-        mWindow->draw(mCodePanelBox);
 
         mWindow->draw(mTitleNum);
         mWindow->draw(mTitleDoubly);
@@ -657,7 +729,7 @@ void DLLVisualizer::render(bool showUI) {
 void DLLVisualizer::renderNodeVisualization(const DLLStepState& state) {
     float nodeRadius = 30.f;
     float spacing = 120.f;
-    sf::Vector2f startPos(200.f, 400.f);
+    sf::Vector2f startPos(200.f, 550.f);
 
     for (size_t i = 0; i < state.nodes.size(); ++i) {
         sf::Vector2f pos = startPos + sf::Vector2f(i * spacing, 0.f);
@@ -681,9 +753,11 @@ void DLLVisualizer::renderNodeVisualization(const DLLStepState& state) {
 }
 
 void DLLVisualizer::renderDoubleArrows(const DLLStepState& state) {
+    if (state.nodes.size() < 2) return;
+    
     float nodeRadius = 30.f;
     float spacing = 120.f;
-    sf::Vector2f startPos(200.f, 400.f);
+    sf::Vector2f startPos(200.f, 550.f);
 
     for (size_t i = 0; i < state.nodes.size() - 1; ++i) {
         sf::Vector2f pos1 = startPos + sf::Vector2f(i * spacing, 0.f);
@@ -693,7 +767,7 @@ void DLLVisualizer::renderDoubleArrows(const DLLStepState& state) {
         sf::Vector2f p2 = pos2 - sf::Vector2f(nodeRadius + 5.f, 0.f);
         
         // Forward arrow (next pointer) - green
-        sf::Vertex forwardLine[] = {sf::Vertex(p1, sf::Color(89, 149, 43)), sf::Vertex(p2, sf::Color(89, 149, 43))};
+        sf::Vertex forwardLine[] = {sf::Vertex{p1, sf::Color(89, 149, 43)}, sf::Vertex{p2, sf::Color(89, 149, 43)}};
         mWindow->draw(forwardLine, 2, sf::PrimitiveType::Lines);
         
         sf::Vector2f dir = p2 - p1;
@@ -706,8 +780,8 @@ void DLLVisualizer::renderDoubleArrows(const DLLStepState& state) {
         mWindow->draw(arrowHead);
 
         // Backward arrow (prev pointer) - red, offset vertically
-        sf::Vertex backwardLine[] = {sf::Vertex(p2 - sf::Vector2f(0.f, 15.f), sf::Color(231, 76, 60)), 
-                                     sf::Vertex(p1 - sf::Vector2f(0.f, 15.f), sf::Color(231, 76, 60))};
+        sf::Vertex backwardLine[] = {sf::Vertex{p2 - sf::Vector2f(0.f, 15.f), sf::Color(231, 76, 60)}, 
+                                     sf::Vertex{p1 - sf::Vector2f(0.f, 15.f), sf::Color(231, 76, 60)}};
         mWindow->draw(backwardLine, 2, sf::PrimitiveType::Lines);
         
         sf::Vector2f backDir = p1 - p2;
@@ -722,11 +796,12 @@ void DLLVisualizer::renderDoubleArrows(const DLLStepState& state) {
 }
 
 void DLLVisualizer::renderPseudoCodePanel(const DLLStepState& state) {
+    mWindow->draw(mCodePanelBox);
     mWindow->draw(mCodeTitleText);
     
     // Draw pseudocode lines
     float lineHeight = 14.f;
-    float startY = 365.f;
+    float startY = 285.f;  // Adjusted for new panel position
     int maxLines = 10;
     
     // Split pseudocode by lines
