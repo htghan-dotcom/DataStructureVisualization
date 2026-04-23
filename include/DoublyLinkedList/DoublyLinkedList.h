@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "DLLStepState.h"
 
 
 struct Node {
@@ -15,15 +16,18 @@ private:
     Node* head;
     Node* tail;
     int size;
+    
+    std::vector<DLLStepState> mStepHistory;
+    int mCurrentStep;
+    DoublyLinkedList* mBackup;
+    int mVisualizationSpeed;
 
 public:
     DoublyLinkedList();
     ~DoublyLinkedList(); 
 
-    
     void insertTail(int value);
     void insertHead(int value);
-    
     
     bool deleteValue(int value); 
     
@@ -38,4 +42,16 @@ public:
     //For frontend
     std::vector<int> getElements() const; 
     int getSize() const;
+    
+    // For visualization
+    void recordStep(const std::string& description);
+    std::vector<DLLStepState> getStepHistory() const;
+    int getCurrentStep() const;
+    void setCurrentStep(int step);
+    void resetHistory(const std::string& initialDescription);
+    void initialize();
+    void backup();
+    void restore();
+    void goToFinalStep();
+    void setVisualizationSpeed(int ms);
 };
