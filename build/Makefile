@@ -321,6 +321,30 @@ src/UI/components/Slider.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\DataStructureVisualization.dir\build.make CMakeFiles/DataStructureVisualization.dir/src/UI/components/Slider.cpp.s
 .PHONY : src/UI/components/Slider.cpp.s
 
+src/UI/components/TaskBar.obj: src/UI/components/TaskBar.cpp.obj
+.PHONY : src/UI/components/TaskBar.obj
+
+# target to build an object file
+src/UI/components/TaskBar.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\DataStructureVisualization.dir\build.make CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.obj
+.PHONY : src/UI/components/TaskBar.cpp.obj
+
+src/UI/components/TaskBar.i: src/UI/components/TaskBar.cpp.i
+.PHONY : src/UI/components/TaskBar.i
+
+# target to preprocess a source file
+src/UI/components/TaskBar.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\DataStructureVisualization.dir\build.make CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.i
+.PHONY : src/UI/components/TaskBar.cpp.i
+
+src/UI/components/TaskBar.s: src/UI/components/TaskBar.cpp.s
+.PHONY : src/UI/components/TaskBar.s
+
+# target to generate assembly for a file
+src/UI/components/TaskBar.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\DataStructureVisualization.dir\build.make CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.s
+.PHONY : src/UI/components/TaskBar.cpp.s
+
 src/UI/renders/EdgeRender.obj: src/UI/renders/EdgeRender.cpp.obj
 .PHONY : src/UI/renders/EdgeRender.obj
 
@@ -546,6 +570,9 @@ help:
 	@echo ... src/UI/components/Slider.obj
 	@echo ... src/UI/components/Slider.i
 	@echo ... src/UI/components/Slider.s
+	@echo ... src/UI/components/TaskBar.obj
+	@echo ... src/UI/components/TaskBar.i
+	@echo ... src/UI/components/TaskBar.s
 	@echo ... src/UI/renders/EdgeRender.obj
 	@echo ... src/UI/renders/EdgeRender.i
 	@echo ... src/UI/renders/EdgeRender.s

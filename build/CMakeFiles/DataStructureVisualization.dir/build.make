@@ -191,11 +191,26 @@ CMakeFiles/DataStructureVisualization.dir/src/UI/components/Slider.cpp.s: cmake_
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/DataStructureVisualization.dir/src/UI/components/Slider.cpp.s"
 	C:\msys64\ucrt64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\src\UI\components\Slider.cpp -o CMakeFiles\DataStructureVisualization.dir\src\UI\components\Slider.cpp.s
 
+CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.obj: CMakeFiles/DataStructureVisualization.dir/flags.make
+CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.obj: CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp
+CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.obj: D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/components/TaskBar.cpp
+CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.obj: CMakeFiles/DataStructureVisualization.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.obj"
+	C:\msys64\ucrt64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.obj -MF CMakeFiles\DataStructureVisualization.dir\src\UI\components\TaskBar.cpp.obj.d -o CMakeFiles\DataStructureVisualization.dir\src\UI\components\TaskBar.cpp.obj -c D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\src\UI\components\TaskBar.cpp
+
+CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.i"
+	C:\msys64\ucrt64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\src\UI\components\TaskBar.cpp > CMakeFiles\DataStructureVisualization.dir\src\UI\components\TaskBar.cpp.i
+
+CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.s"
+	C:\msys64\ucrt64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\src\UI\components\TaskBar.cpp -o CMakeFiles\DataStructureVisualization.dir\src\UI\components\TaskBar.cpp.s
+
 CMakeFiles/DataStructureVisualization.dir/src/UI/renders/EdgeRender.cpp.obj: CMakeFiles/DataStructureVisualization.dir/flags.make
 CMakeFiles/DataStructureVisualization.dir/src/UI/renders/EdgeRender.cpp.obj: CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp
 CMakeFiles/DataStructureVisualization.dir/src/UI/renders/EdgeRender.cpp.obj: D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/renders/EdgeRender.cpp
 CMakeFiles/DataStructureVisualization.dir/src/UI/renders/EdgeRender.cpp.obj: CMakeFiles/DataStructureVisualization.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/UI/renders/EdgeRender.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/UI/renders/EdgeRender.cpp.obj"
 	C:\msys64\ucrt64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/DataStructureVisualization.dir/src/UI/renders/EdgeRender.cpp.obj -MF CMakeFiles\DataStructureVisualization.dir\src\UI\renders\EdgeRender.cpp.obj.d -o CMakeFiles\DataStructureVisualization.dir\src\UI\renders\EdgeRender.cpp.obj -c D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\src\UI\renders\EdgeRender.cpp
 
 CMakeFiles/DataStructureVisualization.dir/src/UI/renders/EdgeRender.cpp.i: cmake_force
@@ -210,7 +225,7 @@ CMakeFiles/DataStructureVisualization.dir/src/UI/renders/NodeRender.cpp.obj: CMa
 CMakeFiles/DataStructureVisualization.dir/src/UI/renders/NodeRender.cpp.obj: CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp
 CMakeFiles/DataStructureVisualization.dir/src/UI/renders/NodeRender.cpp.obj: D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/renders/NodeRender.cpp
 CMakeFiles/DataStructureVisualization.dir/src/UI/renders/NodeRender.cpp.obj: CMakeFiles/DataStructureVisualization.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/UI/renders/NodeRender.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/UI/renders/NodeRender.cpp.obj"
 	C:\msys64\ucrt64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/DataStructureVisualization.dir/src/UI/renders/NodeRender.cpp.obj -MF CMakeFiles\DataStructureVisualization.dir\src\UI\renders\NodeRender.cpp.obj.d -o CMakeFiles\DataStructureVisualization.dir\src\UI\renders\NodeRender.cpp.obj -c D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\src\UI\renders\NodeRender.cpp
 
 CMakeFiles/DataStructureVisualization.dir/src/UI/renders/NodeRender.cpp.i: cmake_force
@@ -225,7 +240,7 @@ CMakeFiles/DataStructureVisualization.dir/src/UI/renders/Renderer.cpp.obj: CMake
 CMakeFiles/DataStructureVisualization.dir/src/UI/renders/Renderer.cpp.obj: CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp
 CMakeFiles/DataStructureVisualization.dir/src/UI/renders/Renderer.cpp.obj: D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/renders/Renderer.cpp
 CMakeFiles/DataStructureVisualization.dir/src/UI/renders/Renderer.cpp.obj: CMakeFiles/DataStructureVisualization.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/UI/renders/Renderer.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/UI/renders/Renderer.cpp.obj"
 	C:\msys64\ucrt64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/DataStructureVisualization.dir/src/UI/renders/Renderer.cpp.obj -MF CMakeFiles\DataStructureVisualization.dir\src\UI\renders\Renderer.cpp.obj.d -o CMakeFiles\DataStructureVisualization.dir\src\UI\renders\Renderer.cpp.obj -c D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\src\UI\renders\Renderer.cpp
 
 CMakeFiles/DataStructureVisualization.dir/src/UI/renders/Renderer.cpp.i: cmake_force
@@ -240,7 +255,7 @@ CMakeFiles/DataStructureVisualization.dir/src/core/Animation.cpp.obj: CMakeFiles
 CMakeFiles/DataStructureVisualization.dir/src/core/Animation.cpp.obj: CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp
 CMakeFiles/DataStructureVisualization.dir/src/core/Animation.cpp.obj: D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/core/Animation.cpp
 CMakeFiles/DataStructureVisualization.dir/src/core/Animation.cpp.obj: CMakeFiles/DataStructureVisualization.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/core/Animation.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/core/Animation.cpp.obj"
 	C:\msys64\ucrt64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/DataStructureVisualization.dir/src/core/Animation.cpp.obj -MF CMakeFiles\DataStructureVisualization.dir\src\core\Animation.cpp.obj.d -o CMakeFiles\DataStructureVisualization.dir\src\core\Animation.cpp.obj -c D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\src\core\Animation.cpp
 
 CMakeFiles/DataStructureVisualization.dir/src/core/Animation.cpp.i: cmake_force
@@ -255,7 +270,7 @@ CMakeFiles/DataStructureVisualization.dir/src/data/GraphLoader.cpp.obj: CMakeFil
 CMakeFiles/DataStructureVisualization.dir/src/data/GraphLoader.cpp.obj: CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp
 CMakeFiles/DataStructureVisualization.dir/src/data/GraphLoader.cpp.obj: D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/data/GraphLoader.cpp
 CMakeFiles/DataStructureVisualization.dir/src/data/GraphLoader.cpp.obj: CMakeFiles/DataStructureVisualization.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/data/GraphLoader.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/data/GraphLoader.cpp.obj"
 	C:\msys64\ucrt64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/DataStructureVisualization.dir/src/data/GraphLoader.cpp.obj -MF CMakeFiles\DataStructureVisualization.dir\src\data\GraphLoader.cpp.obj.d -o CMakeFiles\DataStructureVisualization.dir\src\data\GraphLoader.cpp.obj -c D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\src\data\GraphLoader.cpp
 
 CMakeFiles/DataStructureVisualization.dir/src/data/GraphLoader.cpp.i: cmake_force
@@ -270,7 +285,7 @@ CMakeFiles/DataStructureVisualization.dir/src/input/InputHandler.cpp.obj: CMakeF
 CMakeFiles/DataStructureVisualization.dir/src/input/InputHandler.cpp.obj: CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp
 CMakeFiles/DataStructureVisualization.dir/src/input/InputHandler.cpp.obj: D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/input/InputHandler.cpp
 CMakeFiles/DataStructureVisualization.dir/src/input/InputHandler.cpp.obj: CMakeFiles/DataStructureVisualization.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/input/InputHandler.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/input/InputHandler.cpp.obj"
 	C:\msys64\ucrt64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/DataStructureVisualization.dir/src/input/InputHandler.cpp.obj -MF CMakeFiles\DataStructureVisualization.dir\src\input\InputHandler.cpp.obj.d -o CMakeFiles\DataStructureVisualization.dir\src\input\InputHandler.cpp.obj -c D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\src\input\InputHandler.cpp
 
 CMakeFiles/DataStructureVisualization.dir/src/input/InputHandler.cpp.i: cmake_force
@@ -285,7 +300,7 @@ CMakeFiles/DataStructureVisualization.dir/src/main.cpp.obj: CMakeFiles/DataStruc
 CMakeFiles/DataStructureVisualization.dir/src/main.cpp.obj: CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp
 CMakeFiles/DataStructureVisualization.dir/src/main.cpp.obj: D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/main.cpp
 CMakeFiles/DataStructureVisualization.dir/src/main.cpp.obj: CMakeFiles/DataStructureVisualization.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/main.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/main.cpp.obj"
 	C:\msys64\ucrt64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/DataStructureVisualization.dir/src/main.cpp.obj -MF CMakeFiles\DataStructureVisualization.dir\src\main.cpp.obj.d -o CMakeFiles\DataStructureVisualization.dir\src\main.cpp.obj -c D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\src\main.cpp
 
 CMakeFiles/DataStructureVisualization.dir/src/main.cpp.i: cmake_force
@@ -300,7 +315,7 @@ CMakeFiles/DataStructureVisualization.dir/src/utils/MathUtils.cpp.obj: CMakeFile
 CMakeFiles/DataStructureVisualization.dir/src/utils/MathUtils.cpp.obj: CMakeFiles/DataStructureVisualization.dir/includes_CXX.rsp
 CMakeFiles/DataStructureVisualization.dir/src/utils/MathUtils.cpp.obj: D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/utils/MathUtils.cpp
 CMakeFiles/DataStructureVisualization.dir/src/utils/MathUtils.cpp.obj: CMakeFiles/DataStructureVisualization.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/utils/MathUtils.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object CMakeFiles/DataStructureVisualization.dir/src/utils/MathUtils.cpp.obj"
 	C:\msys64\ucrt64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/DataStructureVisualization.dir/src/utils/MathUtils.cpp.obj -MF CMakeFiles\DataStructureVisualization.dir\src\utils\MathUtils.cpp.obj.d -o CMakeFiles\DataStructureVisualization.dir\src\utils\MathUtils.cpp.obj -c D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\src\utils\MathUtils.cpp
 
 CMakeFiles/DataStructureVisualization.dir/src/utils/MathUtils.cpp.i: cmake_force
@@ -321,6 +336,7 @@ DataStructureVisualization_OBJECTS = \
 "CMakeFiles/DataStructureVisualization.dir/src/UI/Visualizer.cpp.obj" \
 "CMakeFiles/DataStructureVisualization.dir/src/UI/components/Button.cpp.obj" \
 "CMakeFiles/DataStructureVisualization.dir/src/UI/components/Slider.cpp.obj" \
+"CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.obj" \
 "CMakeFiles/DataStructureVisualization.dir/src/UI/renders/EdgeRender.cpp.obj" \
 "CMakeFiles/DataStructureVisualization.dir/src/UI/renders/NodeRender.cpp.obj" \
 "CMakeFiles/DataStructureVisualization.dir/src/UI/renders/Renderer.cpp.obj" \
@@ -341,6 +357,7 @@ DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/src/Al
 DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/src/UI/Visualizer.cpp.obj
 DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/src/UI/components/Button.cpp.obj
 DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/src/UI/components/Slider.cpp.obj
+DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.obj
 DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/src/UI/renders/EdgeRender.cpp.obj
 DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/src/UI/renders/NodeRender.cpp.obj
 DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/src/UI/renders/Renderer.cpp.obj
@@ -356,7 +373,7 @@ DataStructureVisualization.exe: C:/msys64/ucrt64/lib/libsfml-system.dll.a
 DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/linkLibs.rsp
 DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/objects1.rsp
 DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Linking CXX executable DataStructureVisualization.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=D:\study\HK2\Project\DataStructureVisualization\DataStructureVisualization\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Linking CXX executable DataStructureVisualization.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\DataStructureVisualization.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

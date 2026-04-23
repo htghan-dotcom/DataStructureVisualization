@@ -12,6 +12,7 @@ set(OLD_GLOB
   "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/Visualizer.cpp"
   "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/components/Button.cpp"
   "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/components/Slider.cpp"
+  "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/components/TaskBar.cpp"
   "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/renders/EdgeRender.cpp"
   "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/renders/NodeRender.cpp"
   "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src/UI/renders/Renderer.cpp"

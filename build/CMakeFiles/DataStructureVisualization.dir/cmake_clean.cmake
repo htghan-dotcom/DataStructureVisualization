@@ -15,6 +15,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/DataStructureVisualization.dir/src/UI/components/Button.cpp.obj.d"
   "CMakeFiles/DataStructureVisualization.dir/src/UI/components/Slider.cpp.obj"
   "CMakeFiles/DataStructureVisualization.dir/src/UI/components/Slider.cpp.obj.d"
+  "CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.obj"
+  "CMakeFiles/DataStructureVisualization.dir/src/UI/components/TaskBar.cpp.obj.d"
   "CMakeFiles/DataStructureVisualization.dir/src/UI/renders/EdgeRender.cpp.obj"
   "CMakeFiles/DataStructureVisualization.dir/src/UI/renders/EdgeRender.cpp.obj.d"
   "CMakeFiles/DataStructureVisualization.dir/src/UI/renders/NodeRender.cpp.obj"
