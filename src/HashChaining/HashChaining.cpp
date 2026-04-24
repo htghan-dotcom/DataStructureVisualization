@@ -3,10 +3,9 @@
 #include <vector>
 #include <string>
 
-#include "HashChaining.h"
+#include "HashChaining/HashChaining.h"
 
 using namespace std;
-
 
 int HashChaining::hashFunction(int key) {
     return key % size;

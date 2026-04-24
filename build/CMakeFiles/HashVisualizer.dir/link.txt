@@ -1,0 +1,3 @@
+C:\Users\Dell\Downloads\winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64msvcrt-13.0.0-r1\mingw64\bin\cmake.exe -E rm -f CMakeFiles\HashVisualizer.dir/objects.a
+C:\Users\Dell\Downloads\winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64msvcrt-13.0.0-r1\mingw64\bin\ar.exe qc CMakeFiles\HashVisualizer.dir/objects.a @CMakeFiles\HashVisualizer.dir\objects1.rsp
+C:\Users\Dell\Downloads\winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64msvcrt-13.0.0-r1\mingw64\bin\c++.exe -g -Wl,--whole-archive CMakeFiles\HashVisualizer.dir/objects.a -Wl,--no-whole-archive -o HashVisualizer.exe -Wl,--out-implib,libHashVisualizer.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\HashVisualizer.dir\linkLibs.rsp
