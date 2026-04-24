@@ -14,7 +14,7 @@ enum class RenderViewKind {
 struct RenderViewModel {
     RenderViewKind kind = RenderViewKind::MST;
     const Graph* graph = nullptr;
-    sf::FloatRect graphViewport = sf::FloatRect(274.0f, 110.0f, 660.0f, 450.0f);
+    sf::FloatRect graphViewport = sf::FloatRect({274.0f, 110.0f}, {660.0f, 450.0f});
     std::vector<Edge> highlightedEdges;
     std::vector<Edge> candidateEdges;
     std::vector<int> highlightedNodes;

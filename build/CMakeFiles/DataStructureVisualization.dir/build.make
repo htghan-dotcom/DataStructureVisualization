@@ -367,9 +367,10 @@ DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/src/in
 DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/src/main.cpp.obj
 DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/src/utils/MathUtils.cpp.obj
 DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/build.make
-DataStructureVisualization.exe: C:/msys64/ucrt64/lib/libsfml-graphics.dll.a
-DataStructureVisualization.exe: C:/msys64/ucrt64/lib/libsfml-window.dll.a
-DataStructureVisualization.exe: C:/msys64/ucrt64/lib/libsfml-system.dll.a
+DataStructureVisualization.exe: D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/libsfml-graphics-d.a
+DataStructureVisualization.exe: D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/libsfml-window-d.a
+DataStructureVisualization.exe: D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/libsfml-system-d.a
+DataStructureVisualization.exe: D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/libsfml-main-d.a
 DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/linkLibs.rsp
 DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/objects1.rsp
 DataStructureVisualization.exe: CMakeFiles/DataStructureVisualization.dir/link.txt

@@ -4,8 +4,8 @@
 
 namespace {
 sf::Vector2f graphToScreen(float nx, float ny, const sf::FloatRect& graphViewport) {
-        return sf::Vector2f(graphViewport.left + nx * graphViewport.width,
-                                                graphViewport.top + ny * graphViewport.height);
+        return sf::Vector2f(graphViewport.position.x + nx * graphViewport.size.x,
+                            graphViewport.position.y + ny * graphViewport.size.y);
 }
 }
 
@@ -22,7 +22,7 @@ void NodeRender::draw(sf::RenderWindow& window,
     }
 
     sf::CircleShape circle(radius);
-    circle.setOrigin(radius, radius);
+    circle.setOrigin({radius, radius});
     circle.setPosition(graphToScreen(node.x, node.y, graphViewport));
 
     sf::Color nodeColor = config::kNodeFillColor;
@@ -45,11 +45,11 @@ void NodeRender::draw(sf::RenderWindow& window,
     circle.setOutlineThickness(outlineThickness);
     window.draw(circle);
 
-    sf::Text idText(std::to_string(node.id), font, 13);
+    sf::Text idText(font, std::to_string(node.id), 13);
     const int luminance = static_cast<int>(nodeColor.r) + static_cast<int>(nodeColor.g) + static_cast<int>(nodeColor.b);
     idText.setFillColor(luminance > 440 ? sf::Color(36, 42, 48) : sf::Color(245, 245, 245));
     const sf::FloatRect textBounds = idText.getLocalBounds();
-    idText.setPosition(circle.getPosition().x - textBounds.width * 0.5f - textBounds.left,
-                       circle.getPosition().y - textBounds.height * 0.5f - textBounds.top);
+    idText.setPosition({circle.getPosition().x - textBounds.size.x * 0.5f - textBounds.position.x,
+                       circle.getPosition().y - textBounds.size.y * 0.5f - textBounds.position.y});
     window.draw(idText);
 }

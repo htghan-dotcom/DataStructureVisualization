@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <optional>
 #include "../../config/Common.h"
 
 class Button {
@@ -9,7 +10,8 @@ public:
         Default,
         Play,
         Danger,
-        Algorithm
+        Algorithm,
+        IconOnly
     };
 
     Button() = default;
@@ -23,6 +25,7 @@ public:
     void setStyleRole(StyleRole role);
     void flash();
     void setSelected(bool selected);
+    void setIcon(const sf::Texture* texture);
     bool contains(const sf::Vector2f& point) const;
     sf::FloatRect bounds() const;
     void draw(sf::RenderWindow& window);
@@ -34,6 +37,12 @@ private:
     bool selected_ = false;
     StyleRole styleRole_ = StyleRole::Default;
     int flashFrames_ = 0;
-    sf::RectangleShape background_;
-    sf::Text text_;
+    
+    const sf::Texture* iconTexture_ = nullptr;
+    float radius_ = 8.0f;
+    sf::CircleShape mTopLeft, mTopRight, mBottomLeft, mBottomRight;
+    sf::RectangleShape mHorizRect, mVertRect;
+    sf::FloatRect bounds_;
+    std::optional<sf::Text> text_;
+    void updateColors(bool isHovered);
 };

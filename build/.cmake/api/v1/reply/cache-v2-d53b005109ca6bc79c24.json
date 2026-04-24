@@ -155,10 +155,10 @@
 				},
 				{
 					"name" : "HELPSTRING",
-					"value" : "C++ compiler"
+					"value" : "No help, variable specified on the command line."
 				}
 			],
-			"type" : "PATH",
+			"type" : "FILEPATH",
 			"value" : "C:/msys64/ucrt64/bin/g++.exe"
 		},
 		{
@@ -299,10 +299,10 @@
 				},
 				{
 					"name" : "HELPSTRING",
-					"value" : "C compiler"
+					"value" : "No help, variable specified on the command line."
 				}
 			],
-			"type" : "PATH",
+			"type" : "FILEPATH",
 			"value" : "C:/msys64/ucrt64/bin/gcc.exe"
 		},
 		{
@@ -659,7 +659,7 @@
 				}
 			],
 			"type" : "PATH",
-			"value" : "C:/Program Files (x86)/Project"
+			"value" : "C:/Program Files (x86)/DataStructureVisualization"
 		},
 		{
 			"name" : "CMAKE_LINKER",
@@ -1394,40 +1394,16 @@
 			"value" : "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization"
 		},
 		{
-			"name" : "Project_BINARY_DIR",
+			"name" : "SFML_DIR",
 			"properties" : 
 			[
 				{
 					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
+					"value" : "The directory containing a CMake configuration file for SFML."
 				}
 			],
-			"type" : "STATIC",
-			"value" : "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/build"
-		},
-		{
-			"name" : "Project_IS_TOP_LEVEL",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "ON"
-		},
-		{
-			"name" : "Project_SOURCE_DIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization"
+			"type" : "PATH",
+			"value" : "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML"
 		},
 		{
 			"name" : "SFML_DOC_DIR",

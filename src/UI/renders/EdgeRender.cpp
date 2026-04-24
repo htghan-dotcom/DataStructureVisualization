@@ -6,8 +6,8 @@
 
 namespace {
 sf::Vector2f graphToScreen(float nx, float ny, const sf::FloatRect& graphViewport) {
-    return sf::Vector2f(graphViewport.left + nx * graphViewport.width,
-                        graphViewport.top + ny * graphViewport.height);
+    return sf::Vector2f(graphViewport.position.x + nx * graphViewport.size.x,
+                        graphViewport.position.y + ny * graphViewport.size.y);
 }
 
 std::string edgeKey(const Edge& e) {
@@ -28,22 +28,22 @@ void drawThickSegment(sf::RenderWindow& window,
     }
 
     sf::RectangleShape seg(sf::Vector2f(len, thickness));
-    seg.setOrigin(0.f, thickness * 0.5f);
+    seg.setOrigin({0.f, thickness * 0.5f});
     // Snap to half-pixel to reduce shimmering and keep lines visually crisp.
-    seg.setPosition(std::round(a.x) + 0.5f, std::round(a.y) + 0.5f);
-    seg.setRotation(std::atan2(d.y, d.x) * 180.0f / 3.14159265f);
+    seg.setPosition({std::round(a.x) + 0.5f, std::round(a.y) + 0.5f});
+    seg.setRotation(sf::degrees(std::atan2(d.y, d.x) * 180.0f / 3.14159265f));
     seg.setFillColor(color);
     window.draw(seg);
 }
 
 void drawWeight(sf::RenderWindow& window, const sf::Font& font, const sf::Vector2f& center, int weight) {
-    sf::Text weightText(std::to_string(weight), font, 12);
+    sf::Text weightText(font, std::to_string(weight), 12);
     weightText.setFillColor(sf::Color(22, 28, 38));
     weightText.setOutlineColor(sf::Color(252, 252, 252)); // Bo viền trắng (Halo) quanh chữ
     weightText.setOutlineThickness(2.5f);
     const sf::FloatRect b = weightText.getLocalBounds();
-    weightText.setPosition(std::round(center.x - (b.width * 0.5f) - b.left),
-                           std::round(center.y - (b.height * 0.5f) - b.top));
+    weightText.setPosition({std::round(center.x - (b.size.x * 0.5f) - b.position.x),
+                           std::round(center.y - (b.size.y * 0.5f) - b.position.y)});
     window.draw(weightText);
 }
 
@@ -75,9 +75,9 @@ void EdgeRender::draw(sf::RenderWindow& window,
     occupiedWeightBounds.reserve(graph.getEdges().size() + 8);
 
     auto intersectsExisting = [&occupiedWeightBounds](const sf::FloatRect& rect) {
-        sf::FloatRect expanded(rect.left - 8.f, rect.top - 6.f, rect.width + 16.f, rect.height + 12.f);
+        sf::FloatRect expanded({rect.position.x - 8.f, rect.position.y - 6.f}, {rect.size.x + 16.f, rect.size.y + 12.f});
         for (const auto& used : occupiedWeightBounds) {
-            if (expanded.intersects(used)) {
+            if (expanded.findIntersection(used).has_value()) {
                 return true;
             }
         }
@@ -132,10 +132,10 @@ void EdgeRender::draw(sf::RenderWindow& window,
             const float tangentShift = (k == 0) ? 0.0f : ((k % 2 == 0) ? 14.0f : -14.0f) * (1.0f + (k / 2) * 0.4f);
             const sf::Vector2f pos(centerPoint.x + labelNormal.x * offset * normalDir + tangent.x * tangentShift,
                                    centerPoint.y + labelNormal.y * offset * normalDir + tangent.y * tangentShift);
-            const sf::FloatRect bounds(pos.x - 12.0f, pos.y - 10.0f, 24.0f, 20.0f);
+            const sf::FloatRect bounds({pos.x - 12.0f, pos.y - 10.0f}, {24.0f, 20.0f});
             if (!intersectsExisting(bounds)) {
                 occupiedWeightBounds.push_back(
-                    sf::FloatRect(bounds.left - 2.f, bounds.top - 2.f, bounds.width + 4.f, bounds.height + 4.f));
+                    sf::FloatRect({bounds.position.x - 2.f, bounds.position.y - 2.f}, {bounds.size.x + 4.f, bounds.size.y + 4.f}));
                 drawWeight(window, font, pos, e.weight);
                 placed = true;
                 break;

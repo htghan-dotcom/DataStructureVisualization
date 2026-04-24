@@ -1,47 +1,40 @@
 cmake_minimum_required(VERSION 3.10)
 
-# Force MSYS2 ucrt64 compiler before project definition.
-set(CMAKE_C_COMPILER "C:/msys64/ucrt64/bin/gcc.exe" CACHE PATH "C compiler" FORCE)
-set(CMAKE_CXX_COMPILER "C:/msys64/ucrt64/bin/g++.exe" CACHE PATH "C++ compiler" FORCE)
-
 project(DataStructureVisualization)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# SFML package path for MSYS2 ucrt64.
-set(SFML_DIR "C:/msys64/ucrt64/lib/cmake/SFML")
-find_package(SFML 2.6 COMPONENTS graphics window system REQUIRED)
+message(STATUS "========== CMAKE DEBUG INFO ==========")
+message(STATUS "Compiler C++: ${CMAKE_CXX_COMPILER}")
+
+set(SFML_DIR "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/lib/cmake/SFML" CACHE PATH "Force SFML Dir" FORCE)
+list(APPEND CMAKE_PREFIX_PATH "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit")
+find_package(SFML 3.0 CONFIG COMPONENTS Graphics Window System Main REQUIRED)
+message(STATUS "Found SFML Version: ${SFML_VERSION}")
 
 # Collect project sources.
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 
 if(SOURCES STREQUAL "")
 	message(FATAL_ERROR "No source files found under src/")
+else()
+	list(LENGTH SOURCES SOURCE_COUNT)
+	message(STATUS "Found ${SOURCE_COUNT} source files.")
 endif()
 
-add_executable(DataStructureVisualization ${SOURCES})
+add_executable(DataStructureVisualization WIN32 ${SOURCES})
 
 target_include_directories(DataStructureVisualization PRIVATE
 	"${CMAKE_SOURCE_DIR}/src"
 )
 
 target_link_libraries(DataStructureVisualization PRIVATE
-	sfml-graphics
-	sfml-window
-	sfml-system
+	SFML::Graphics
+	SFML::Window
+	SFML::System
+	SFML::Main
 )
-
-if(WIN32)
-	target_link_libraries(DataStructureVisualization PRIVATE
-		winmm
-		gdi32
-		ole32
-		oleaut32
-		uuid
-		advapi32
-	)
-endif()
 
 set_target_properties(DataStructureVisualization PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"

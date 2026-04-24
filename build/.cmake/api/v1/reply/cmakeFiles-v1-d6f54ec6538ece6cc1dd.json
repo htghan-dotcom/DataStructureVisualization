@@ -244,23 +244,59 @@
 		},
 		{
 			"isExternal" : true,
-			"path" : "C:/msys64/ucrt64/lib/cmake/SFML/SFMLConfigVersion.cmake"
+			"path" : "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLConfigVersion.cmake"
 		},
 		{
 			"isExternal" : true,
-			"path" : "C:/msys64/ucrt64/lib/cmake/SFML/SFMLConfig.cmake"
+			"path" : "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLConfig.cmake"
 		},
 		{
 			"isExternal" : true,
-			"path" : "C:/msys64/ucrt64/lib/cmake/SFML/SFMLSharedTargets.cmake"
+			"path" : "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLSystemSharedTargets.cmake"
 		},
 		{
 			"isExternal" : true,
-			"path" : "C:/msys64/ucrt64/lib/cmake/SFML/SFMLSharedTargets-release.cmake"
+			"path" : "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLSystemSharedTargets-debug.cmake"
 		},
 		{
 			"isExternal" : true,
-			"path" : "C:/msys64/ucrt64/lib/cmake/SFML/SFMLConfigDependencies.cmake"
+			"path" : "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLSystemSharedTargets-release.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLWindowSharedTargets.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLWindowSharedTargets-debug.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLWindowSharedTargets-release.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLGraphicsSharedTargets.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLGraphicsSharedTargets-debug.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLGraphicsSharedTargets-release.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLMainSharedTargets.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLMainSharedTargets-debug.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLMainSharedTargets-release.cmake"
 		}
 	],
 	"kind" : "cmakeFiles",

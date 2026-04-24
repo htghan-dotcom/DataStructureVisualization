@@ -39,27 +39,11 @@ set(CMAKE_MAKEFILE_DEPENDS
   "C:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-windres.cmake"
   "C:/msys64/ucrt64/share/cmake/Modules/Platform/Windows.cmake"
   "C:/msys64/ucrt64/share/cmake/Modules/Platform/WindowsPaths.cmake"
-  "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/CMakeLists.txt"
+  "D:/study/HK2/Project/DataStructureVisualization/CMakeLists.txt"
   "CMakeFiles/4.1.0/CMakeCCompiler.cmake"
   "CMakeFiles/4.1.0/CMakeCXXCompiler.cmake"
   "CMakeFiles/4.1.0/CMakeRCCompiler.cmake"
   "CMakeFiles/4.1.0/CMakeSystem.cmake"
-  "CMakeFiles/VerifyGlobs.cmake"
-  "CMakeFiles/cmake.verify_globs"
-  "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLConfig.cmake"
-  "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLConfigVersion.cmake"
-  "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLGraphicsSharedTargets-debug.cmake"
-  "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLGraphicsSharedTargets-release.cmake"
-  "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLGraphicsSharedTargets.cmake"
-  "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLMainSharedTargets-debug.cmake"
-  "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLMainSharedTargets-release.cmake"
-  "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLMainSharedTargets.cmake"
-  "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLSystemSharedTargets-debug.cmake"
-  "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLSystemSharedTargets-release.cmake"
-  "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLSystemSharedTargets.cmake"
-  "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLWindowSharedTargets-debug.cmake"
-  "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLWindowSharedTargets-release.cmake"
-  "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/lib/cmake/SFML/SFMLWindowSharedTargets.cmake"
   )
 
 # The corresponding makefile is:
@@ -75,5 +59,4 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/DataStructureVisualization.dir/DependInfo.cmake"
   )

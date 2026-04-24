@@ -29,25 +29,19 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 23,
+				"line" : 26,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 29,
-				"parent" : 0
-			},
-			{
-				"command" : 1,
-				"file" : 0,
-				"line" : 36,
+				"line" : 32,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 25,
+				"line" : 28,
 				"parent" : 0
 			}
 		]
@@ -64,8 +58,13 @@
 			"includes" : 
 			[
 				{
-					"backtrace" : 4,
+					"backtrace" : 3,
 					"path" : "D:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "D:/study/HK2/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/include"
 				}
 			],
 			"language" : "CXX",
@@ -73,7 +72,7 @@
 			{
 				"backtraces" : 
 				[
-					1
+					2
 				],
 				"standard" : "17"
 			},
@@ -109,48 +108,27 @@
 				"role" : "flags"
 			},
 			{
-				"backtrace" : 2,
-				"fragment" : "C:\\msys64\\ucrt64\\lib\\libsfml-graphics.dll.a",
-				"role" : "libraries"
+				"fragment" : "-mwindows",
+				"role" : "flags"
 			},
 			{
 				"backtrace" : 2,
-				"fragment" : "C:\\msys64\\ucrt64\\lib\\libsfml-window.dll.a",
+				"fragment" : "D:\\study\\HK2\\SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit\\SFML-3.0.2\\lib\\libsfml-graphics-d.a",
 				"role" : "libraries"
 			},
 			{
 				"backtrace" : 2,
-				"fragment" : "C:\\msys64\\ucrt64\\lib\\libsfml-system.dll.a",
+				"fragment" : "D:\\study\\HK2\\SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit\\SFML-3.0.2\\lib\\libsfml-window-d.a",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 3,
-				"fragment" : "-lwinmm",
+				"backtrace" : 2,
+				"fragment" : "D:\\study\\HK2\\SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit\\SFML-3.0.2\\lib\\libsfml-system-d.a",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 3,
-				"fragment" : "-lgdi32",
-				"role" : "libraries"
-			},
-			{
-				"backtrace" : 3,
-				"fragment" : "-lole32",
-				"role" : "libraries"
-			},
-			{
-				"backtrace" : 3,
-				"fragment" : "-loleaut32",
-				"role" : "libraries"
-			},
-			{
-				"backtrace" : 3,
-				"fragment" : "-luuid",
-				"role" : "libraries"
-			},
-			{
-				"backtrace" : 3,
-				"fragment" : "-ladvapi32",
+				"backtrace" : 2,
+				"fragment" : "D:\\study\\HK2\\SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit\\SFML-3.0.2\\lib\\libsfml-main-d.a",
 				"role" : "libraries"
 			},
 			{

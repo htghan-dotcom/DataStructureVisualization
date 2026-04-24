@@ -8,8 +8,8 @@
 
 void Renderer::draw(sf::RenderWindow& window, const RenderViewModel& vm, const sf::Font& font) {
     if (vm.kind != RenderViewKind::MST) {
-        sf::Text unsupported("Structure renderer scaffolded (implementation pending)", font, 16);
-        unsupported.setPosition(270.f, 60.f);
+        sf::Text unsupported(font, "Structure renderer scaffolded (implementation pending)", 16);
+        unsupported.setPosition({270.f, 60.f});
         unsupported.setFillColor(sf::Color(220, 220, 220));
         window.draw(unsupported);
         return;

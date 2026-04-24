@@ -1,5 +1,5 @@
 #pragma once
-
+#include <optional>
 #include <SFML/Graphics.hpp>
 
 class Slider {
@@ -23,7 +23,8 @@ private:
 
     sf::RectangleShape track_;
     sf::CircleShape knob_;
-    sf::Text label_;
+    
+    std::optional<sf::Text> label_;
 
     void updateKnobPosition();
 };
