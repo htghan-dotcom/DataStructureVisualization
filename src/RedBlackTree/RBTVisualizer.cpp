@@ -1,4 +1,5 @@
 #include "RBTVisualizer.h"
+#include "ThemeManager.h"
 #include "tinyfiledialogs.h"
 #include "Common.h"
 
@@ -6,7 +7,6 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     : mWindow(&window),
       mTitleNum(mFontBold),
       mTitleRed(mFontBold), mTitleBlack(mFontBold), mTitleTree(mFontBold),
-      mStepText(mFontRegular),
 
       mClearBtn(mFontRegular, "Clear tree", 70.f, 176.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
       mNewBtn(mFontRegular, "New tree", 251.f, 176.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
@@ -15,10 +15,6 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
       mSearchBtn(mFontRegular, "Search", 70.f, 338.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
       mUndoBtn(mFontRegular, "Undo", 70.f, 176.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
       
-      mSpeedSlider(mFontRegular, 956.f, 921.f),
-      mStepBackBtn(mFontRegular, "Step back", 326.f, 896.f, 165.f, 49.f, 24.5f, sf::Color(245, 245, 240)),
-      mStepForwardBtn(mFontRegular, "Step forward", 504.f, 896.f, 201.f, 49.f, 24.5f, sf::Color(245, 245, 240)),
-
       mInsertHoverStroke(mFontRegular, "", 68.f, 228.f, 164.f, 49.f, 23.f, sf::Color(90, 150, 44)),
       mInsertExpandedStroke(mFontRegular, "", 68.f, 228.f, 345.f, 49.f, 23.f, sf::Color(90, 150, 44)),
       mInsertExpandedBg(mFontRegular, "", 70.f, 230.f, 341.f, 45.f, 21.f, sf::Color(217, 217, 217)),
@@ -47,73 +43,11 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
         cerr << "Cannot load font!" << endl;
     }
     
-    if (!mSkipBackTex.loadFromFile("assets/images/skipbackButton.png")){cerr << "Cannot load skipbackButton.png" << endl;}
-    if (!mPauseTex.loadFromFile("assets/images/pauseButton.png")){cerr << "Cannot load pauseButton.png" << endl; }
-    if (!mSkipForwardTex.loadFromFile("assets/images/skipforwardButton.png")){cerr << "Cannot load skipforwardButton.png" << endl;}
-    if (!mStartTex.loadFromFile("assets/images/startButton.png")){cerr << "Loi load startButton.png" << endl;}
-
-    mSkipBackTex.setSmooth(true);
-    mPauseTex.setSmooth(true);
-    mSkipForwardTex.setSmooth(true);
-    mStartTex.setSmooth(true);
-    
-    mSkipBackTex.generateMipmap();
-    mPauseTex.generateMipmap();
-    mSkipForwardTex.generateMipmap();
-    mStartTex.generateMipmap();
-    
-    mSkipBackBtn.setup(mSkipBackTex, 333.f, 897.f, 48.f, 48.f);
-    mPauseBtn.setup(mPauseTex, 397.f, 897.f, 48.f, 48.f);
-    mSkipForwardBtn.setup(mSkipForwardTex, 461.f, 897.f, 48.f, 48.f);
-    mStartBtn.setup(mStartTex, 134.f, 897.f, 48.f, 48.f);
-    
-    mPauseBtn.setCallback([this](){
-        mIsPaused = true;
-        mSkipBackBtn.setup(mSkipBackTex, 67.f, 897.f, 48.f, 48.f);
-        mSkipForwardBtn.setup(mSkipForwardTex, 735.f, 897.f, 48.f, 48.f);
-    });
-
-    mStartBtn.setCallback([this](){
-        mIsPaused = false;
-        mSkipBackBtn.setup(mSkipBackTex, 333.f, 897.f, 48.f, 48.f);
-        mSkipForwardBtn.setup(mSkipForwardTex, 461.f, 897.f, 48.f, 48.f);
-    });
-    
-    mSkipBackBtn.setCallback([this](){
-        mTree.setCurrentStep(0);
-        mIsPaused = true;
-    });
-
-    mStepBackBtn.setCallback([this](){
-        int cur = mTree.getCurrentStep();
-        if (cur > 0){
-            mTargetStep = cur - 1;
-            mStepAnimProgress = 0.0f;
-        }
-        mIsPaused = true;
-    });
-
-    mStepForwardBtn.setCallback([this](){
-        int cur = mTree.getCurrentStep();
-        if (cur < mTree.getStepHistory().size() - 1){
-            mTargetStep = cur + 1;
-            mStepAnimProgress = 0.0f;
-        }
-        mIsPaused = true;
-    });
-
-    mSkipForwardBtn.setCallback([this](){
-        mTree.goToFinalStep();
-        mIsPaused = true;
-    });
-    
     mClearBtn.refreshText();
     mNewBtn.refreshText();
     mInsertBtn.refreshText();
     mDeleteBtn.refreshText();
     mSearchBtn.refreshText();
-    mStepBackBtn.refreshText();
-    mStepForwardBtn.refreshText();
     mConfirmAddBtn.refreshText();
     mConfirmRemoveBtn.refreshText();
     mConfirmSearchBtn.refreshText();
@@ -122,8 +56,7 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     mUploadBtn.refreshText();
 
     if (!mDiceTex.loadFromFile("assets/images/randomButton.png")){cerr << "Loi load randomButton.png" << endl;}
-    mDiceTex.setSmooth(true);
-    mDiceTex.generateMipmap();
+    mDiceTex.setSmooth(true); mDiceTex.generateMipmap();
     
     mInsertDiceBtn.setup(mDiceTex, 205.f, 237.f, 30.f, 30.f);
     mDeleteDiceBtn.setup(mDiceTex, 205.f, 291.f, 30.f, 30.f);
@@ -172,43 +105,6 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     mTitleTree.setCharacterSize(70);
     mTitleTree.setFillColor(sf::Color(89, 149, 43));
     mTitleTree.setPosition(sf::Vector2f(67.f, 765.f));
-    
-    float bgX = 131.f, bgY = 890.f, bgW = 580.f, bgH = 61.f, bgR = 30.5f;
-    sf::Color bgColor(196, 196, 196);
-        
-    mStepBgLeft.setRadius(bgR);
-    mStepBgLeft.setPosition(sf::Vector2f(bgX, bgY));
-    mStepBgLeft.setFillColor(bgColor);
-    
-    mStepBgRight.setRadius(bgR);
-    mStepBgRight.setPosition(sf::Vector2f(bgX + bgW - bgH, bgY));
-    mStepBgRight.setFillColor(bgColor);
-    
-    mStepBgCenter.setSize(sf::Vector2f(bgW - bgH, bgH));
-    mStepBgCenter.setPosition(sf::Vector2f(bgX + bgR, bgY));
-    mStepBgCenter.setFillColor(bgColor);
-
-    mStepText.setString("Step 0 / 0");
-    mStepText.setCharacterSize(21);
-    mStepText.setFillColor(sf::Color::Black);
-    mStepText.setOrigin(sf::Vector2f(0.f, 0.f));
-    mStepText.setPosition(sf::Vector2f(192.f, 906.f));
-
-
-
-    mClearBtn.setCallback([this](){
-        mTree.backup();
-        mTree.initialize();
-        mTree.resetHistory("Tree cleared");
-        mLayout.setDescription("Tree cleared.");
-        mShowUndoBtn = true;
-    });
-    
-    mUndoBtn.setCallback([this](){
-        mTree.restore();
-        mLayout.setDescription("Tree restored.");
-        mShowUndoBtn = false;
-    });
       
     mTree.initialize();
               
@@ -243,23 +139,11 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
     mInsertBtn.update(mousePos);
     mDeleteBtn.update(mousePos);
     mSearchBtn.update(mousePos);
-    mSpeedSlider.update(mousePos);
         
-    float speedMult = mSpeedSlider.getSpeed();
+    float speedMult = mLayout.getSpeed();
     if (speedMult > 0.0f){
         int speedMs = static_cast<int>(500.f / speedMult);
         mTree.setVisualizationSpeed(speedMs);
-    }
-    
-    mSkipBackBtn.update(mousePos);
-    mSkipForwardBtn.update(mousePos);
-    
-    if (mIsPaused){
-        mStartBtn.update(mousePos);
-        mStepBackBtn.update(mousePos);
-        mStepForwardBtn.update(mousePos);
-    } else {
-        mPauseBtn.update(mousePos);
     }
     
     if (mIsInsertExpanded){
@@ -388,7 +272,7 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                 mTree.restore();
                 mLayout.setDescription("Undo successfully.");
                 mShowUndoBtn = false;
-                mIsPaused = true;
+                mLayout.setPaused(true);
                 
                 mIsNewExpanded = false;
                 mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false;
@@ -420,7 +304,7 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
             }
             
             else if (keyEvent->code == sf::Keyboard::Key::Space){
-                mIsPaused = !mIsPaused;
+                mLayout.setPaused(!mLayout.isPaused());
             }
                     
             else if (keyEvent->code == sf::Keyboard::Key::R){
@@ -502,10 +386,10 @@ void RBTVisualizer::drawAnimatedTree(const StepState& stepA, const StepState& st
     const float R = (20.f + (35.f - 20.f) * easeP1) * currentScale;
     float lineThickness = (2.f + (4.f - 2.f) * easeP1) * currentScale;
     float mainStroke = (2.f + (3.f - 2.f) * easeP1) * currentScale;
-    int fontSize = static_cast<int>((14 + (25 - 14) * easeP1) * currentScale);
+    int fontSize = static_cast<int>((14 + (30 - 14) * easeP1) * currentScale);
     
-    sf::Color edgeColor(89, 149, 43);
-
+    sf::Color edgeColor = ThemeManager::current.primary;
+    
     map<int, sf::Vector2f> currentPos;
     for (const auto& n : stepB.nodes){
         sf::Vector2f endPos = posB[n.val];
@@ -580,9 +464,9 @@ void RBTVisualizer::drawAnimatedTree(const StepState& stepA, const StepState& st
             circle.setOutlineColor(sf::Color(230, 57, 70));
             textColor = sf::Color(230, 57, 70);
         } else {
-            circle.setFillColor(sf::Color(139, 139, 139));
-            circle.setOutlineColor(sf::Color(0, 0, 0));
-            textColor = sf::Color(0, 0, 0);
+            circle.setFillColor(sf::Color(172, 172, 172));
+            circle.setOutlineColor(sf::Color(67, 66, 67));
+            textColor = sf::Color(67, 66, 67);
         }
         
         mWindow->draw(circle);
@@ -600,6 +484,15 @@ void RBTVisualizer::drawAnimatedTree(const StepState& stepA, const StepState& st
 }
 
 void RBTVisualizer::render(bool showUI){
+    mNewHoverStroke.setThemeColor(ThemeManager::current.primary);
+    mNewExpandedStroke.setThemeColor(ThemeManager::current.primary);
+    mInsertHoverStroke.setThemeColor(ThemeManager::current.primary);
+    mInsertExpandedStroke.setThemeColor(ThemeManager::current.primary);
+    mDeleteHoverStroke.setThemeColor(ThemeManager::current.primary);
+    mDeleteExpandedStroke.setThemeColor(ThemeManager::current.primary);
+    mSearchHoverStroke.setThemeColor(ThemeManager::current.primary);
+    mSearchExpandedStroke.setThemeColor(ThemeManager::current.primary);
+    
     if (!showUI and mTransitionProgress == 1.0f){
         setTransitionProgress(0.0f);
     }
@@ -607,19 +500,19 @@ void RBTVisualizer::render(bool showUI){
     auto history = mTree.getStepHistory();
     int cur = mTree.getCurrentStep();
     int total = static_cast<int>(history.size());
-
+    
     if (mTargetStep != -1 and mTargetStep != cur){
         float speedSec = mTree.getVisualizationSpeed() / 1000.f;
         float frameDelta = 1.0f / (speedSec * 60.0f);
-            
+        
         mStepAnimProgress += frameDelta;
-            
+        
         if (mStepAnimProgress >= 1.0f){
             mStepAnimProgress = 1.0f;
             mTree.setCurrentStep(mTargetStep);
             cur = mTargetStep;
-                
-            if (!mIsPaused and cur < total - 1){
+            
+            if (!mLayout.isPaused() and cur < total - 1){
                 mTargetStep = cur + 1;
                 mStepAnimProgress = 0.0f;
             } else {
@@ -627,12 +520,12 @@ void RBTVisualizer::render(bool showUI){
             }
         }
     }
-        
-    else if (!mIsPaused and showUI and cur < total - 1 and mTargetStep == -1){
+    
+    else if (!mLayout.isPaused() and showUI and cur < total - 1 and mTargetStep == -1){
         mTargetStep = cur + 1;
         mStepAnimProgress = 0.0f;
     }
-
+    
     if (cur >= 0 and cur < total){
         if (mTargetStep != -1 and mTargetStep < total and mStepAnimProgress < 1.0f){
             drawAnimatedTree(history[cur], history[mTargetStep], mStepAnimProgress);
@@ -640,18 +533,54 @@ void RBTVisualizer::render(bool showUI){
             drawAnimatedTree(history[cur], history[cur], 1.0f);
         }
     }
-
+    
     if (showUI){
         setTransitionProgress(1.0f);
+        
+        mTitleNum.setFillColor(ThemeManager::current.textColor);
+        mTitleBlack.setFillColor(ThemeManager::current.textColor);
+        mTitleTree.setFillColor(ThemeManager::current.primary);
+        
+        if (mInsertDiceBtn.mSprite){mInsertDiceBtn.mSprite->setColor(ThemeManager::current.textColor);}
+        if (mDeleteDiceBtn.mSprite){mDeleteDiceBtn.mSprite->setColor(ThemeManager::current.textColor);}
+        if (mSearchDiceBtn.mSprite){mSearchDiceBtn.mSprite->setColor(ThemeManager::current.textColor);}
+
+        mClearBtn.setThemeColor(ThemeManager::current.secondary);
+        mNewBtn.setThemeColor(ThemeManager::current.secondary);
+        mInsertBtn.setThemeColor(ThemeManager::current.secondary);
+        mDeleteBtn.setThemeColor(ThemeManager::current.secondary);
+        mSearchBtn.setThemeColor(ThemeManager::current.secondary);
+        mUndoBtn.setThemeColor(ThemeManager::current.secondary);
+            
+        mUploadBtn.setThemeColor(ThemeManager::current.screenBg);
+        mRandomBtn.setThemeColor(ThemeManager::current.screenBg);
+        mConfirmAddBtn.setThemeColor(ThemeManager::current.screenBg);
+        mConfirmRemoveBtn.setThemeColor(ThemeManager::current.screenBg);
+        mConfirmSearchBtn.setThemeColor(ThemeManager::current.screenBg);
+        
+        mInsertExpandedBg.setThemeColor(ThemeManager::current.secondary);
+        mDeleteExpandedBg.setThemeColor(ThemeManager::current.secondary);
+        mSearchExpandedBg.setThemeColor(ThemeManager::current.secondary);
+        mNewExpandedBg.setThemeColor(ThemeManager::current.secondary);
+
+        mInsertInputText.setFillColor(ThemeManager::current.textColor);
+        mDeleteInputText.setFillColor(ThemeManager::current.textColor);
+        mSearchInputText.setFillColor(ThemeManager::current.textColor);
+        mInsertCursorLine.setFillColor(ThemeManager::current.textColor);
+        mDeleteCursorLine.setFillColor(ThemeManager::current.textColor);
+        mSearchCursorLine.setFillColor(ThemeManager::current.textColor);
         
         sf::Vector2f worldPos = mWindow->mapPixelToCoords(sf::Mouse::getPosition(*mWindow));
         
         if (cur >= 0 and cur < static_cast<int>(history.size())){
             mLayout.setDescription(history[cur].description);
         }
-        
+            
+        int total = static_cast<int>(mTree.getStepHistory().size());
+        int current = mTree.getCurrentStep();
+        mLayout.setStepText("Step " + std::to_string(current + 1) + " / " + std::to_string(total));
         mLayout.draw(*mWindow);
-        
+            
         mWindow->draw(mTitleNum);
         mWindow->draw(mTitleRed);
         mWindow->draw(mTitleBlack);
@@ -662,7 +591,7 @@ void RBTVisualizer::render(bool showUI){
         } else {
             mClearBtn.draw(*mWindow);
         }
-        
+            
         if (mIsNewExpanded){
             mNewExpandedStroke.draw(*mWindow);
             mNewExpandedBg.draw(*mWindow);
@@ -681,10 +610,10 @@ void RBTVisualizer::render(bool showUI){
             mInsertExpandedBg.draw(*mWindow);
             mConfirmAddBtn.draw(*mWindow);
             mInsertDiceBtn.draw(*mWindow);
-                    
+            
             mInsertInputText.setString(mInputValue);
             mWindow->draw(mInsertInputText);
-                    
+            
             if (mCursorClock.getElapsedTime().asSeconds() >= 0.5f){
                 mShowCursor = !mShowCursor;
                 mCursorClock.restart();
@@ -711,12 +640,12 @@ void RBTVisualizer::render(bool showUI){
             
             mDeleteInputText.setString(mInputValue);
             mWindow->draw(mDeleteInputText);
-                    
+            
             if (mCursorClock.getElapsedTime().asSeconds() >= 0.5f){
                 mShowCursor = !mShowCursor;
                 mCursorClock.restart();
             }
-                
+            
             if (mShowCursor){
                 float textWidth = mDeleteInputText.getLocalBounds().size.x;
                 float cursorX = mInputValue.empty() ? 85.f : 85.f + textWidth + 2.f;
@@ -729,7 +658,7 @@ void RBTVisualizer::render(bool showUI){
             }
             mDeleteBtn.draw(*mWindow);
         }
-
+         
         if (mIsSearchExpanded){
             mSearchExpandedStroke.draw(*mWindow);
             mSearchExpandedBg.draw(*mWindow);
@@ -755,30 +684,6 @@ void RBTVisualizer::render(bool showUI){
                 mSearchHoverStroke.draw(*mWindow);
             }
             mSearchBtn.draw(*mWindow);
-        }
-        
-        mSpeedSlider.draw(*mWindow);
-        
-        mSkipBackBtn.draw(*mWindow);
-        mSkipForwardBtn.draw(*mWindow);
-        
-        if (mIsPaused){
-            mWindow->draw(mStepBgLeft);
-            mWindow->draw(mStepBgRight);
-            mWindow->draw(mStepBgCenter);
-            
-            if (total == 0){
-                mStepText.setString("Step 0 / 0");
-            } else {
-                mStepText.setString("Step " + to_string(cur + 1) + " / " + to_string(total));
-            }
-                        
-            mWindow->draw(mStepText);
-            mStartBtn.draw(*mWindow);
-            mStepBackBtn.draw(*mWindow);
-            mStepForwardBtn.draw(*mWindow);
-        } else {
-            mPauseBtn.draw(*mWindow);
         }
     }
 }
@@ -861,6 +766,7 @@ bool RBTVisualizer::checkReturnHome(){
         mGoHome = false;
         return true;
     }
+    
     return false;
 }
 
@@ -869,9 +775,11 @@ void RBTVisualizer::generateRandomTree(){
     random_device rd;
     mt19937 gen(rd());
     uniform_int_distribution<> dis(1, 99);
+    
     for (int i = 0; i<7; ++i){
         mTree.insert(dis(gen));
     }
+    
     mTree.resetHistory("Random new tree");
 }
 
@@ -885,9 +793,12 @@ bool RBTVisualizer::isEmpty(){
 }
 
 void RBTVisualizer::resetPlayUI(){
-    mIsPaused = false;
+    mLayout.setPaused(false);
+    
+    mTree.setCurrentStep(0);
+    mTargetStep = -1;
+    mStepAnimProgress = 1.0f;
+    
     mShowUndoBtn = false;
-    mSkipBackBtn.setup(mSkipBackTex, 333.f, 897.f, 48.f, 48.f);
-    mSkipForwardBtn.setup(mSkipForwardTex, 461.f, 897.f, 48.f, 48.f);
     mAutoPlayClock.restart();
 }

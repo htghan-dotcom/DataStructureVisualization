@@ -20,31 +20,10 @@ private:
     sf::Text mTitleBlack;
     sf::Text mTitleTree;
     
-    sf::Texture mSkipBackTex;
-    sf::Texture mPauseTex;
-    sf::Texture mSkipForwardTex;
-
-    ImageButton mSkipBackBtn;
-    ImageButton mPauseBtn;
-    ImageButton mSkipForwardBtn;
-    
     sf::Clock mAutoPlayClock;
-    bool mIsPaused = false;
-
-    sf::Texture mStartTex;
-    ImageButton mStartBtn;
-
-    sf::CircleShape mStepBgLeft, mStepBgRight;
-    sf::RectangleShape mStepBgCenter;
-    sf::Text mStepText;
-    
-    RoundedButton mStepBackBtn;
-    RoundedButton mStepForwardBtn;
 
     RoundedButton mClearBtn, mUndoBtn, mNewBtn, mInsertBtn, mDeleteBtn, mSearchBtn;
     
-    SpeedSlider mSpeedSlider;
-
     bool mGoHome = false;
     float mTransitionProgress = 1.0f;
     
