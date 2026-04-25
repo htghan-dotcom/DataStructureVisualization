@@ -116,7 +116,8 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     mUploadBtn.refreshText();
 
     if (!mDiceTex.loadFromFile("assets/images/randomButton.png")){cerr << "Loi load randomButton.png" << endl;}
-    mDiceTex.setSmooth(true); if (!mDiceTex.generateMipmap()) {}
+    mDiceTex.setSmooth(true);
+    if (!mDiceTex.generateMipmap()) {}
     
     mInsertDiceBtn.setup(mDiceTex, 205.f, 237.f, 30.f, 30.f);
     mDeleteDiceBtn.setup(mDiceTex, 205.f, 291.f, 30.f, 30.f);
