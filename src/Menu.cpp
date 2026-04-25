@@ -1,6 +1,8 @@
 #include "Menu.h"
 #include "ThemeManager.h"
-#include "Common.h"
+#include "config/Common.h"
+
+using namespace std;
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -55,7 +57,8 @@ MainMenu::MainMenu(float w, float h)
     }
     
     if (!mExitTex.loadFromFile("assets/images/exitButton.png")){cerr << "Cannot load exitButton.png" << endl;}
-    mExitTex.setSmooth(true); mExitTex.generateMipmap();
+    mExitTex.setSmooth(true); 
+    (void)mExitTex.generateMipmap();
     
     mExitBtn.setup(mExitTex, 43.f, 62.f, 48.f, 48.f);
     mExitBtn.setCallback([this](){
@@ -171,4 +174,3 @@ void MainMenu::draw(sf::RenderTarget& target){
     mExitBtn.mSprite->setColor(ThemeManager::current.primary);
     mExitBtn.draw(target);
 }
-

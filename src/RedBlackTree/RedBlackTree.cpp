@@ -1,5 +1,7 @@
-#include "Common.h"
-#include "RedBlackTree.h"
+#include "config/Common.h"
+#include "RedBlackTree/RedBlackTree.h"
+
+using namespace std;
 
 RedBlackTree::RedBlackTree(){
     mpRoot = nullptr;

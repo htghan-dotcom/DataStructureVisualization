@@ -1,6 +1,8 @@
 #include "SettingsScreen.h"
 #include "ThemeManager.h"
-#include "Common.h"
+#include "config/Common.h"
+
+using namespace std;
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -108,7 +110,7 @@ SettingsScreen::SettingsScreen(float w, float h)
         cerr << "Cannot load musicButton.png" << endl;
     } else {
         mMusicTex.setSmooth(true);
-        mMusicTex.generateMipmap();
+        (void)mMusicTex.generateMipmap();
         mBtnMusic.icon.emplace(mMusicTex);
         
         sf::FloatRect iconBounds = mBtnMusic.icon->getLocalBounds();
@@ -121,7 +123,7 @@ SettingsScreen::SettingsScreen(float w, float h)
 
     if (!mExitTex.loadFromFile("assets/images/exitButton.png")){cerr << "Cannot load exitButton.png" << endl;}
     mExitTex.setSmooth(true);
-    mExitTex.generateMipmap();
+    (void)mExitTex.generateMipmap();
 
     mExitBtn.setup(mExitTex, 49.f, 62.f, 48.f, 48.f);
     mExitBtn.setCallback([this](){
@@ -141,7 +143,7 @@ SettingsScreen::SettingsScreen(float w, float h)
     mCloseBtnBg.setFillColor(sf::Color(217, 217, 217));
     if (mCloseTex.loadFromFile("assets/images/closeButton.png")){
         mCloseTex.setSmooth(true);
-        mCloseTex.generateMipmap();
+        (void)mCloseTex.generateMipmap();
         mCloseIcon = sf::Sprite(mCloseTex);
         sf::FloatRect cb = mCloseIcon->getLocalBounds();
         mCloseIcon->setOrigin(sf::Vector2f(cb.size.x/2.f, cb.size.y/2.f));
@@ -217,7 +219,7 @@ SettingsScreen::SettingsScreen(float w, float h)
     
     if (mLightTex.loadFromFile("assets/images/lightIcon.png")){
         mLightTex.setSmooth(true);
-        mLightTex.generateMipmap();
+        (void)mLightTex.generateMipmap();
         mLightIcon.emplace(mLightTex);
         
         sf::FloatRect lib = mLightIcon->getLocalBounds();
@@ -229,7 +231,7 @@ SettingsScreen::SettingsScreen(float w, float h)
     
     if (mDarkTex.loadFromFile("assets/images/darkIcon.png")){
         mDarkTex.setSmooth(true);
-        mDarkTex.generateMipmap();
+        (void)mDarkTex.generateMipmap();
         mDarkIcon.emplace(mDarkTex);
         sf::FloatRect dib = mDarkIcon->getLocalBounds();
         mDarkIcon->setOrigin(sf::Vector2f(dib.size.x / 2.f, dib.size.y / 2.f));

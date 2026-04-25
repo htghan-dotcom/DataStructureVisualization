@@ -1,7 +1,19 @@
-#include "RBTVisualizer.h"
+#include "RedBlackTree/RBTVisualizer.h"
 #include "ThemeManager.h"
-#include "tinyfiledialogs.h"
-#include "Common.h"
+#include "../config/Common.h"
+
+#include <windows.h>
+
+#include <iostream>
+#include <string>
+#include <random>
+#include <map>
+#include <set>
+#include <functional>
+#include <cmath>
+#include <optional>
+
+using namespace std;
 
 RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     : mWindow(&window),
@@ -56,7 +68,8 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     mUploadBtn.refreshText();
 
     if (!mDiceTex.loadFromFile("assets/images/randomButton.png")){cerr << "Loi load randomButton.png" << endl;}
-    mDiceTex.setSmooth(true); mDiceTex.generateMipmap();
+    mDiceTex.setSmooth(true); 
+    (void)mDiceTex.generateMipmap();
     
     mInsertDiceBtn.setup(mDiceTex, 205.f, 237.f, 30.f, 30.f);
     mDeleteDiceBtn.setup(mDiceTex, 205.f, 291.f, 30.f, 30.f);
@@ -158,7 +171,21 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
             if (mouseEvent->button == sf::Mouse::Button::Left){
                 bool clickedInsideAnyForm = false;
                 
-                if (!mIsNewExpanded and sf::FloatRect(sf::Vector2f(251.f, 176.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+                if (sf::FloatRect(sf::Vector2f(70.f, 176.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+                    clickedInsideAnyForm = true;
+                    if (mShowUndoBtn){
+                        mTree.restore();
+                        mLayout.setDescription("Undo successfully.");
+                        mShowUndoBtn = false;
+                        mLayout.setPaused(true);
+                    } else {
+                        mTree.backup();
+                        mTree.initialize();
+                        mShowUndoBtn = true;
+                    }
+                    mIsNewExpanded = false; mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false;
+                }
+                else if (!mIsNewExpanded and sf::FloatRect(sf::Vector2f(251.f, 176.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
                     mIsNewExpanded = true;
                     mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false;
                     clickedInsideAnyForm = true;
@@ -170,18 +197,28 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                         mTree.backup();
                         generateRandomTree();
                         mIsNewExpanded = false;
-                        mShowUndoBtn = false;
+                        mShowUndoBtn = true;
                     }
                     
                     else if (sf::FloatRect(sf::Vector2f(254.f, 287.f), sf::Vector2f(154.f, 39.f)).contains(worldPos)){
                         mTree.backup();
-                        const char* filterPatterns[1] = { "*.txt" };
-                        const char* filePath = tinyfd_openFileDialog("Choose Red-Black Tree data file", "", 1, filterPatterns, "Text Files (*.txt)", 0);
-                        if (filePath != nullptr){
-                            mTree.initializeFromFile(filePath);
+                        
+                        char filename[MAX_PATH] = "";
+                        OPENFILENAMEA ofn;
+                        ZeroMemory(&ofn, sizeof(ofn));
+                        ofn.lStructSize = sizeof(ofn);
+                        ofn.hwndOwner = nullptr;
+                        ofn.lpstrFilter = "Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0";
+                        ofn.lpstrFile = filename;
+                        ofn.nMaxFile = MAX_PATH;
+                        ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+                        ofn.lpstrDefExt = "txt";
+
+                        if (GetOpenFileNameA(&ofn)){
+                            mTree.initializeFromFile(filename);
                             mTree.resetHistory("Tree loaded from file");
                             mLayout.setDescription("Tree loaded from file!");
-                            mShowUndoBtn = false;
+                            mShowUndoBtn = true;
                         } else {
                             mLayout.setDescription("Cancel load file.");
                         }
@@ -206,6 +243,7 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                         mTree.setCurrentStep(0);
                         mIsInsertExpanded = false;
                         mInputValue = "";
+                        mShowUndoBtn = true;
                         resetPlayUI();
                     }
                     
@@ -230,6 +268,7 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                         mTree.setCurrentStep(0);
                         mIsDeleteExpanded = false;
                         mInputValue = "";
+                        mShowUndoBtn = true;
                         resetPlayUI();
                     }
                     
@@ -313,7 +352,7 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                 } else {
                     mTree.backup();
                     generateRandomTree();
-                    mShowUndoBtn = false;
+                    mShowUndoBtn = true;
                     mIsNewExpanded = false;
                 }
             }
@@ -330,12 +369,14 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                         mTree.backup();
                         mTree.resetHistory("Create new node " + to_string(val) + " (RED)");
                         mTree.insert(val);
+                        mShowUndoBtn = true;
                     }
                     
                     else if (mIsDeleteExpanded){
                         mTree.backup();
                         mTree.resetHistory("Start to Remove " + to_string(val));
                         mTree.remove(val);
+                        mShowUndoBtn = true;
                     }
                     
                     else if (mIsSearchExpanded){
@@ -351,12 +392,18 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                 
                 else {
                     int digit = -1;
-                    if (keyEvent->code >= sf::Keyboard::Key::Num0 and keyEvent->code <= sf::Keyboard::Key::Num9){
-                        digit = static_cast<int>(keyEvent->code) - static_cast<int>(sf::Keyboard::Key::Num0);
-                    }
                     
-                    else if (keyEvent->code >= sf::Keyboard::Key::Numpad0 and keyEvent->code <= sf::Keyboard::Key::Numpad9){
-                        digit = static_cast<int>(keyEvent->code) - static_cast<int>(sf::Keyboard::Key::Numpad0);
+                    int codeInt = static_cast<int>(keyEvent->code);
+                    int num0Int = static_cast<int>(sf::Keyboard::Key::Num0);
+                    int num9Int = static_cast<int>(sf::Keyboard::Key::Num9);
+                    int numpad0Int = static_cast<int>(sf::Keyboard::Key::Numpad0);
+                    int numpad9Int = static_cast<int>(sf::Keyboard::Key::Numpad9);
+                    
+                    if (codeInt >= num0Int and codeInt <= num9Int){
+                        digit = codeInt - num0Int;
+                    }
+                    else if (codeInt >= numpad0Int and codeInt <= numpad9Int){
+                        digit = codeInt - numpad0Int;
                     }
                     
                     if (digit != -1 and mInputValue.length() < 3){
@@ -576,7 +623,7 @@ void RBTVisualizer::render(bool showUI){
             mLayout.setDescription(history[cur].description);
         }
             
-        int total = static_cast<int>(mTree.getStepHistory().size());
+        total = static_cast<int>(mTree.getStepHistory().size());
         int current = mTree.getCurrentStep();
         mLayout.setStepText("Step " + std::to_string(current + 1) + " / " + std::to_string(total));
         mLayout.draw(*mWindow);

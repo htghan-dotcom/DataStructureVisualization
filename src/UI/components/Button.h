@@ -1,20 +1,18 @@
 #pragma once
-
 #include <SFML/Graphics.hpp>
+#include <string>
 #include <optional>
-#include "../../config/Common.h"
 
 class Button {
 public:
     enum class StyleRole {
         Default,
-        Play,
+        Primary,
         Danger,
-        Algorithm,
-        IconOnly
+        IconOnly,
+        Pill
     };
 
-    Button() = default;
     Button(const std::string& label, const sf::Font& font);
 
     void setLabel(const std::string& label);
@@ -32,17 +30,17 @@ public:
 
 private:
     void alignText();
+    void updateColors(bool isHovered);
 
-    bool enabled_ = true;
-    bool selected_ = false;
-    StyleRole styleRole_ = StyleRole::Default;
-    int flashFrames_ = 0;
-    
-    const sf::Texture* iconTexture_ = nullptr;
-    float radius_ = 8.0f;
-    sf::CircleShape mTopLeft, mTopRight, mBottomLeft, mBottomRight;
-    sf::RectangleShape mHorizRect, mVertRect;
     sf::FloatRect bounds_;
     std::optional<sf::Text> text_;
-    void updateColors(bool isHovered);
+    const sf::Texture* iconTexture_ = nullptr;
+    bool enabled_ = true;
+    bool selected_ = false;
+    int flashFrames_ = 0;
+    StyleRole styleRole_ = StyleRole::Default;
+
+    // Cached colors from updateColors
+    sf::Color baseColor_;
+    sf::Color textColor_;
 };

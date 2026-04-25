@@ -1,14 +1,22 @@
-        #include "Visualizer.h"
+#include "Visualizer.h"
 
-        #include <cmath>
-        #include <filesystem>
-        #include <sstream>
-        #include <optional>
-        #include <cstdint>
-        #include <iostream>
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <filesystem>
+#include <iostream>
+#include <optional>
+#include <random>
+#include <sstream>
+#include <system_error>
+#include <unordered_map>
 
-        #include "../config/Config.h"
-        #include "../data/GraphLoader.h"
+#include "ThemeManager.h"
+#include "../config/Config.h"
+#include "../data/GraphLoader.h"
+
+Visualizer::Visualizer()
+    : backButton_("", font_), speedSlider_(0.f, 0.f, 100.f, 0.f, 10.f, 0.f, font_) {}
 
         namespace {
         int randomWeight() {
@@ -77,25 +85,25 @@
                                             l.leftPanel.position.y + (l.leftPanel.size.y - kLeftCollapseBtnH) * 0.5f},
                                             {kLeftCollapseBtnW,
                                             kLeftCollapseBtnH});
-
-    float stepToggleX = showRightStep ? (l.rightPanel.position.x - toggleW) : (w - toggleW);
-            l.rightStepToggleBtn = sf::FloatRect({stepToggleX,
-                                                l.rightPanel.position.y + 12.0f},
-                                                {toggleW,
-                                                kRightStepBtnH});
-
-    float pseudoToggleX = showRightPseudo ? (l.rightPanel.position.x - toggleW) : (w - toggleW);
-            l.rightPseudoToggleBtn = sf::FloatRect({pseudoToggleX,
-                                                l.rightPanel.position.y + 230.0f},
-                                                {toggleW,
-                                                80.0f});
-
+                                            
             const float rightContentW = l.rightPanel.size.x;
             l.rightStepBox = sf::FloatRect({l.rightPanel.position.x, l.rightPanel.position.y}, {rightContentW, 218.0f});
             l.rightPseudoBox = sf::FloatRect({l.rightPanel.position.x,
                                             l.rightPanel.position.y + 230.0f},
                                             {rightContentW,
                                             std::max(120.0f, l.rightPanel.size.y - 230.0f)});
+
+    float stepToggleX = showRightStep ? (l.rightPanel.position.x - toggleW) : (w - toggleW);
+            l.rightStepToggleBtn = sf::FloatRect({stepToggleX,
+                                                l.rightStepBox.position.y + (l.rightStepBox.size.y - kRightStepBtnH) * 0.5f},
+                                                {toggleW,
+                                                kRightStepBtnH});
+
+    float pseudoToggleX = showRightPseudo ? (l.rightPanel.position.x - toggleW) : (w - toggleW);
+            l.rightPseudoToggleBtn = sf::FloatRect({pseudoToggleX,
+                                                l.rightPseudoBox.position.y + (l.rightPseudoBox.size.y - 80.0f) * 0.5f},
+                                                {toggleW,
+                                                80.0f});
 
             float graphMinX = leftCollapseX + kLeftCollapseBtnW + gutter;
             float graphMaxX = std::min(stepToggleX, pseudoToggleX) - gutter;
@@ -161,66 +169,6 @@
             return std::clamp(kMatrixBaseCell - std::max(0, n - 10) * 0.45f, 16.0f, kMatrixBaseCell);
         }
 
-        void drawRoundedFill(sf::RenderWindow& window, const sf::FloatRect& rect, float radius, const sf::Color& color) {
-            if (rect.size.x <= 0.f || rect.size.y <= 0.f) {
-                return;
-            }
-
-            const float r = std::clamp(radius, 0.0f, std::min(rect.size.x, rect.size.y) * 0.5f);
-            if (r <= 0.01f) {
-                sf::RectangleShape box(sf::Vector2f(rect.size.x, rect.size.y));
-                box.setPosition({rect.position.x, rect.position.y});
-                box.setFillColor(color);
-                window.draw(box);
-                return;
-            }
-
-            sf::RectangleShape center(sf::Vector2f(rect.size.x - 2.f * r, rect.size.y));
-            center.setPosition({rect.position.x + r, rect.position.y});
-            center.setFillColor(color);
-            window.draw(center);
-
-            sf::RectangleShape middle(sf::Vector2f(rect.size.x, rect.size.y - 2.f * r));
-            middle.setPosition({rect.position.x, rect.position.y + r});
-            middle.setFillColor(color);
-            window.draw(middle);
-
-            sf::CircleShape corner(r);
-            corner.setFillColor(color);
-
-            corner.setPosition({rect.position.x, rect.position.y});
-            window.draw(corner);
-
-            corner.setPosition({rect.position.x + rect.size.x - 2.f * r, rect.position.y});
-            window.draw(corner);
-
-            corner.setPosition({rect.position.x, rect.position.y + rect.size.y - 2.f * r});
-            window.draw(corner);
-
-            corner.setPosition({rect.position.x + rect.size.x - 2.f * r, rect.position.y + rect.size.y - 2.f * r});
-            window.draw(corner);
-        }
-
-        void drawRoundedBox(sf::RenderWindow& window,
-                            const sf::FloatRect& rect,
-                            float radius,
-                            float outlineThickness,
-                            const sf::Color& fill,
-                            const sf::Color& outline) {
-            drawRoundedFill(window, rect, radius, outline);
-
-            if (outlineThickness <= 0.01f) {
-                return;
-            }
-
-            const float inset = outlineThickness;
-            const sf::FloatRect inner({rect.position.x + inset,
-                                    rect.position.y + inset},
-                                    {std::max(0.f, rect.size.x - inset * 2.f),
-                                    std::max(0.f, rect.size.y - inset * 2.f)});
-            drawRoundedFill(window, inner, std::max(0.f, radius - inset), fill);
-        }
-
         sf::ConvexShape createRoundedRect(sf::Vector2f size, float radius) {
             int pointsPerCorner = 15;
             sf::ConvexShape shape(pointsPerCorner * 4);
@@ -244,63 +192,6 @@
                 shape.setPoint(index++, sf::Vector2f(radius + radius * std::sin(angle), radius - radius * std::cos(angle)));
             }
             return shape;
-        }
-
-        sf::VertexArray createGradientRoundedRect(sf::Vector2f size, float radius, sf::Vector2f pos, sf::Color cBottomLeft, sf::Color cTopRight) {
-            int pointsPerCorner = 15;
-            int totalPoints = pointsPerCorner * 4;
-            
-            sf::VertexArray va(sf::PrimitiveType::Triangles, totalPoints * 3);
-            sf::Vector2f center = size / 2.0f;
-            
-            auto lerpColor = [](sf::Color a, sf::Color b, float t) {
-                t = std::max(0.0f, std::min(1.0f, t));
-                return sf::Color(
-                    static_cast<uint8_t>(a.r + (b.r - a.r) * t),
-                    static_cast<uint8_t>(a.g + (b.g - a.g) * t),
-                    static_cast<uint8_t>(a.b + (b.b - a.b) * t),
-                    static_cast<uint8_t>(a.a + (b.a - a.a) * t)
-                );
-            };
-
-            sf::Color centerColor = lerpColor(cBottomLeft, cTopRight, 0.5f);
-            std::vector<sf::Vector2f> p(totalPoints);
-            int index = 0;
-            const float PI = 3.14159265358979323846f;
-            
-            for(int i = 0; i < pointsPerCorner; ++i){
-                float angle = i * (PI / 2) / (pointsPerCorner - 1);
-                p[index++] = sf::Vector2f(size.x - radius + radius * std::sin(angle), radius - radius * std::cos(angle));
-            }
-            for(int i = 0; i < pointsPerCorner; ++i){
-                float angle = PI / 2 + i * (PI / 2) / (pointsPerCorner - 1);
-                p[index++] = sf::Vector2f(size.x - radius + radius * std::sin(angle), size.y - radius - radius * std::cos(angle));
-            }
-            for(int i = 0; i < pointsPerCorner; ++i){
-                float angle = PI + i * (PI / 2) / (pointsPerCorner - 1);
-                p[index++] = sf::Vector2f(radius + radius * std::sin(angle), size.y - radius - radius * std::cos(angle));
-            }
-            for(int i = 0; i < pointsPerCorner; ++i){
-                float angle = 3 * PI / 2 + i * (PI / 2) / (pointsPerCorner - 1);
-                p[index++] = sf::Vector2f(radius + radius * std::sin(angle), radius - radius * std::cos(angle));
-            }
-
-            auto calcColor = [&](sf::Vector2f pt) {
-                float t = (pt.x + (size.y - pt.y)) / (size.x + size.y);
-                return lerpColor(cBottomLeft, cTopRight, t);
-            };
-
-            for (int i = 0; i < totalPoints; ++i) {
-                int next = (i + 1) % totalPoints;
-                va[i * 3].position = pos + center;
-                va[i * 3].color = centerColor;
-                va[i * 3 + 1].position = pos + p[i];
-                va[i * 3 + 1].color = calcColor(p[i]);
-                va[i * 3 + 2].position = pos + p[next];
-                va[i * 3 + 2].color = calcColor(p[next]);
-            }
-            
-            return va;
         }
 
         bool loadFontFromCandidates(sf::Font& font, const std::vector<std::string>& candidates) {
@@ -921,19 +812,19 @@ void Visualizer::onActionResetView() {
     panOffset_ = {0.0f, 0.0f};
 }
 
-        void Visualizer::run() {
+void Visualizer::run(sf::RenderWindow& window) {
             std::cout << "[Debug] Bắt đầu chạy Visualizer::run()..." << std::endl;
+            ThemeManager::setTheme(ThemeType::DEFAULT);
+
             const std::vector<std::string> uiFontCandidates = {
-                "assets/fonts/JetBrainsMono-2.304/fonts/ttf/JetBrainsMono-Regular.ttf",
-                "../assets/fonts/JetBrainsMono-2.304/fonts/ttf/JetBrainsMono-Regular.ttf",
-                "../../assets/fonts/JetBrainsMono-2.304/fonts/ttf/JetBrainsMono-Regular.ttf",
+                "assets/fonts/Inter-Regular.ttf",
+                "../assets/fonts/Inter-Regular.ttf",
                 "C:/Windows/Fonts/segoeui.ttf",
                 "C:/Windows/Fonts/arial.ttf"};
 
             const std::vector<std::string> monoFontCandidates = {
-                "assets/fonts/JetBrainsMono-2.304/fonts/ttf/JetBrainsMono-Regular.ttf",
-                "../assets/fonts/JetBrainsMono-2.304/fonts/ttf/JetBrainsMono-Regular.ttf",
-                "../../assets/fonts/JetBrainsMono-2.304/fonts/ttf/JetBrainsMono-Regular.ttf",
+                "assets/fonts/Inter-Bold.ttf",
+                "../assets/fonts/Inter-Bold.ttf",
                 "C:/Windows/Fonts/consola.ttf",
                 "C:/Windows/Fonts/cour.ttf"};
 
@@ -997,14 +888,14 @@ void Visualizer::onActionResetView() {
                 Button("Play/Pause", font_),
                 Button("Step Forward", font_),
                 Button("Skip Forward", font_),
-                Button("New Graph", font_),
+                Button("New MST", font_),
                 Button("Undo", font_),
                 Button("Add Node", font_),
                 Button("Delete Node", font_),
                 Button("Edit Edges", font_),
                 Button("Random", font_),
                 Button("BUILD", font_),
-                Button("View: Graph", font_),
+                Button("View: MST", font_),
                 Button("Kruskal", font_),
         Button("Prim", font_),
         Button("Reset View", font_),
@@ -1048,7 +939,7 @@ void Visualizer::onActionResetView() {
         controlButtons_[9].setPosition(initLeftX, initGraphSetupY + initRowGap * 3.5f);
 
         // Group 3: Build Action
-        controlButtons_[11].setSize(initButtonW * 2 + initColGap, 36.f);
+        controlButtons_[11].setSize(initButtonW * 2 + initColGap, 40.f);
         controlButtons_[11].setPosition(initLeftX, initGraphSetupY + initRowGap * 5.0f);
 
             const float initAlgoY = initGraphSetupY + 4 * initRowGap + 20.f;
@@ -1075,30 +966,24 @@ void Visualizer::onActionResetView() {
 
             speedSlider_ = Slider(940.f, 650.f, 150.f, 1.f, 10.f, 2.f, font_);
 
-            controlButtons_[0].setStyleRole(Button::StyleRole::IconOnly);
-            controlButtons_[2].setStyleRole(Button::StyleRole::IconOnly);
-            controlButtons_[4].setStyleRole(Button::StyleRole::IconOnly);
-            controlButtons_[8].setStyleRole(Button::StyleRole::Danger);
-            controlButtons_[13].setStyleRole(Button::StyleRole::Algorithm);
-            controlButtons_[14].setStyleRole(Button::StyleRole::Algorithm);
-
-        std::cout << "[Debug] Khởi tạo cửa sổ Window..." << std::endl;
-        sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
-        unsigned int winW = desktop.size.x;
-        unsigned int winH = desktop.size.y > 80 ? desktop.size.y - 80 : desktop.size.y;
-
-        // Cố định tạm kích thước màn hình chuẩn để test (tránh lỗi getDesktopMode() trả về kích thước quá to)
-        sf::RenderWindow window(sf::VideoMode({1280, 720}), "Data Structure Visualization");
-            window.setVerticalSyncEnabled(true);
-            window.setFramerateLimit(60);
-            window.setView(
-                sf::View(sf::FloatRect({0.0f, 0.0f}, {static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)})));
+            controlButtons_[0].setStyleRole(Button::StyleRole::Pill);
+            controlButtons_[1].setStyleRole(Button::StyleRole::Pill);
+            controlButtons_[2].setStyleRole(Button::StyleRole::Pill);
+            controlButtons_[3].setStyleRole(Button::StyleRole::Pill);
+            controlButtons_[4].setStyleRole(Button::StyleRole::Pill);
 
             sf::Vector2u prevWindowSize = window.getSize();
 
+    // Ép trạng thái ban đầu là Visualization, nhảy thẳng vào đồ thị thay vì hiện Menu nội bộ
+    currentScreen_ = Screen::Visualization;
+    selectedStructure_ = RenderViewKind::MST;
+    setupDefaultGraph();
+    rebuildTimeline();
+
             std::cout << "[Debug] Vào vòng lặp chính (Main loop)..." << std::endl;
             while (window.isOpen()) {
-                const UILayout layout = computeUILayout(window.getSize(), showLeftActions_, showRightStepPanel_, showRightPseudocodePanel_);
+                const sf::Vector2u logicalSize(static_cast<unsigned int>(window.getView().getSize().x), static_cast<unsigned int>(window.getView().getSize().y));
+                const UILayout layout = computeUILayout(logicalSize, showLeftActions_, showRightStepPanel_, showRightPseudocodePanel_);
         
         float cx = layout.graphViewport.position.x + layout.graphViewport.size.x * 0.5f + panOffset_.x;
         float cy = layout.graphViewport.position.y + layout.graphViewport.size.y * 0.5f + panOffset_.y;
@@ -1114,15 +999,24 @@ void Visualizer::onActionResetView() {
                     }
 
                     if (const auto* resized = event.getIf<sf::Event::Resized>()) {
-                        const sf::Vector2u newSize = resized->size;
-                        window.setView(sf::View(sf::FloatRect({0.0f, 0.0f},
-                            {static_cast<float>(newSize.x), static_cast<float>(newSize.y)})));
-
-                        if (newSize.x > prevWindowSize.x || newSize.y > prevWindowSize.y) {
-                            showRightStepPanel_ = true;
-                            showRightPseudocodePanel_ = true;
+                        sf::View view = window.getView(); // Lấy view hiện tại (1440x960)
+                        float windowWidth = static_cast<float>(resized->size.x);
+                        float windowHeight = static_cast<float>(std::max(1u, resized->size.y));
+                        float windowRatio = windowWidth / windowHeight;
+                        float viewRatio = view.getSize().x / view.getSize().y;
+                        float sizeX = 1.0f, sizeY = 1.0f;
+                        float posX = 0.0f, posY = 0.0f;
+                        
+                        if (windowRatio > viewRatio) {
+                            sizeX = viewRatio / windowRatio;
+                            posX = (1.0f - sizeX) / 2.0f;
+                        } else {
+                            sizeY = windowRatio / viewRatio;
+                            posY = (1.0f - sizeY) / 2.0f;
                         }
-                        prevWindowSize = newSize;
+                        
+                        view.setViewport(sf::FloatRect({posX, posY}, {sizeX, sizeY}));
+                        window.setView(view);
                     }
 
             if (const auto* mouseWheelScrolled = event.getIf<sf::Event::MouseWheelScrolled>()) {
@@ -1189,9 +1083,8 @@ void Visualizer::onActionResetView() {
                     } else {
                         if (backButton_.contains(mousePos)) {
                             backButton_.flash();
-                            currentScreen_ = Screen::Menu;
-                            playing_ = false;
-                            continue;
+                        playing_ = false;
+                        return; // Thoát khỏi hàm run() để trả quyền điều khiển về cho MainMenu của App
                         }
 
                         if (isMstSelected()) {
@@ -1493,10 +1386,10 @@ void Visualizer::onActionResetView() {
                     }
                 }
             }
-            }
+        } // Kết thúc vòng lặp while (pollEvent)
 
-                if (currentScreen_ == Screen::Visualization && isMstSelected() && playing_ && !animation_.empty() &&
-                    playClock_.getElapsedTime().asSeconds() >= (1.0f / speed_)) {
+        if (currentScreen_ == Screen::Visualization && isMstSelected() && playing_ && !animation_.empty() &&
+            playClock_.getElapsedTime().asSeconds() >= (1.0f / speed_)) {
                     playClock_.restart();
                     if (!animation_.moveNext()) {
                         playing_ = false;
@@ -1554,42 +1447,37 @@ void Visualizer::onActionResetView() {
                     }
                 }
 
-                // Static Task Bar layout matching the screenshot reference
-                const float iconBtnW = 44.0f;
-                const float stepBtnW = 120.0f;
-                const float hBtn = 40.0f;
-                const float baseGap = 12.0f;
-                const float stepTextW = 110.0f;
-                const float totalTaskBarW = iconBtnW * 3 + stepBtnW * 2 + stepTextW + baseGap * 5;
-                const float y = layout.bottomButtonsArea.position.y + (layout.bottomButtonsArea.size.y - hBtn) * 0.5f;
-                float x = layout.bottomPanel.position.x + (layout.bottomPanel.size.x - totalTaskBarW) * 0.5f;
-                
-                // [0] Skip Back
-                controlButtons_[0].setSize(iconBtnW, hBtn);
-                controlButtons_[0].setPosition(x, y);
-                x += iconBtnW + baseGap;
-                
-                // [2] Play/Pause
-                controlButtons_[2].setSize(iconBtnW, hBtn);
-                controlButtons_[2].setPosition(x, y);
-                x += iconBtnW + baseGap;
-                
-                // Reserve space for "Step X / Y" text
-                x += stepTextW + baseGap; 
+                // Task Bar layout with smooth collapse animation
+                float w0 = smoothLerp(48.0f, 0.0f, taskBarAnimProgress_);
+                float w1 = smoothLerp(165.0f, 0.0f, taskBarAnimProgress_);
+                float w3 = smoothLerp(165.0f, 0.0f, taskBarAnimProgress_);
+                float w4 = smoothLerp(48.0f, 0.0f, taskBarAnimProgress_);
+                float gap = smoothLerp(12.0f, 0.0f, taskBarAnimProgress_);
 
-                // [1] Step Back
-                controlButtons_[1].setSize(stepBtnW, hBtn);
-                controlButtons_[1].setPosition(x, y);
-                x += stepBtnW + baseGap;
+                const float hBtn = 49.0f;
+                const float totalW = w0 + w1 + 48.0f + w3 + w4 + gap * 4;
+                float x = layout.bottomPanel.position.x + (layout.bottomPanel.size.x - totalW) / 2.0f;
+                const float y = layout.bottomPanel.position.y + (layout.bottomPanel.size.y - hBtn) / 2.0f;
                 
-                // [3] Step Forward
-                controlButtons_[3].setSize(stepBtnW, hBtn);
-                controlButtons_[3].setPosition(x, y);
-                x += stepBtnW + baseGap;
+                controlButtons_[0].setSize(std::max(0.1f, w0), hBtn); 
+                controlButtons_[1].setSize(std::max(0.1f, w1), hBtn); 
+                controlButtons_[2].setSize(48.0f, hBtn); 
+                controlButtons_[3].setSize(std::max(0.1f, w3), hBtn); 
+                controlButtons_[4].setSize(std::max(0.1f, w4), hBtn); 
 
-                // [4] Skip Forward
-                controlButtons_[4].setSize(iconBtnW, hBtn);
+                controlButtons_[0].setPosition(x, y); x += w0 + gap;
+                controlButtons_[1].setPosition(x, y); x += w1 + gap;
+                controlButtons_[2].setPosition(x, y); x += 48.0f + gap;
+                controlButtons_[3].setPosition(x, y); x += w3 + gap;
                 controlButtons_[4].setPosition(x, y);
+
+                if (taskBarAnimProgress_ > 0.05f) {
+                    controlButtons_[1].setLabel("");
+                    controlButtons_[3].setLabel("");
+                } else {
+                    controlButtons_[1].setLabel("Step back");
+                    controlButtons_[3].setLabel("Step forward");
+                }
 
                 // Slider positioned strictly to the far right
                 const float sliderX = layout.bottomPanel.position.x + layout.bottomPanel.size.x - 160.f;
@@ -1608,7 +1496,7 @@ void Visualizer::onActionResetView() {
                     controlButtons_[8].setEnabled(!playing_ && canDeleteAny); // Delete Node
                     controlButtons_[9].setEnabled(!playing_ && canvasMode_ == MstCanvasMode::Graph); // Add/Modify
                     controlButtons_[10].setEnabled(!playing_);   // Random
-                    controlButtons_[11].setEnabled(!playing_);   // Build
+                    controlButtons_[11].setEnabled(!playing_);   // Build (Primary action)
                     controlButtons_[12].setEnabled(!playing_);   // View
                     controlButtons_[13].setEnabled(!playing_);   // Kruskal
                     controlButtons_[14].setEnabled(!playing_);   // Prim
@@ -1621,7 +1509,8 @@ void Visualizer::onActionResetView() {
                         }
                     }
 
-                    controlButtons_[12].setLabel(canvasMode_ == MstCanvasMode::Graph ? "View: Matrix" : "View: Graph");
+                    controlButtons_[12].setLabel(canvasMode_ == MstCanvasMode::Graph ? "View: Matrix" : "View: MST");
+                    controlButtons_[11].setStyleRole(Button::StyleRole::Primary);
                     controlButtons_[11].setLabel(timelineDirty_ ? "BUILD *" : "BUILD");
 
                     if (enteringRandomCount_) {
@@ -1639,7 +1528,12 @@ void Visualizer::onActionResetView() {
                     controlButtons_[14].setSelected(algorithmType_ == algo::AlgorithmType::Prim);
                 }
 
-                window.clear(config::kBackgroundColor);
+                // Đổ màu viền Letterbox bằng màu xám đen để các Panel nhìn "sát góc"
+                window.clear(sf::Color(40, 40, 40));
+                sf::RectangleShape appBg(sf::Vector2f(window.getView().getSize().x, window.getView().getSize().y));
+                appBg.setPosition({0.f, 0.f});
+                appBg.setFillColor(ThemeManager::current.screenBg);
+                window.draw(appBg);
 
                 if (currentScreen_ == Screen::Menu) {
                     sf::Text title(font_, "Choose Data Structure", 34);
@@ -1674,7 +1568,7 @@ void Visualizer::onActionResetView() {
                             bgSprite.setOrigin({static_cast<float>(bgLogoTex.getSize().x) * 0.5f, static_cast<float>(bgLogoTex.getSize().y) * 0.5f});
                             bgSprite.setPosition({layout.graphViewport.position.x + layout.graphViewport.size.x * 0.5f, 
                                                  layout.graphViewport.position.y + layout.graphViewport.size.y * 0.5f});
-                            bgSprite.setColor(sf::Color(255, 255, 255, 40)); // Alpha = 40 để làm mờ (0-255)
+                            bgSprite.setColor(sf::Color(ThemeManager::current.textColor.r, ThemeManager::current.textColor.g, ThemeManager::current.textColor.b, 20)); // Watermark
                             window.draw(bgSprite);
                         }
                         Renderer::draw(window, vm, font_);
@@ -1720,12 +1614,11 @@ void Visualizer::onActionResetView() {
                                 modalBg.setFillColor(sf::Color(0, 0, 0, 180)); // Đen mờ làm chìm cảnh vật
                                 window.draw(modalBg);
 
-                                sf::RectangleShape popupRect;
-                                popupRect.setSize({380.f, 160.f});
-                                popupRect.setPosition({(window.getSize().x - 380.f) * 0.5f, (window.getSize().y - 160.f) * 0.5f});
-                                popupRect.setFillColor(sf::Color(35, 45, 55, 255));
-                                popupRect.setOutlineThickness(3.f);
-                                popupRect.setOutlineColor(sf::Color(100, 150, 200));
+                                sf::ConvexShape popupRect = createRoundedRect({380.f, 160.f}, 20.f);
+                                popupRect.setPosition({(static_cast<float>(window.getSize().x) - 380.f) * 0.5f, (static_cast<float>(window.getSize().y) - 160.f) * 0.5f});
+                                popupRect.setFillColor(ThemeManager::current.bg);
+                                popupRect.setOutlineThickness(2.f);
+                                popupRect.setOutlineColor(ThemeManager::current.primary);
                                 window.draw(popupRect);
                                 
                                 std::string titleStr = "EDIT EDGE WEIGHT";
@@ -1737,21 +1630,21 @@ void Visualizer::onActionResetView() {
                                 window.draw(titleText);
 
                                 sf::Text promptText(font_, "Node " + std::to_string(pendingEdgeFrom_) + " <--> Node " + std::to_string(pendingEdgeTo_), 16);
-                                promptText.setFillColor(sf::Color::White);
+                                promptText.setFillColor(ThemeManager::current.textColor);
                                 sf::FloatRect ptb = promptText.getLocalBounds();
                                 promptText.setPosition({popupRect.getPosition().x + (380.f - ptb.size.x) * 0.5f - ptb.position.x,
                                                         popupRect.getPosition().y + 55.f});
                                 window.draw(promptText);
 
                                 sf::Text guideText(font_, "(Enter weight or 0 to remove edge)", 13);
-                                guideText.setFillColor(sf::Color(150, 160, 170));
+                                guideText.setFillColor(sf::Color(ThemeManager::current.textColor.r, ThemeManager::current.textColor.g, ThemeManager::current.textColor.b, 150));
                                 sf::FloatRect gtb = guideText.getLocalBounds();
                                 guideText.setPosition({popupRect.getPosition().x + (380.f - gtb.size.x) * 0.5f - gtb.position.x,
                                                        popupRect.getPosition().y + 80.f});
                                 window.draw(guideText);
 
                                 sf::Text inputText(font_, edgeWeightInput_ + "_", 26);
-                                inputText.setFillColor(sf::Color(250, 210, 120));
+                                inputText.setFillColor(ThemeManager::current.primary);
                                 sf::FloatRect itb = inputText.getLocalBounds();
                                 inputText.setPosition({popupRect.getPosition().x + (380.f - itb.size.x) * 0.5f - itb.position.x,
                                                        popupRect.getPosition().y + 110.f});
@@ -1768,53 +1661,26 @@ void Visualizer::onActionResetView() {
                         const sf::FloatRect rightPseudoBox = layout.rightPseudoBox;
 
                         if (showRightStepPanel_) {
-                            for (int i = 0; i < 8; ++i) {
-                                sf::ConvexShape shadow = createRoundedRect(sf::Vector2f(rightStepBox.size.x + i, rightStepBox.size.y + i), 18.0f + i / 2.0f);
-                                shadow.setPosition(sf::Vector2f(rightStepBox.position.x - i / 2.0f, rightStepBox.position.y + 6.0f - i / 2.0f));
-                                shadow.setFillColor(sf::Color(0, 0, 0, 8));
-                                window.draw(shadow);
-                            }
-                            sf::VertexArray stepBg = createGradientRoundedRect(
-                                sf::Vector2f(rightStepBox.size.x, rightStepBox.size.y),
-                                18.0f,
-                                sf::Vector2f(rightStepBox.position.x, rightStepBox.position.y),
-                                sf::Color(45, 52, 71),
-                                sf::Color(31, 37, 52)
-                            );
+                            // Làm cho box background tròn nhẹ hơn
+                            sf::ConvexShape stepBg = createRoundedRect(rightStepBox.size, 14.0f);
+                            stepBg.setPosition(rightStepBox.position);
+                            stepBg.setFillColor(ThemeManager::current.secondary);
                             window.draw(stepBg);
                         }
 
                         if (showRightPseudocodePanel_) {
-                            for (int i = 0; i < 8; ++i) {
-                                sf::ConvexShape shadow = createRoundedRect(sf::Vector2f(rightPseudoBox.size.x + i, rightPseudoBox.size.y + i), 18.0f + i / 2.0f);
-                                shadow.setPosition(sf::Vector2f(rightPseudoBox.position.x - i / 2.0f, rightPseudoBox.position.y + 6.0f - i / 2.0f));
-                                shadow.setFillColor(sf::Color(0, 0, 0, 8));
-                                window.draw(shadow);
-                            }
-                            sf::VertexArray pseudoBg = createGradientRoundedRect(
-                                sf::Vector2f(rightPseudoBox.size.x, rightPseudoBox.size.y),
-                                18.0f,
-                                sf::Vector2f(rightPseudoBox.position.x, rightPseudoBox.position.y),
-                                sf::Color(45, 52, 71),
-                                sf::Color(31, 37, 52)
-                            );
+                            sf::ConvexShape pseudoBg = createRoundedRect(rightPseudoBox.size, 14.0f);
+                            pseudoBg.setPosition(rightPseudoBox.position);
+                            pseudoBg.setFillColor(ThemeManager::current.secondary);
                             window.draw(pseudoBg);
-                        }
-
-                        // Draw Taskbar Gray Pill Background
-                        if (controlButtons_.size() >= 5) {
-                            const float pillX = controlButtons_[0].bounds().position.x - 24.f;
-                            const float pillY = controlButtons_[0].bounds().position.y - 12.f;
-                            const float pillW = controlButtons_[4].bounds().position.x + controlButtons_[4].bounds().size.x - controlButtons_[0].bounds().position.x + 48.f;
-                            const float pillH = controlButtons_[0].bounds().size.y + 24.f;
-                            drawRoundedBox(window, sf::FloatRect({pillX, pillY}, {pillW, pillH}), pillH * 0.5f, 0.f, sf::Color(218, 222, 226), sf::Color::Transparent);
                         }
 
                         for (size_t i = 0; i < controlButtons_.size(); ++i) {
                             if (!showLeftActions_ && i >= 5 && i <= 16) {
                                 continue;
                             }
-                            if (playing_ && (i == 1 || i == 3)) {
+                            // Hide completely when collapsed to prevent drawing artifacts
+                            if (taskBarAnimProgress_ >= 0.95f && (i == 0 || i == 1 || i == 3 || i == 4)) {
                                 continue;
                             }
                             controlButtons_[i].draw(window);
@@ -1828,50 +1694,47 @@ void Visualizer::onActionResetView() {
                         if (!animation_.empty()) {
                             actionText = "Step " + std::to_string(animation_.currentIndex() + 1) + " / " + std::to_string(animation_.totalSteps());
                         }
-                        sf::Text statusAction(font_, actionText, 16);
-                        float stepTextX = controlButtons_[2].bounds().position.x + controlButtons_[2].bounds().size.x + 12.0f;
-                        float stepTextW = 110.0f;
+                        sf::Text statusAction(font_, actionText, 18);
                         sf::FloatRect saBounds = statusAction.getLocalBounds();
-                        statusAction.setPosition({stepTextX + (stepTextW - saBounds.size.x) * 0.5f, layout.bottomButtonsArea.position.y + (layout.bottomButtonsArea.size.y - saBounds.size.y) * 0.5f - 6.0f});
-                        statusAction.setFillColor(sf::Color(60, 65, 70));
+                        statusAction.setOrigin({saBounds.position.x + saBounds.size.x / 2.f, saBounds.position.y + saBounds.size.y / 2.f});
+                        float statusY = controlButtons_[0].bounds().position.y - 30.f;
+                        statusAction.setPosition({layout.bottomPanel.position.x + layout.bottomPanel.size.x / 2.f, statusY});
+                        statusAction.setFillColor(ThemeManager::current.textColor);
                         window.draw(statusAction);
 
                         // Left collapse control.
-                        drawRoundedBox(window,
-                                    layout.leftCollapseBtn,
-                                    14.0f,
-                                    1.0f,
-                                    sf::Color(95, 131, 151),
-                                    sf::Color(73, 106, 125));
+                        sf::ConvexShape leftCollapseShape = createRoundedRect(layout.leftCollapseBtn.size, 14.f);
+                        leftCollapseShape.setPosition(layout.leftCollapseBtn.position);
+                        leftCollapseShape.setFillColor(ThemeManager::current.secondary);
+                        window.draw(leftCollapseShape);
+
                         sf::Text collapseLabel(monoFont_, showLeftActions_ ? "<" : ">", 16);
                         const sf::FloatRect collapseBounds = collapseLabel.getLocalBounds();
                         collapseLabel.setPosition({layout.leftCollapseBtn.position.x + (layout.leftCollapseBtn.size.x - collapseBounds.size.x) * 0.5f - collapseBounds.position.x,
                                                 layout.leftCollapseBtn.position.y + (layout.leftCollapseBtn.size.y - collapseBounds.size.y) * 0.5f - collapseBounds.position.y - 2.f});
-                        collapseLabel.setFillColor(sf::Color::White);
+                        collapseLabel.setFillColor(ThemeManager::current.textColor);
                         window.draw(collapseLabel);
 
                         // Right side toggles: step info and pseudocode visibility.
-                        drawRoundedBox(window,
-                                    layout.rightStepToggleBtn,
-                                    14.0f,
-                                    1.0f,
-                                    showRightStepPanel_ ? sf::Color(83, 117, 136) : sf::Color(124, 150, 165),
-                                    sf::Color(65, 95, 111));
+                        sf::ConvexShape rightStepToggleShape = createRoundedRect(layout.rightStepToggleBtn.size, 14.f);
+                        rightStepToggleShape.setPosition(layout.rightStepToggleBtn.position);
+                        rightStepToggleShape.setFillColor(showRightStepPanel_ ? ThemeManager::current.primary : ThemeManager::current.secondary);
+                        window.draw(rightStepToggleShape);
+
                         sf::Text stepToggle(monoFont_, showRightStepPanel_ ? ">" : "<", 16);
-                        stepToggle.setFillColor(sf::Color::White);
+                        stepToggle.setFillColor(showRightStepPanel_ ? ThemeManager::current.bg : ThemeManager::current.textColor);
                         sf::FloatRect stepBounds = stepToggle.getLocalBounds();
                         stepToggle.setPosition({layout.rightStepToggleBtn.position.x + (layout.rightStepToggleBtn.size.x - stepBounds.size.x) * 0.5f - stepBounds.position.x,
                                                layout.rightStepToggleBtn.position.y + (layout.rightStepToggleBtn.size.y - stepBounds.size.y) * 0.5f - stepBounds.position.y - 2.f});
                         window.draw(stepToggle);
 
-                        drawRoundedBox(window,
-                                    layout.rightPseudoToggleBtn,
-                                    14.0f,
-                                    1.0f,
-                                    showRightPseudocodePanel_ ? sf::Color(83, 117, 136) : sf::Color(124, 150, 165),
-                                    sf::Color(65, 95, 111));
+                        sf::ConvexShape rightPseudoToggleShape = createRoundedRect(layout.rightPseudoToggleBtn.size, 14.f);
+                        rightPseudoToggleShape.setPosition(layout.rightPseudoToggleBtn.position);
+                        rightPseudoToggleShape.setFillColor(showRightPseudocodePanel_ ? ThemeManager::current.primary : ThemeManager::current.secondary);
+                        window.draw(rightPseudoToggleShape);
+
                         sf::Text pseudoToggle(monoFont_, showRightPseudocodePanel_ ? ">" : "<", 16);
-                        pseudoToggle.setFillColor(sf::Color::White);
+                        pseudoToggle.setFillColor(showRightPseudocodePanel_ ? ThemeManager::current.bg : ThemeManager::current.textColor);
                         sf::FloatRect pseudoBounds = pseudoToggle.getLocalBounds();
                         pseudoToggle.setPosition({layout.rightPseudoToggleBtn.position.x + (layout.rightPseudoToggleBtn.size.x - pseudoBounds.size.x) * 0.5f - pseudoBounds.position.x,
                                                  layout.rightPseudoToggleBtn.position.y + (layout.rightPseudoToggleBtn.size.y - pseudoBounds.size.y) * 0.5f - pseudoBounds.position.y - 2.f});
@@ -1883,6 +1746,8 @@ void Visualizer::onActionResetView() {
                                 return;
                             }
                             const sf::FloatRect rect = btn.bounds();
+                            // Hide icons during animation to prevent overflow
+                            if (rect.size.x < 12.0f) return;
                             sf::Sprite sp(tex);
                             const float targetH = std::max(12.0f, rect.size.y * 0.7f); // Phóng to icon để nổi bật
                             const float scale = targetH / static_cast<float>(tex.getSize().y);
@@ -1891,72 +1756,65 @@ void Visualizer::onActionResetView() {
                             const float h = static_cast<float>(tex.getSize().y) * scale;
                             sp.setPosition({rect.position.x + (rect.size.x - w) * 0.5f, rect.position.y + (rect.size.y - h) * 0.5f});
                             sf::Color finalTint = btn.isEnabled() ? tint : sf::Color(180, 180, 180, 150);
-                            sp.setColor(finalTint);
+                            sp.setColor(btn.isEnabled() ? ThemeManager::current.textColor : sf::Color(180, 180, 180, 150));
                             window.draw(sp);
                         };
 
-                        drawIconInButton(skipBackIconTex, controlButtons_[0], sf::Color(28, 32, 36));
-                        drawIconInButton(playing_ ? pauseIconTex : playIconTex, controlButtons_[2], sf::Color(28, 32, 36));
-                        drawIconInButton(skipForwardIconTex, controlButtons_[4], sf::Color(28, 32, 36));
+                        drawIconInButton(skipBackIconTex, controlButtons_[0], ThemeManager::current.textColor);
+                        drawIconInButton(playing_ ? pauseIconTex : playIconTex, controlButtons_[2], ThemeManager::current.textColor);
+                        drawIconInButton(skipForwardIconTex, controlButtons_[4], ThemeManager::current.textColor);
 
                         const sf::FloatRect backRect = backButton_.bounds();
-                        drawRoundedBox(window,
-                                    backRect,
-                                    12.0f,
-                                    1.0f,
-                                    sf::Color(236, 239, 243, 245),
-                                    sf::Color(195, 199, 206));
-                        drawIconInButton(homeIconTex, backButton_, sf::Color(201, 63, 88));
+                        sf::ConvexShape backButtonShape = createRoundedRect(backRect.size, 12.f);
+                        backButtonShape.setPosition(backRect.position);
+                        backButtonShape.setFillColor(ThemeManager::current.secondary);
+                        window.draw(backButtonShape);
 
-                        sf::Text mainTitle(font_, "Data Structure Visualization", 22);
-                        mainTitle.setFillColor(sf::Color(18, 22, 26));
-                        mainTitle.setStyle(sf::Text::Bold);
-                        mainTitle.setPosition({backButton_.bounds().position.x + backButton_.bounds().size.x + 16.f, 
-                                               backButton_.bounds().position.y + (backButton_.bounds().size.y - mainTitle.getLocalBounds().size.y) * 0.5f - 6.f});
+                        // Re-draw icon on top
+                        backButton_.setIcon(&homeIconTex);
+                        drawIconInButton(homeIconTex, backButton_, ThemeManager::current.primary);
+
+                        sf::Text mainTitle(monoFont_, "Data Structure Visualization", 22);
+                        mainTitle.setFillColor(ThemeManager::current.textColor);
+                        mainTitle.setPosition({76.f, 26.f});
                         window.draw(mainTitle);
 
-                        // 04 Minimum Spanning Tree Title above left panel
-                        float bottomY = layout.bottomPanel.position.y - 24.f;
-                        
-                        sf::Text titleLine2(font_, "Tree", 44);
-                        titleLine2.setFillColor(sf::Color(90, 160, 60, 255));
-                        titleLine2.setStyle(sf::Text::Bold);
-                        titleLine2.setPosition({layout.leftPanel.position.x, bottomY - titleLine2.getLocalBounds().size.y - 12.f});
-                        
-                        sf::Text titleLine1(font_, "Minimum Spanning", 44);
-                        titleLine1.setFillColor(sf::Color(30, 36, 44, 255));
-                        titleLine1.setStyle(sf::Text::Bold);
-                        titleLine1.setPosition({layout.leftPanel.position.x, titleLine2.getPosition().y - titleLine1.getLocalBounds().size.y - 16.f});
-                        
-                        sf::Text numText(font_, "04", 24);
-                        numText.setFillColor(sf::Color(30, 36, 44, 255));
-                        numText.setStyle(sf::Text::Bold);
-                        numText.setPosition({layout.leftPanel.position.x, titleLine1.getPosition().y - numText.getLocalBounds().size.y - 16.f});
-                        
+                        // 04 Minimum Spanning Tree Title matching exactly RBTVisualizer sizes & positions
+                        sf::Text numText(monoFont_, "04", 30);
+                        numText.setFillColor(ThemeManager::current.textColor);
+                        numText.setPosition({67.f, 663.f});
                         window.draw(numText);
+
+                        sf::Text titleLine1(monoFont_, "Minimum Spanning", 70);
+                        titleLine1.setFillColor(ThemeManager::current.textColor);
+                        titleLine1.setPosition({67.f, 695.f});
                         window.draw(titleLine1);
+
+                        sf::Text titleLine2(monoFont_, "Tree", 70);
+                        titleLine2.setFillColor(ThemeManager::current.primary);
+                        titleLine2.setPosition({67.f, 765.f});
                         window.draw(titleLine2);
 
                         if (showLeftActions_) {
                             sf::Text setupTitle(font_, "System & Tools", 16);
                             setupTitle.setPosition({layout.leftPanel.position.x + 16.0f, layout.leftPanel.position.y + 16.0f});
-                            setupTitle.setFillColor(sf::Color(58, 78, 94)); 
+                            setupTitle.setFillColor(ThemeManager::current.textColor); 
                             window.draw(setupTitle);
 
-                            sf::Text editTitle(font_, "Graph Actions", 16);
+                            sf::Text editTitle(font_, "MST Actions", 16);
                             editTitle.setPosition({layout.leftPanel.position.x + 16.0f, layout.leftPanel.position.y + 176.0f});
-                            editTitle.setFillColor(sf::Color(58, 78, 94));
+                            editTitle.setFillColor(ThemeManager::current.textColor);
                             window.draw(editTitle);
 
                             // Vẽ đường phân cách ngang (Separator line)
                             sf::RectangleShape separator(sf::Vector2f(layout.leftPanel.size.x - 32.0f, 1.0f));
                             separator.setPosition({layout.leftPanel.position.x + 16.0f, layout.leftPanel.position.y + 356.0f});
-                            separator.setFillColor(sf::Color(180, 190, 200));
+                            separator.setFillColor(ThemeManager::current.secondary);
                             window.draw(separator);
 
                             sf::Text algoTitle(font_, "Algorithms", 16);
                             algoTitle.setPosition({layout.leftPanel.position.x + 16.0f, layout.leftPanel.position.y + 364.0f});
-                            algoTitle.setFillColor(sf::Color(58, 78, 94));
+                            algoTitle.setFillColor(ThemeManager::current.textColor);
                             window.draw(algoTitle);
                         }
 
@@ -1965,30 +1823,30 @@ void Visualizer::onActionResetView() {
                             float rightInfoY = rightStepBox.position.y + 24.0f;
                             sf::Text buildInfo(font_, timelineDirty_ ? "Action Required: Click BUILD to update."
                                                             : "Build is up to date.", 14);
-                            buildInfo.setFillColor(timelineDirty_ ? sf::Color(250, 180, 100) : sf::Color(150, 210, 150));
+                            buildInfo.setFillColor(timelineDirty_ ? sf::Color(245, 158, 11) : ThemeManager::current.primary);
                             const auto buildInfoLines =
                                 wrapTextToWidth(font_, buildInfo.getString().toAnsiString(), 14, rightTextMax);
                             for (size_t i = 0; i < std::min<size_t>(3, buildInfoLines.size()); ++i) {
                                 sf::Text line(font_, buildInfoLines[i], 14);
                                 line.setPosition({rightInnerX, rightInfoY + static_cast<float>(i) * 20.f});
-                                line.setFillColor(timelineDirty_ ? sf::Color(250, 180, 100) : sf::Color(150, 210, 150));
+                                line.setFillColor(timelineDirty_ ? sf::Color(245, 158, 11) : ThemeManager::current.primary);
                                 window.draw(line);
                             }
                             rightInfoY += static_cast<float>(std::min<size_t>(3, buildInfoLines.size())) * 20.f + 8.f;
 
-                            const std::string workflowText = "Workflow: New Graph -> Add Node -> Edit Edges -> Build";
+                            const std::string workflowText = "Workflow: New Tree -> Add Node -> Edit Edges -> Build";
                             const auto workflowLines = wrapTextToWidth(font_, workflowText, 13, rightTextMax);
                             for (const auto& workflowLine : workflowLines) {
                                 sf::Text line(font_, workflowLine, 13);
                                 line.setPosition({rightInnerX, rightInfoY});
-                                line.setFillColor(sf::Color(160, 170, 180)); // Làm mờ nhẹ text phụ
+                                line.setFillColor(sf::Color(ThemeManager::current.textColor.r, ThemeManager::current.textColor.g, ThemeManager::current.textColor.b, 180));
                                 window.draw(line);
                                 rightInfoY += 20.f;
                             }
                             rightInfoY += 8.f;
 
                             sf::Text selectedNodeText(font_,
-                                "Selected Node: " + std::string(selectedNodeId_ >= 0 ? std::to_string(selectedNodeId_) : "None"), 14);
+                                "Selected: " + std::string(selectedNodeId_ >= 0 ? "Node " + std::to_string(selectedNodeId_) : "None"), 14);
                             selectedNodeText.setPosition({rightInnerX, rightInfoY});
                             selectedNodeText.setFillColor(sf::Color(246, 225, 132));
                             clampTextToWidth(selectedNodeText, rightTextMax);
@@ -2003,7 +1861,7 @@ void Visualizer::onActionResetView() {
                         if (canvasMode_ == MstCanvasMode::Matrix) {
                             sf::Text matrixHelp(font_, "Adjacency Matrix: click a cell to edit weight (enter 0 to remove)", 14);
                             matrixHelp.setPosition({matrixOrigin.x, matrixOrigin.y - 34.f});
-                            matrixHelp.setFillColor(sf::Color(72, 90, 106));
+                            matrixHelp.setFillColor(ThemeManager::current.textColor);
                             clampTextToWidth(matrixHelp, gGraphViewport.position.x + gGraphViewport.size.x - matrixOrigin.x - 8.0f);
                             window.draw(matrixHelp);
 
@@ -2037,35 +1895,40 @@ void Visualizer::onActionResetView() {
                                             (r == -1 && c >= 0 && c < n && c < static_cast<int>(nodeAlive_.size()) && !nodeAlive_[static_cast<size_t>(c)]) ||
                                             (c == -1 && r >= 0 && r < n && r < static_cast<int>(nodeAlive_.size()) && !nodeAlive_[static_cast<size_t>(r)]);
                                         cellFill = inactiveHeader ? sf::Color(220, 196, 196) : sf::Color(183, 192, 201);
+                                        cellFill = ThemeManager::current.secondary;
                                     } else if (r == c) {
                                         const bool inactive = r < static_cast<int>(nodeAlive_.size()) && !nodeAlive_[static_cast<size_t>(r)];
-                                        cellFill = inactive ? sf::Color(220, 196, 196) : sf::Color(199, 206, 213);
+                                        cellFill = inactive ? sf::Color(220, 196, 196) : sf::Color(ThemeManager::current.secondary.r, ThemeManager::current.secondary.g, ThemeManager::current.secondary.b, 100);
                                     } else {
                                         const bool inactive =
                                             r < static_cast<int>(nodeAlive_.size()) && c < static_cast<int>(nodeAlive_.size()) &&
                                             (!nodeAlive_[static_cast<size_t>(r)] || !nodeAlive_[static_cast<size_t>(c)]);
                                         if (inactive) {
-                                            cellFill = sf::Color(224, 208, 208);
+                                            cellFill = sf::Color(ThemeManager::current.secondary.r, ThemeManager::current.secondary.g, ThemeManager::current.secondary.b, 50);
                                         } else {
                                             if (enteringEdgeWeight_ && ((r == pendingMatrixRow_ && c == pendingMatrixCol_) || (r == pendingMatrixCol_ && c == pendingMatrixRow_))) {
-                                                cellFill = sf::Color(250, 210, 120);
+                                                cellFill = ThemeManager::current.primary;
                                                 outlineThick = 2.0f;
-                                                cellOutline = sf::Color(200, 150, 50);
+                                                cellOutline = ThemeManager::current.primaryLight;
                                             } else {
                                                 cellFill = adjacencyMatrix_[static_cast<size_t>(r)][static_cast<size_t>(c)] > 0
-                                                                    ? sf::Color(173, 204, 166)
-                                                                    : sf::Color(216, 221, 225);
+                                                                    ? ThemeManager::current.primaryLight
+                                                                    : ThemeManager::current.bg;
                                             }
                                         }
                                     }
-                                    drawRoundedBox(window, cellRect, 4.0f, outlineThick, cellFill, outlineThick > 0.0f ? cellOutline : cellFill);
+                                    sf::ConvexShape cellShape = createRoundedRect(cellRect.size, 4.f);
+                                    cellShape.setPosition(cellRect.position);
+                                    cellShape.setFillColor(cellFill);
+                                    cellShape.setOutlineColor(outlineThick > 0.f ? cellOutline : sf::Color::Transparent);
+                                    cellShape.setOutlineThickness(outlineThick);
+                                    window.draw(cellShape);
 
                                     sf::Text t(font_, "", 13);
-                                    t.setFillColor(sf::Color(56, 70, 82));
+                                    t.setFillColor(ThemeManager::current.textColor);
                                     if (r == -1 && c >= 0) {
                                         if (c < static_cast<int>(nodeAlive_.size()) && !nodeAlive_[static_cast<size_t>(c)]) {
                                             t.setString("x");
-                                            t.setFillColor(sf::Color(170, 96, 96));
                                         } else {
                                             t.setString(std::to_string(c));
                                         }
@@ -2080,7 +1943,6 @@ void Visualizer::onActionResetView() {
                                         if ((r < static_cast<int>(nodeAlive_.size()) && !nodeAlive_[static_cast<size_t>(r)]) ||
                                             (c < static_cast<int>(nodeAlive_.size()) && !nodeAlive_[static_cast<size_t>(c)])) {
                                             t.setString("-");
-                                            t.setFillColor(sf::Color(154, 106, 106));
                                         } else {
                                             if (enteringEdgeWeight_ && ((r == pendingMatrixRow_ && c == pendingMatrixCol_) || (r == pendingMatrixCol_ && c == pendingMatrixRow_))) {
                                                 t.setString(edgeWeightInput_ + "_");
@@ -2110,7 +1972,7 @@ void Visualizer::onActionResetView() {
                             for (size_t i = 0; i < shownDescLines; ++i) {
                                 sf::Text desc(font_, descLines[i], 15);
                                 desc.setPosition({rightInnerX, descStartY + static_cast<float>(i) * 24.0f});
-                                desc.setFillColor(sf::Color::White);
+                                desc.setFillColor(ThemeManager::current.textColor);
                                 window.draw(desc);
                             }
                         }
@@ -2119,7 +1981,7 @@ void Visualizer::onActionResetView() {
                             const float pseudoY = rightPseudoBox.position.y + 14.0f;
                             sf::Text pseudoTitle(font_, "Pseudocode", 18);
                             pseudoTitle.setStyle(sf::Text::Bold);
-                            pseudoTitle.setPosition({rightInnerX, pseudoY});
+                            pseudoTitle.setPosition({rightInnerX, pseudoY + 4.f});
                             pseudoTitle.setFillColor(sf::Color(246, 225, 132));
                             clampTextToWidth(pseudoTitle, rightTextMax);
                             window.draw(pseudoTitle);
@@ -2142,13 +2004,17 @@ void Visualizer::onActionResetView() {
                                     if (pseudoLineY > pseudoMaxY) {
                                         break;
                                     }
+                                    sf::Color textColor = highlighted ? ThemeManager::current.bg : ThemeManager::current.textColor;
                                     const float indentX = (w == 0) ? 0.0f : 16.0f;
                                     if (highlighted) {
-                                        drawRoundedFill(window, sf::FloatRect({rightInnerX - 6.0f, pseudoLineY - 2.0f}, {rightTextMax + 12.0f, 22.0f}), 6.0f, sf::Color(80, 140, 220, 120));
+                                        sf::RectangleShape lineBg({rightTextMax + 12.0f, 22.0f});
+                                        lineBg.setPosition({rightInnerX - 6.0f, pseudoLineY - 2.0f});
+                                        lineBg.setFillColor(ThemeManager::current.primary);
+                                        window.draw(lineBg);
                                     }
                                     sf::Text line(font_, wrappedPseudo[w], 14);
                                     line.setPosition({rightInnerX + indentX, pseudoLineY});
-                                    line.setFillColor(highlighted ? sf::Color::White : sf::Color(200, 210, 220));
+                                    line.setFillColor(textColor);
                                     line.setStyle(highlighted ? sf::Text::Bold : sf::Text::Regular);
                                     window.draw(line);
                                     pseudoLineY += 22.f;
@@ -2168,7 +2034,7 @@ void Visualizer::onActionResetView() {
 
                         sf::Text selectedTitle(font_, selectedName, 28);
                         selectedTitle.setPosition({430.f, 18.f});
-                        selectedTitle.setFillColor(sf::Color(58, 78, 94));
+                        selectedTitle.setFillColor(ThemeManager::current.textColor);
                         window.draw(selectedTitle);
                     }
                 }

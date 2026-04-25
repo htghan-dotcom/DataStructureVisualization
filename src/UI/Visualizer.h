@@ -1,6 +1,8 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <string>
+#include <vector>
 
 #include "../Algo/AlgorithmFactory.h"
 #include "../Algo/Graph/Graph.h"
@@ -12,7 +14,8 @@
 
 class Visualizer {
 public:
-    void run();
+    Visualizer();
+    void run(sf::RenderWindow& window);
 
 private:
     enum class Screen {
@@ -23,6 +26,11 @@ private:
     enum class MstCanvasMode {
         Graph,
         Matrix
+    };
+
+    enum class PlaybackMode {
+        StepByStep,
+        RunAtOnce
     };
 
     void setupDefaultGraph();
@@ -66,12 +74,12 @@ private:
     bool playing_ = false;
     float speed_ = 2.0f;
 
+    sf::Font font_;
+    sf::Font monoFont_;
     std::vector<Button> menuButtons_;
     std::vector<Button> controlButtons_;
     Button backButton_;
     Slider speedSlider_;
-    sf::Font font_;
-    sf::Font monoFont_;
     sf::Clock playClock_;
 
     std::vector<std::string> pseudocode_;

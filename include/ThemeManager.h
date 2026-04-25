@@ -1,3 +1,5 @@
+#ifndef THEME_MANAGER_H
+#define THEME_MANAGER_H
 #pragma once
 #include <SFML/Graphics.hpp>
 
@@ -111,3 +113,4 @@ public:
         }
     }
 };
+#endif

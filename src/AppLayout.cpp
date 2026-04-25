@@ -1,6 +1,8 @@
 #include "AppLayout.h"
 #include "ThemeManager.h"
-#include "Common.h"
+#include "config/Common.h"
+
+using namespace std;
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -42,7 +44,8 @@ AppLayout::AppLayout()
         cerr << "Cannot load font!" << endl;
     }
     if (!mHomeTex.loadFromFile("assets/images/homeButton.png")){cerr << "Cannot load homeButton.png" << endl;}
-    mHomeTex.setSmooth(true); mHomeTex.generateMipmap();
+    mHomeTex.setSmooth(true); 
+    (void)mHomeTex.generateMipmap();
 
     mFooter.setSize({1440.f, 78.f});
     mFooter.setPosition({0.f, 882.f});
@@ -70,10 +73,14 @@ AppLayout::AppLayout()
     if (!mSkipForwardTex.loadFromFile("assets/images/skipforwardButton.png")){cerr << "Check lai anh skipforward" << endl;}
     if (!mStartTex.loadFromFile("assets/images/startButton.png")){cerr << "Check lai anh start" << endl;}
 
-    mSkipBackTex.setSmooth(true); mSkipBackTex.generateMipmap();
-    mPauseTex.setSmooth(true); mPauseTex.generateMipmap();
-    mSkipForwardTex.setSmooth(true); mSkipForwardTex.generateMipmap();
-    mStartTex.setSmooth(true); mStartTex.generateMipmap();
+    mSkipBackTex.setSmooth(true); 
+    (void)mSkipBackTex.generateMipmap();
+    mPauseTex.setSmooth(true); 
+    (void)mPauseTex.generateMipmap();
+    mSkipForwardTex.setSmooth(true); 
+    (void)mSkipForwardTex.generateMipmap();
+    mStartTex.setSmooth(true); 
+    (void)mStartTex.generateMipmap();
 
     mSkipBackBtn.setup(mSkipBackTex, 333.f, 897.f, 48.f, 48.f);
     mPauseBtn.setup(mPauseTex, 397.f, 897.f, 48.f, 48.f);

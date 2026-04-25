@@ -1,6 +1,8 @@
 #include "WelcomeScreen.h"
 #include "ThemeManager.h"
-#include "Common.h"
+#include "config/Common.h"
+
+using namespace std;
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -177,7 +179,8 @@ WelcomeScreen::WelcomeScreen(float w, float h)
     mSettingBgShape.setFillColor(sf::Color::White);
     
     if (mSettingTex.loadFromFile("assets/images/settingButton.png")){
-        mSettingTex.setSmooth(true); mSettingTex.generateMipmap();
+        mSettingTex.setSmooth(true); 
+        (void)mSettingTex.generateMipmap();
         mSettingIconSprite.emplace(mSettingTex);
         
         sf::FloatRect iconBounds = mSettingIconSprite->getLocalBounds();

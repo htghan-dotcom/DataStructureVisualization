@@ -1,17 +1,41 @@
 #include "Button.h"
+#include "ThemeManager.h"
 
 #include <algorithm>
 #include <cmath>
 
+// Helper function from leader's code to create rounded rectangles
+namespace {
+    sf::ConvexShape createRoundedRect(sf::Vector2f size, float radius) {
+        radius = std::min({radius, size.x / 2.f, size.y / 2.f});
+        int pointsPerCorner = 15;
+        sf::ConvexShape shape(pointsPerCorner * 4);
+        int index = 0;
+        const float PI = 3.14159265358979323846f;
+        
+        for(int i = 0; i < pointsPerCorner; ++i){
+            float angle = i * (PI / 2) / (pointsPerCorner - 1);
+            shape.setPoint(index++, sf::Vector2f(size.x - radius + radius * std::sin(angle), radius - radius * std::cos(angle)));
+        }
+        for(int i = 0; i < pointsPerCorner; ++i){
+            float angle = PI / 2 + i * (PI / 2) / (pointsPerCorner - 1);
+            shape.setPoint(index++, sf::Vector2f(size.x - radius + radius * std::sin(angle), size.y - radius - radius * std::cos(angle)));
+        }
+        for(int i = 0; i < pointsPerCorner; ++i){
+            float angle = PI + i * (PI / 2) / (pointsPerCorner - 1);
+            shape.setPoint(index++, sf::Vector2f(radius + radius * std::sin(angle), size.y - radius - radius * std::cos(angle)));
+        }
+        for(int i = 0; i < pointsPerCorner; ++i){
+            float angle = 3 * PI / 2 + i * (PI / 2) / (pointsPerCorner - 1);
+            shape.setPoint(index++, sf::Vector2f(radius + radius * std::sin(angle), radius - radius * std::cos(angle)));
+        }
+        return shape;
+    }
+}
+
 Button::Button(const std::string& label, const sf::Font& font)
  {
     text_.emplace(font, label, 15);
-    
-    radius_ = 8.0f; // Bo góc mềm mại hơn để hợp với nút to
-    mTopLeft.setRadius(radius_);
-    mTopRight.setRadius(radius_);
-    mBottomLeft.setRadius(radius_);
-    mBottomRight.setRadius(radius_);
 }
 
 
@@ -23,28 +47,12 @@ void Button::setLabel(const std::string& label) {
 void Button::setSize(float width, float height) {
     bounds_.size.x = width;
     bounds_.size.y = height;
-    
-    mHorizRect.setSize(sf::Vector2f(width - radius_ * 2.0f, height));
-    mVertRect.setSize(sf::Vector2f(width, height - radius_ * 2.0f));
-    
     setPosition(bounds_.position.x, bounds_.position.y);
 }
 
 void Button::setPosition(float x, float y) {
     bounds_.position.x = x;
     bounds_.position.y = y;
-    
-    float w = bounds_.size.x;
-    float h = bounds_.size.y;
-    
-    mTopLeft.setPosition({x, y});
-    mTopRight.setPosition({x + w - radius_ * 2.0f, y});
-    mBottomLeft.setPosition({x, y + h - radius_ * 2.0f});
-    mBottomRight.setPosition({x + w - radius_ * 2.0f, y + h - radius_ * 2.0f});
-
-    mHorizRect.setPosition({x + radius_, y});
-    mVertRect.setPosition({x, y + radius_});
-    
     alignText();
 }
 
@@ -82,108 +90,54 @@ sf::FloatRect Button::bounds() const {
 }
 
 void Button::updateColors(bool isHovered) {
-    sf::Color baseColor;
-    sf::Color textColor = sf::Color::White;
-    std::string lbl = text_ ? text_->getString().toAnsiString() : "";
+    baseColor_ = ThemeManager::current.secondary;
+    textColor_ = ThemeManager::current.textColor;
 
     if (!enabled_) {
-        if (styleRole_ == StyleRole::IconOnly) {
-            baseColor = sf::Color::Transparent;
-        } else if (lbl.find("Step") != std::string::npos) {
-            baseColor = sf::Color(230, 234, 238); // Xám cực nhạt cho nút disabled
-            textColor = sf::Color(160, 164, 168);
-        } else {
-            baseColor = sf::Color(202, 208, 214);
-            textColor = sf::Color(120, 124, 128);
-        }
+        baseColor_ = sf::Color(ThemeManager::current.secondary.r, ThemeManager::current.secondary.g, ThemeManager::current.secondary.b, 100);
+        textColor_ = sf::Color(ThemeManager::current.textColor.r, ThemeManager::current.textColor.g, ThemeManager::current.textColor.b, 100);
     } else {
         switch (styleRole_) {
-            case StyleRole::Play: baseColor = sf::Color(90, 150, 44); break;
-            case StyleRole::Danger: baseColor = sf::Color(211, 73, 98); break;
-            case StyleRole::Algorithm: baseColor = sf::Color(65, 80, 95); textColor = sf::Color(180, 195, 210); break;
-            case StyleRole::IconOnly: baseColor = sf::Color::Transparent; break;
-            default: 
-                if (lbl.find("Add Node") != std::string::npos || lbl.find("Edit Edges") != std::string::npos) {
-                    baseColor = sf::Color(65, 125, 195); // Xanh dương cho Edit thao tác
-                } else if (lbl.find("New") != std::string::npos || lbl.find("Undo") != std::string::npos || lbl.find("Random") != std::string::npos || lbl.find("View") != std::string::npos) {
-                    baseColor = sf::Color(105, 115, 125); // Xám trung tính cho System
-                } else if (lbl.find("BUILD") != std::string::npos) {
-                    baseColor = sf::Color(46, 175, 100); // Xanh lục Primary thu hút mắt
-                } else if (lbl.find("Step") != std::string::npos) {
-                    baseColor = sf::Color(240, 244, 248); // Màu sáng tạo background nổi bật
-                    textColor = sf::Color(40, 48, 56); // Chữ tối màu
-                } else {
-                    baseColor = sf::Color(95, 131, 151); // Mặc định
-                }
+            case StyleRole::Primary:
+                baseColor_ = ThemeManager::current.primary;
+                textColor_ = ThemeManager::current.bg;
+                break;
+            case StyleRole::Danger:
+                baseColor_ = sf::Color(201, 63, 88); // A consistent danger color
+                textColor_ = sf::Color::White;
+                break;
+            case StyleRole::IconOnly:
+            case StyleRole::Pill: // Pill buttons in leader's code have a different bg
+                baseColor_ = ThemeManager::current.bg;
+                textColor_ = ThemeManager::current.textColor;
+                break;
+            case StyleRole::Default:
+            default:
+                baseColor_ = ThemeManager::current.secondary;
+                textColor_ = ThemeManager::current.textColor;
                 break;
         }
 
         if (selected_) {
-            if (styleRole_ == StyleRole::Algorithm) {
-                baseColor = sf::Color(241, 186, 88);
-            } else if (styleRole_ == StyleRole::Danger || lbl.find("Delete") != std::string::npos) {
-                baseColor = sf::Color(197, 100, 100);
-            } else if (styleRole_ == StyleRole::IconOnly) {
-                baseColor = sf::Color(0, 0, 0, 40);
-            } else {
-                baseColor = sf::Color(114, 149, 170);
-            }
-            textColor = sf::Color(20, 20, 20);
+            baseColor_ = ThemeManager::current.primary;
+            textColor_ = ThemeManager::current.bg;
         } else if (isHovered) {
-            if (styleRole_ == StyleRole::IconOnly) {
-                baseColor = sf::Color(0, 0, 0, 20); // Subtle hover effect
-            } else if (lbl.find("Step") != std::string::npos) {
-                baseColor = sf::Color(220, 226, 232); // Hover đậm hơn chút
-            } else {
-                baseColor = sf::Color(static_cast<std::uint8_t>(std::max(0, baseColor.r - 20)), 
-                                      static_cast<std::uint8_t>(std::max(0, baseColor.g - 20)), 
-                                      static_cast<std::uint8_t>(std::max(0, baseColor.b - 20)));
-            }
+            // Darken the color slightly on hover
+            baseColor_.r = static_cast<uint8_t>(std::max(0, baseColor_.r - 25));
+            baseColor_.g = static_cast<uint8_t>(std::max(0, baseColor_.g - 25));
+            baseColor_.b = static_cast<uint8_t>(std::max(0, baseColor_.b - 25));
         }
 
         if (flashFrames_ > 0) {
-            baseColor = sf::Color(255, 255, 255, 200);
-            textColor = sf::Color::Black;
+            baseColor_ = sf::Color::White;
+            textColor_ = sf::Color::Black;
             if (text_) text_->setScale({0.92f, 0.92f}); // Tạo cảm giác lún click
             flashFrames_--;
         } else {
             if (text_) text_->setScale({1.0f, 1.0f});
         }
     }
-
-    if (lbl.find("Step") != std::string::npos) {
-        radius_ = std::min(bounds_.size.y * 0.5f, bounds_.size.x * 0.5f);
-    } else {
-        radius_ = 8.0f;
-    }
-
-    mTopLeft.setRadius(radius_);
-    mTopRight.setRadius(radius_);
-    mBottomLeft.setRadius(radius_);
-    mBottomRight.setRadius(radius_);
-
-    float x = bounds_.position.x;
-    float y = bounds_.position.y;
-    float w = bounds_.size.x;
-    float h = bounds_.size.y;
-    
-    mTopLeft.setPosition({x, y});
-    mTopRight.setPosition({x + w - radius_ * 2.0f, y});
-    mBottomLeft.setPosition({x, y + h - radius_ * 2.0f});
-    mBottomRight.setPosition({x + w - radius_ * 2.0f, y + h - radius_ * 2.0f});
-
-    mHorizRect.setSize(sf::Vector2f(w - radius_ * 2.0f, h));
-    mVertRect.setSize(sf::Vector2f(w, h - radius_ * 2.0f));
-    mHorizRect.setPosition({x + radius_, y});
-    mVertRect.setPosition({x, y + radius_});
-
-    mTopLeft.setFillColor(baseColor);
-    mTopRight.setFillColor(baseColor);
-    mBottomLeft.setFillColor(baseColor);
-    mBottomRight.setFillColor(baseColor);
-    mHorizRect.setFillColor(baseColor);
-    mVertRect.setFillColor(baseColor);
-    if (text_) text_->setFillColor(textColor);
+    if (text_) text_->setFillColor(textColor_);
 }
 
 void Button::draw(sf::RenderWindow& window) {
@@ -193,12 +147,12 @@ void Button::draw(sf::RenderWindow& window) {
     
     updateColors(isHovered);
     
-    window.draw(mTopLeft);
-    window.draw(mTopRight);
-    window.draw(mBottomLeft);
-    window.draw(mBottomRight);
-    window.draw(mHorizRect);
-    window.draw(mVertRect);
+    float radius = (styleRole_ == StyleRole::Pill) ? bounds_.size.y / 2.f : 12.f;
+    sf::ConvexShape buttonShape = createRoundedRect(bounds_.size, radius);
+    buttonShape.setPosition(bounds_.position);
+    buttonShape.setFillColor(baseColor_);
+
+    window.draw(buttonShape);
     
     // Vẽ text
     if (text_) window.draw(*text_);
@@ -224,7 +178,7 @@ void Button::draw(sf::RenderWindow& window) {
         float scaledIconY = bounds_.position.y + (bounds_.size.y - scaledIconH) / 2.0f;
         
         iconSprite.setPosition({iconX, scaledIconY});
-        iconSprite.setColor(text_ ? text_->getFillColor() : sf::Color::White); // Đổi màu giống chữ (sáng/tối/mờ)
+        iconSprite.setColor(textColor_); // Đổi màu giống chữ (sáng/tối/mờ)
         
         window.draw(iconSprite);
     }
