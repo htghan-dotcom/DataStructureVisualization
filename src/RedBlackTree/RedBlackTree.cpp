@@ -1,5 +1,5 @@
 #include "Common.h"
-#include "RedBlackTree.h"
+#include "RedBlackTree/RedBlackTree.h"
 
 RedBlackTree::RedBlackTree(){
     mpRoot = nullptr;

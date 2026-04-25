@@ -14,12 +14,20 @@ struct Node{
     }
 };
 
+// Snapshot of one bucket chain at a point in time
+struct ChainSnapshot {
+    vector<int> vals;   // head -> tail order
+};
+
 struct HashStepInfo{
-    string description; // for user
-    int lineID; // the code line needs highlighted (-1 = no highlight)
-    int targetBucket; // focused bucket (-1 = none)
-    int targetVal; // focused node value (-1 = none)
-    bool found; // found or not
+    string description;
+    int lineID;
+    int targetBucket;   // highlighted bucket (-1 = none)
+    int targetVal;      // highlighted node value (-1 = none)
+    bool found;
+
+    // Snapshot of the entire table at this step
+    vector<ChainSnapshot> tableSnapshot;
 };
 
 class HashChaining {
@@ -33,6 +41,9 @@ private:
     bool deleteInternal(int key, bool keepSteps);
     int  searchImpl(int key);
 
+    // Capture current table state into a snapshot
+    vector<ChainSnapshot> captureSnapshot() const;
+
 public:
     HashChaining(int tableSize);
     ~HashChaining();
@@ -45,7 +56,6 @@ public:
     void clear();
     void generateRandom(int count);
     void loadFromFile(const string& filename);
-
 
     vector<Node*> getTable() const;
     int getSize() const;

@@ -1,4 +1,4 @@
-#include "RBTVisualizer.h"
+#include "RedBlackTree/RBTVisualizer.h"
 #include "ThemeManager.h"
 #include "tinyfiledialogs.h"
 #include "Common.h"
@@ -43,6 +43,66 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
         cerr << "Cannot load font!" << endl;
     }
     
+    if (!mSkipBackTex.loadFromFile("assets/images/skipbackButton.png")){cerr << "Cannot load skipbackButton.png" << endl;}
+    if (!mPauseTex.loadFromFile("assets/images/pauseButton.png")){cerr << "Cannot load pauseButton.png" << endl; }
+    if (!mSkipForwardTex.loadFromFile("assets/images/skipforwardButton.png")){cerr << "Cannot load skipforwardButton.png" << endl;}
+    if (!mStartTex.loadFromFile("assets/images/startButton.png")){cerr << "Loi load startButton.png" << endl;}
+
+    mSkipBackTex.setSmooth(true);
+    mPauseTex.setSmooth(true);
+    mSkipForwardTex.setSmooth(true);
+    mStartTex.setSmooth(true);
+    
+    if (!mSkipBackTex.generateMipmap()) {}
+    if (!mPauseTex.generateMipmap()) {}
+    if (!mSkipForwardTex.generateMipmap()) {}
+    if (!mStartTex.generateMipmap()) {}
+    
+    mSkipBackBtn.setup(mSkipBackTex, 333.f, 897.f, 48.f, 48.f);
+    mPauseBtn.setup(mPauseTex, 397.f, 897.f, 48.f, 48.f);
+    mSkipForwardBtn.setup(mSkipForwardTex, 461.f, 897.f, 48.f, 48.f);
+    mStartBtn.setup(mStartTex, 134.f, 897.f, 48.f, 48.f);
+    
+    mPauseBtn.setCallback([this](){
+        mIsPaused = true;
+        mSkipBackBtn.setup(mSkipBackTex, 67.f, 897.f, 48.f, 48.f);
+        mSkipForwardBtn.setup(mSkipForwardTex, 735.f, 897.f, 48.f, 48.f);
+    });
+
+    mStartBtn.setCallback([this](){
+        mIsPaused = false;
+        mSkipBackBtn.setup(mSkipBackTex, 333.f, 897.f, 48.f, 48.f);
+        mSkipForwardBtn.setup(mSkipForwardTex, 461.f, 897.f, 48.f, 48.f);
+    });
+    
+    mSkipBackBtn.setCallback([this](){
+        mTree.setCurrentStep(0);
+        mIsPaused = true;
+    });
+
+    mStepBackBtn.setCallback([this](){
+        int cur = mTree.getCurrentStep();
+        if (cur > 0){
+            mTargetStep = cur - 1;
+            mStepAnimProgress = 0.0f;
+        }
+        mIsPaused = true;
+    });
+
+    mStepForwardBtn.setCallback([this](){
+        int cur = mTree.getCurrentStep();
+        if (cur < mTree.getStepHistory().size() - 1){
+            mTargetStep = cur + 1;
+            mStepAnimProgress = 0.0f;
+        }
+        mIsPaused = true;
+    });
+
+    mSkipForwardBtn.setCallback([this](){
+        mTree.goToFinalStep();
+        mIsPaused = true;
+    });
+    
     mClearBtn.refreshText();
     mNewBtn.refreshText();
     mInsertBtn.refreshText();
@@ -56,7 +116,7 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     mUploadBtn.refreshText();
 
     if (!mDiceTex.loadFromFile("assets/images/randomButton.png")){cerr << "Loi load randomButton.png" << endl;}
-    mDiceTex.setSmooth(true); mDiceTex.generateMipmap();
+    mDiceTex.setSmooth(true); if (!mDiceTex.generateMipmap()) {}
     
     mInsertDiceBtn.setup(mDiceTex, 205.f, 237.f, 30.f, 30.f);
     mDeleteDiceBtn.setup(mDiceTex, 205.f, 291.f, 30.f, 30.f);
@@ -105,6 +165,43 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     mTitleTree.setCharacterSize(70);
     mTitleTree.setFillColor(sf::Color(89, 149, 43));
     mTitleTree.setPosition(sf::Vector2f(67.f, 765.f));
+    
+    float bgX = 131.f, bgY = 890.f, bgW = 580.f, bgH = 61.f, bgR = 30.5f;
+    sf::Color bgColor(196, 196, 196);
+        
+    mStepBgLeft.setRadius(bgR);
+    mStepBgLeft.setPosition(sf::Vector2f(bgX, bgY));
+    mStepBgLeft.setFillColor(bgColor);
+    
+    mStepBgRight.setRadius(bgR);
+    mStepBgRight.setPosition(sf::Vector2f(bgX + bgW - bgH, bgY));
+    mStepBgRight.setFillColor(bgColor);
+    
+    mStepBgCenter.setSize(sf::Vector2f(bgW - bgH, bgH));
+    mStepBgCenter.setPosition(sf::Vector2f(bgX + bgR, bgY));
+    mStepBgCenter.setFillColor(bgColor);
+
+    mStepText.setString("Step 0 / 0");
+    mStepText.setCharacterSize(21);
+    mStepText.setFillColor(sf::Color::Black);
+    mStepText.setOrigin(sf::Vector2f(0.f, 0.f));
+    mStepText.setPosition(sf::Vector2f(192.f, 906.f));
+
+
+
+    mClearBtn.setCallback([this](){
+        mTree.backup();
+        mTree.initialize();
+        mTree.resetHistory("Tree cleared");
+        mLayout.setDescription("Tree cleared.");
+        mShowUndoBtn = true;
+    });
+    
+    mUndoBtn.setCallback([this](){
+        mTree.restore();
+        mLayout.setDescription("Tree restored.");
+        mShowUndoBtn = false;
+    });
       
     mTree.initialize();
               
@@ -411,7 +508,7 @@ void RBTVisualizer::drawAnimatedTree(const StepState& stepA, const StepState& st
         line.setOrigin(sf::Vector2f(0.f, lineThickness / 2.0f));
         line.setPosition(p1);
         line.setFillColor(edgeColor);
-        line.setRotation(sf::radians(atan2(dir.y, dir.x)));
+        line.setRotation(sf::radians(std::atan2(dir.y, dir.x)));
         mWindow->draw(line);
     };
 
