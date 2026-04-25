@@ -36,7 +36,6 @@ private:
     sf::Texture mMusicTex;
     sf::Texture mExitTex;
     
-    sf::ConvexShape createRoundedRect(sf::Vector2f size, float radius);
     void setupButton(TriButton& btn, float x, float y);
     
     bool mShowThemePopup = false;

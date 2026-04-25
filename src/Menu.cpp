@@ -2,36 +2,6 @@
 #include "ThemeManager.h"
 #include "Common.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-sf::ConvexShape createPillShape(float w, float h){
-    float radius = h / 2.f;
-    int pointsPerCorner = 15;
-    sf::ConvexShape shape(pointsPerCorner * 4);
-    int index = 0;
-    
-    for (int i = 0; i < pointsPerCorner; ++i){
-        float angle = i * (M_PI / 2) / (pointsPerCorner - 1);
-        shape.setPoint(index++, sf::Vector2f(w - radius + radius * sin(angle), radius - radius * cos(angle)));
-    }
-    for (int i = 0; i < pointsPerCorner; ++i){
-        float angle = M_PI / 2 + i * (M_PI / 2) / (pointsPerCorner - 1);
-        shape.setPoint(index++, sf::Vector2f(w - radius + radius * sin(angle), h - radius - radius * cos(angle)));
-    }
-    for (int i = 0; i < pointsPerCorner; ++i){
-        float angle = M_PI + i * (M_PI / 2) / (pointsPerCorner - 1);
-        shape.setPoint(index++, sf::Vector2f(radius + radius * sin(angle), h - radius - radius * cos(angle)));
-    }
-
-    for(int i = 0; i < pointsPerCorner; ++i){
-        float angle = 3 * M_PI / 2 + i * (M_PI / 2) / (pointsPerCorner - 1);
-        shape.setPoint(index++, sf::Vector2f(radius + radius * sin(angle), radius - radius * cos(angle)));
-    }
-    return shape;
-}
-
 MainMenu::MainMenu(float w, float h)
     : mWindowWidth(w),
       mWindowHeight(h),
@@ -147,7 +117,7 @@ void MainMenu::draw(sf::RenderTarget& target){
             
             sf::Color pColor = ThemeManager::current.primary;
             
-            sf::ConvexShape pillBtn = createPillShape(btnW, btnH);
+            sf::ConvexShape pillBtn = createRoundedRect({btnW, btnH}, btnH / 2.f);
             pillBtn.setPosition(sf::Vector2f(btnX, btnY));
             pillBtn.setFillColor(pColor);
             target.draw(pillBtn);

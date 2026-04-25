@@ -8,36 +8,36 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
       mTitleNum(mFontBold),
       mTitleRed(mFontBold), mTitleBlack(mFontBold), mTitleTree(mFontBold),
 
-      mClearBtn(mFontRegular, "Clear tree", 70.f, 176.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
-      mNewBtn(mFontRegular, "New tree", 251.f, 176.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
-      mInsertBtn(mFontRegular, "Insert", 70.f, 230.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
-      mDeleteBtn(mFontRegular, "Delete", 70.f, 284.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
-      mSearchBtn(mFontRegular, "Search", 70.f, 338.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
-      mUndoBtn(mFontRegular, "Undo", 70.f, 176.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
+      mClearBtn(mFontRegular, "Clear tree", 32.f, 150.f, 160.f, 45.f, 22.5f, ThemeManager::current.secondary),
+      mNewBtn(mFontRegular, "New tree", 213.f, 150.f, 160.f, 45.f, 22.5f, ThemeManager::current.secondary),
+      mInsertBtn(mFontRegular, "Insert", 32.f, 204.f, 160.f, 45.f, 22.5f, ThemeManager::current.secondary),
+      mDeleteBtn(mFontRegular, "Delete", 32.f, 258.f, 160.f, 45.f, 22.5f, ThemeManager::current.secondary),
+      mSearchBtn(mFontRegular, "Search", 32.f, 312.f, 160.f, 45.f, 22.5f, ThemeManager::current.secondary),
+      mUndoBtn(mFontRegular, "Undo", 32.f, 150.f, 160.f, 45.f, 22.5f, ThemeManager::current.secondary),
       
-      mInsertHoverStroke(mFontRegular, "", 68.f, 228.f, 164.f, 49.f, 23.f, sf::Color(90, 150, 44)),
-      mInsertExpandedStroke(mFontRegular, "", 68.f, 228.f, 345.f, 49.f, 23.f, sf::Color(90, 150, 44)),
-      mInsertExpandedBg(mFontRegular, "", 70.f, 230.f, 341.f, 45.f, 21.f, sf::Color(217, 217, 217)),
-      mConfirmAddBtn(mFontRegular, "Add", 254.f, 233.f, 154.f, 39.f, 19.5f, sf::Color(245, 245, 240)),
+      mInsertHoverStroke(mFontRegular, "", 30.f, 202.f, 164.f, 49.f, 24.5f, ThemeManager::current.primary),
+      mInsertExpandedStroke(mFontRegular, "", 30.f, 202.f, 345.f, 49.f, 24.5f, ThemeManager::current.primary),
+      mInsertExpandedBg(mFontRegular, "", 32.f, 204.f, 341.f, 45.f, 22.5f, ThemeManager::current.secondary),
+      mConfirmAddBtn(mFontRegular, "Add", 216.f, 207.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
       mInsertInputText(mFontRegular),
 
-      mDeleteHoverStroke(mFontRegular, "", 68.f, 282.f, 164.f, 49.f, 23.f, sf::Color(90, 150, 44)),
-      mDeleteExpandedStroke(mFontRegular, "", 68.f, 282.f, 345.f, 49.f, 23.f, sf::Color(90, 150, 44)),
-      mDeleteExpandedBg(mFontRegular, "", 70.f, 284.f, 341.f, 45.f, 21.f, sf::Color(217, 217, 217)),
-      mConfirmRemoveBtn(mFontRegular, "Remove", 254.f, 287.f, 154.f, 39.f, 19.5f, sf::Color(245, 245, 240)),
+      mDeleteHoverStroke(mFontRegular, "", 30.f, 256.f, 164.f, 49.f, 24.5f, ThemeManager::current.primary),
+      mDeleteExpandedStroke(mFontRegular, "", 30.f, 256.f, 345.f, 49.f, 24.5f, ThemeManager::current.primary),
+      mDeleteExpandedBg(mFontRegular, "", 32.f, 258.f, 341.f, 45.f, 22.5f, ThemeManager::current.secondary),
+      mConfirmRemoveBtn(mFontRegular, "Remove", 216.f, 261.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
       mDeleteInputText(mFontRegular),
 
-      mSearchHoverStroke(mFontRegular, "", 68.f, 336.f, 164.f, 49.f, 23.f, sf::Color(90, 150, 44)),
-      mSearchExpandedStroke(mFontRegular, "", 68.f, 336.f, 345.f, 49.f, 23.f, sf::Color(90, 150, 44)),
-      mSearchExpandedBg(mFontRegular, "", 70.f, 338.f, 341.f, 45.f, 21.f, sf::Color(217, 217, 217)),
-      mConfirmSearchBtn(mFontRegular, "Search", 254.f, 341.f, 154.f, 39.f, 19.5f, sf::Color(245, 245, 240)),
+      mSearchHoverStroke(mFontRegular, "", 30.f, 310.f, 164.f, 49.f, 24.5f, ThemeManager::current.primary),
+      mSearchExpandedStroke(mFontRegular, "", 30.f, 310.f, 345.f, 49.f, 24.5f, ThemeManager::current.primary),
+      mSearchExpandedBg(mFontRegular, "", 32.f, 312.f, 341.f, 45.f, 22.5f, ThemeManager::current.secondary),
+      mConfirmSearchBtn(mFontRegular, "Search", 216.f, 315.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
       mSearchInputText(mFontRegular),
 
-      mNewHoverStroke(mFontRegular, "", 249.f, 174.f, 164.f, 49.f, 23.f, sf::Color(90, 150, 44)),
-      mNewExpandedStroke(mFontRegular, "", 249.f, 174.f, 164.f, 157.f, 23.f, sf::Color(90, 150, 44)),
-      mNewExpandedBg(mFontRegular, "", 251.f, 176.f, 160.f, 153.f, 21.f, sf::Color(217, 217, 217)),
-      mRandomBtn(mFontRegular, "Random", 254.f, 233.f, 154.f, 39.f, 19.5f, sf::Color(245, 245, 240)),
-      mUploadBtn(mFontRegular, "From File", 254.f, 287.f, 154.f, 39.f, 19.5f, sf::Color(245, 245, 240))
+      mNewHoverStroke(mFontRegular, "", 211.f, 148.f, 164.f, 49.f, 24.5f, ThemeManager::current.primary),
+      mNewExpandedStroke(mFontRegular, "", 211.f, 148.f, 164.f, 157.f, 24.5f, ThemeManager::current.primary),
+      mNewExpandedBg(mFontRegular, "", 213.f, 150.f, 160.f, 153.f, 22.5f, ThemeManager::current.secondary),
+      mRandomBtn(mFontRegular, "Random", 216.f, 207.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
+      mUploadBtn(mFontRegular, "From File", 216.f, 261.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg)
 {
     if (!mFontBold.openFromFile("assets/fonts/Inter-Bold.ttf") or !mFontRegular.openFromFile("assets/fonts/Inter-Regular.ttf")){
         cerr << "Cannot load font!" << endl;
@@ -55,56 +55,112 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     mRandomBtn.refreshText();
     mUploadBtn.refreshText();
 
-    if (!mDiceTex.loadFromFile("assets/images/randomButton.png")){cerr << "Loi load randomButton.png" << endl;}
+    if (!mDiceTex.loadFromFile("assets/images/randomButton.png")){cerr << "Cannot load randomButton.png" << endl;}
     mDiceTex.setSmooth(true); mDiceTex.generateMipmap();
     
-    mInsertDiceBtn.setup(mDiceTex, 205.f, 237.f, 30.f, 30.f);
-    mDeleteDiceBtn.setup(mDiceTex, 205.f, 291.f, 30.f, 30.f);
-    mSearchDiceBtn.setup(mDiceTex, 205.f, 345.f, 30.f, 30.f);
+    mInsertDiceBtn.setup(mDiceTex, 167.f, 211.f, 30.f, 30.f);
+    mDeleteDiceBtn.setup(mDiceTex, 167.f, 265.f, 30.f, 30.f);
+    mSearchDiceBtn.setup(mDiceTex, 167.f, 319.f, 30.f, 30.f);
     
     mInsertInputText.setFont(mFontRegular);
-    mInsertInputText.setCharacterSize(22);
-    mInsertInputText.setFillColor(sf::Color::Black);
-    mInsertInputText.setPosition(sf::Vector2f(85.f, 238.f));
+    mInsertInputText.setCharacterSize(25);
+    mInsertInputText.setFillColor(ThemeManager::current.textColor);
+    mInsertInputText.setPosition(sf::Vector2f(47.f, 212.f));
     
     mDeleteInputText.setFont(mFontRegular);
-    mDeleteInputText.setCharacterSize(22);
-    mDeleteInputText.setFillColor(sf::Color::Black);
-    mDeleteInputText.setPosition(sf::Vector2f(85.f, 292.f));
+    mDeleteInputText.setCharacterSize(25);
+    mDeleteInputText.setFillColor(ThemeManager::current.textColor);
+    mDeleteInputText.setPosition(sf::Vector2f(47.f, 266.f));
     
     mSearchInputText.setFont(mFontRegular);
-    mSearchInputText.setCharacterSize(22);
-    mSearchInputText.setFillColor(sf::Color::Black);
-    mSearchInputText.setPosition(sf::Vector2f(85.f, 346.f));
+    mSearchInputText.setCharacterSize(25);
+    mSearchInputText.setFillColor(ThemeManager::current.textColor);
+    mSearchInputText.setPosition(sf::Vector2f(47.f, 320.f));
     
-    mInsertCursorLine.setSize(sf::Vector2f(2.f, 24.f));
-    mInsertCursorLine.setFillColor(sf::Color::Black);
+    mInsertCursorLine.setSize(sf::Vector2f(2.f, 25.f));
+    mInsertCursorLine.setFillColor(ThemeManager::current.textColor);
     
-    mDeleteCursorLine.setSize(sf::Vector2f(2.f, 24.f));
-    mDeleteCursorLine.setFillColor(sf::Color::Black);
+    mDeleteCursorLine.setSize(sf::Vector2f(2.f, 25.f));
+    mDeleteCursorLine.setFillColor(ThemeManager::current.textColor);
     
-    mSearchCursorLine.setSize(sf::Vector2f(2.f, 24.f));
-    mSearchCursorLine.setFillColor(sf::Color::Black);
+    mSearchCursorLine.setSize(sf::Vector2f(2.f, 25.f));
+    mSearchCursorLine.setFillColor(ThemeManager::current.textColor);
 
+    mClearBtn.setCallback([this](){
+        mTree.backup();
+        mTree.initialize();
+        mTree.resetHistory("Tree cleared.");
+        mLayout.setDescription("Tree cleared.");
+        resetPlayUI();
+        mShowUndoBtn = true;
+    });
+        
+    mUndoBtn.setCallback([this](){
+        mTree.restore();
+        mLayout.setDescription("Undo successfully.");
+        mShowUndoBtn = false;
+        mLayout.setPaused(true);
+            
+        mIsNewExpanded = false;
+        mIsInsertExpanded = false;
+        mIsDeleteExpanded = false;
+        mIsSearchExpanded = false;
+        mInputValue = "";
+    });
+    
+    mLayout.setSkipBackCallback([this](){
+        mTree.setCurrentStep(0);
+        mTargetStep = -1;
+        mLayout.setPaused(true);
+    });
+
+    mLayout.setStepBackCallback([this](){
+        int cur = mTree.getCurrentStep();
+        if (cur > 0){
+            mTargetStep = cur - 1;
+            mStepAnimProgress = 0.0f;
+        }
+        mLayout.setPaused(true);
+    });
+
+    mLayout.setStepForwardCallback([this](){
+        int cur = mTree.getCurrentStep();
+        int total = static_cast<int>(mTree.getStepHistory().size());
+        if (cur < total - 1){
+            mTargetStep = cur + 1;
+            mStepAnimProgress = 0.0f;
+        }
+        mLayout.setPaused(true);
+    });
+
+    mLayout.setSkipForwardCallback([this](){
+        int total = static_cast<int>(mTree.getStepHistory().size());
+        if (total > 0){
+            mTree.setCurrentStep(total - 1);
+            mTargetStep = -1;
+        }
+        mLayout.setPaused(true);
+    });
+    
     mTitleNum.setString("03");
     mTitleNum.setCharacterSize(30);
-    mTitleNum.setFillColor(sf::Color::Black);
-    mTitleNum.setPosition(sf::Vector2f(67.f, 663.f));
+    mTitleNum.setFillColor(ThemeManager::current.textColor);
+    mTitleNum.setPosition(sf::Vector2f(32.f, 585.f));
 
     mTitleRed.setString("Red");
     mTitleRed.setCharacterSize(70);
     mTitleRed.setFillColor(sf::Color(230, 57, 70));
-    mTitleRed.setPosition(sf::Vector2f(67.f, 695.f));
+    mTitleRed.setPosition(sf::Vector2f(32.f, 617.f));
     
     mTitleBlack.setString("-Black");
     mTitleBlack.setCharacterSize(70);
-    mTitleBlack.setFillColor(sf::Color::Black);
-    mTitleBlack.setPosition(sf::Vector2f(79.f + mTitleRed.getLocalBounds().size.x, 695.f));
+    mTitleBlack.setFillColor(ThemeManager::current.textColor);
+    mTitleBlack.setPosition(sf::Vector2f(44.f + mTitleRed.getLocalBounds().size.x, 617.f));
 
     mTitleTree.setString("Tree");
     mTitleTree.setCharacterSize(70);
-    mTitleTree.setFillColor(sf::Color(89, 149, 43));
-    mTitleTree.setPosition(sf::Vector2f(67.f, 765.f));
+    mTitleTree.setFillColor(ThemeManager::current.primary);
+    mTitleTree.setPosition(sf::Vector2f(32.f, 687.f));
       
     mTree.initialize();
               
@@ -158,22 +214,24 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
             if (mouseEvent->button == sf::Mouse::Button::Left){
                 bool clickedInsideAnyForm = false;
                 
-                if (!mIsNewExpanded and sf::FloatRect(sf::Vector2f(251.f, 176.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+                if (!mIsNewExpanded and sf::FloatRect(sf::Vector2f(213.f, 150.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
                     mIsNewExpanded = true;
-                    mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false;
+                    mShowUndoBtn = false;
+                    mIsInsertExpanded = false;
+                    mIsDeleteExpanded = false;
+                    mIsSearchExpanded = false;
+                    
                     clickedInsideAnyForm = true;
                 }
                 
-                else if (mIsNewExpanded and sf::FloatRect(sf::Vector2f(251.f, 176.f), sf::Vector2f(160.f, 161.f)).contains(worldPos)){
+                else if (mIsNewExpanded and sf::FloatRect(sf::Vector2f(213.f, 150.f), sf::Vector2f(160.f, 161.f)).contains(worldPos)){
                     clickedInsideAnyForm = true;
-                    if (sf::FloatRect(sf::Vector2f(254.f, 233.f), sf::Vector2f(154.f, 39.f)).contains(worldPos)){
+                    if (sf::FloatRect(sf::Vector2f(216.f, 207.f), sf::Vector2f(154.f, 39.f)).contains(worldPos)){
                         mTree.backup();
                         generateRandomTree();
                         mIsNewExpanded = false;
                         mShowUndoBtn = false;
-                    }
-                    
-                    else if (sf::FloatRect(sf::Vector2f(254.f, 287.f), sf::Vector2f(154.f, 39.f)).contains(worldPos)){
+                    } else if (sf::FloatRect(sf::Vector2f(216.f, 261.f), sf::Vector2f(154.f, 39.f)).contains(worldPos)){
                         mTree.backup();
                         const char* filterPatterns[1] = { "*.txt" };
                         const char* filePath = tinyfd_openFileDialog("Choose Red-Black Tree data file", "", 1, filterPatterns, "Text Files (*.txt)", 0);
@@ -189,16 +247,20 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                     }
                 }
 
-                else if (!mIsInsertExpanded and sf::FloatRect(sf::Vector2f(70.f, 230.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+                else if (!mIsInsertExpanded and sf::FloatRect(sf::Vector2f(32.f, 204.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
                     mIsNewExpanded = false;
-                    mIsInsertExpanded = true; mIsDeleteExpanded = false; mIsSearchExpanded = false;
+                    mIsInsertExpanded = true;
+                    mIsDeleteExpanded = false;
+                    mIsSearchExpanded = false;
+                    
+                    mShowUndoBtn = false;
                     mInputValue = "";
                     clickedInsideAnyForm = true;
                 }
                 
-                else if (mIsInsertExpanded and sf::FloatRect(sf::Vector2f(70.f, 230.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
+                else if (mIsInsertExpanded and sf::FloatRect(sf::Vector2f(32.f, 204.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
                     clickedInsideAnyForm = true;
-                    if (sf::FloatRect(sf::Vector2f(254.f, 233.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) and !mInputValue.empty()){
+                    if (sf::FloatRect(sf::Vector2f(216.f, 207.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) and !mInputValue.empty()){
                         int val = stoi(mInputValue);
                         mTree.backup();
                         mTree.resetHistory("Create new node " + to_string(val) + " (RED)");
@@ -207,22 +269,25 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                         mIsInsertExpanded = false;
                         mInputValue = "";
                         resetPlayUI();
-                    }
-                    
-                    else if (sf::FloatRect(sf::Vector2f(205.f, 237.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)){
+                    } else if (sf::FloatRect(sf::Vector2f(167.f, 211.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)){
                         mInputValue = to_string(rand() % 99 + 1);
                     }
                 }
 
-                else if (!mIsDeleteExpanded and sf::FloatRect(sf::Vector2f(70.f, 284.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
-                    mIsDeleteExpanded = true; mIsNewExpanded = false; mIsInsertExpanded = false; mIsSearchExpanded = false;
+                else if (!mIsDeleteExpanded and sf::FloatRect(sf::Vector2f(32.f, 258.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+                    mIsNewExpanded = false;
+                    mIsDeleteExpanded = true;
+                    mIsInsertExpanded = false;
+                    mIsSearchExpanded = false;
+                    
+                    mShowUndoBtn = false;
                     mInputValue = "";
                     clickedInsideAnyForm = true;
                 }
                 
-                else if (mIsDeleteExpanded and sf::FloatRect(sf::Vector2f(70.f, 284.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
+                else if (mIsDeleteExpanded and sf::FloatRect(sf::Vector2f(32.f, 258.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
                     clickedInsideAnyForm = true;
-                    if (sf::FloatRect(sf::Vector2f(254.f, 287.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) and !mInputValue.empty()){
+                    if (sf::FloatRect(sf::Vector2f(216.f, 261.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) and !mInputValue.empty()){
                         int val = stoi(mInputValue);
                         mTree.backup();
                         mTree.resetHistory("Start to Remove " + to_string(val));
@@ -231,22 +296,25 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                         mIsDeleteExpanded = false;
                         mInputValue = "";
                         resetPlayUI();
-                    }
-                    
-                    else if (sf::FloatRect(sf::Vector2f(205.f, 291.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)){
+                    } else if (sf::FloatRect(sf::Vector2f(167.f, 265.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)){
                         mInputValue = to_string(rand() % 99 + 1);
                     }
                 }
                 
-                else if (!mIsSearchExpanded and sf::FloatRect(sf::Vector2f(70.f, 338.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
-                    mIsSearchExpanded = true; mIsNewExpanded = false; mIsInsertExpanded = false; mIsDeleteExpanded = false;
+                else if (!mIsSearchExpanded and sf::FloatRect(sf::Vector2f(32.f, 312.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+                    mIsNewExpanded = false;
+                    mIsSearchExpanded = true;
+                    mIsInsertExpanded = false;
+                    mIsDeleteExpanded = false;
+                    
+                    mShowUndoBtn = false;
                     mInputValue = "";
                     clickedInsideAnyForm = true;
                 }
                 
-                else if (mIsSearchExpanded and sf::FloatRect(sf::Vector2f(70.f, 338.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
+                else if (mIsSearchExpanded and sf::FloatRect(sf::Vector2f(32.f, 312.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
                     clickedInsideAnyForm = true;
-                    if (sf::FloatRect(sf::Vector2f(254.f, 341.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) and !mInputValue.empty()){
+                    if (sf::FloatRect(sf::Vector2f(216.f, 315.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) and !mInputValue.empty()){
                         int val = stoi(mInputValue);
                         mTree.resetHistory("Start to Search for " + to_string(val));
                         mTree.search(val);
@@ -254,15 +322,16 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                         mIsSearchExpanded = false;
                         mInputValue = "";
                         resetPlayUI();
-                    }
-                    
-                    else if (sf::FloatRect(sf::Vector2f(205.f, 345.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)){
+                    } else if (sf::FloatRect(sf::Vector2f(167.f, 319.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)){
                         mInputValue = to_string(rand() % 99 + 1);
                     }
                 }
 
                 if (!clickedInsideAnyForm){
-                    mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false; mIsNewExpanded = false;
+                    mIsInsertExpanded = false;
+                    mIsDeleteExpanded = false;
+                    mIsSearchExpanded = false;
+                    mIsNewExpanded = false;
                 }
             }
         }
@@ -276,30 +345,35 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                 
                 mIsNewExpanded = false;
                 mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false;
+                mShowUndoBtn = false;
                 mInputValue = "";
             }
                     
             else if (keyEvent->code == sf::Keyboard::Key::I){
                 mIsNewExpanded = false;
                 mIsInsertExpanded = true; mIsDeleteExpanded = false; mIsSearchExpanded = false;
+                mShowUndoBtn = false;
                 mInputValue = "";
             }
             
             else if (keyEvent->code == sf::Keyboard::Key::D){
                 mIsNewExpanded = false;
                 mIsInsertExpanded = false; mIsDeleteExpanded = true; mIsSearchExpanded = false;
+                mShowUndoBtn = false;
                 mInputValue = "";
             }
             
             else if (keyEvent->code == sf::Keyboard::Key::S){
                 mIsNewExpanded = false;
                 mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = true;
+                mShowUndoBtn = false;
                 mInputValue = "";
             }
             
             else if (keyEvent->code == sf::Keyboard::Key::N){
                 mIsNewExpanded = !mIsNewExpanded;
                 mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false;
+                mShowUndoBtn = false;
                 mInputValue = "";
             }
             
@@ -379,14 +453,58 @@ void RBTVisualizer::drawAnimatedTree(const StepState& stepA, const StepState& st
     float easeP2 = animP * animP * (3.0f - 2.0f * animP);
     
     int nodeCount = static_cast<int>(stepB.nodes.size());
-    float menuScale = (nodeCount > 7) ? (7.0f / (float)nodeCount) : 1.0f;
-    float visScale = (nodeCount > 8) ? (8.0f / (float)nodeCount) : 1.0f;
+    
+    int maxDepth = 0;
+    map<int, const NodeSnapshot*> byVal;
+    set<int> hasParent;
+    for (const auto& n : stepB.nodes){
+        byVal[n.val] = &n;
+        if (n.leftVal != -1){
+            hasParent.insert(n.leftVal);
+        }
+        
+        if (n.rightVal != -1){
+            hasParent.insert(n.rightVal);
+        }
+    }
+        
+    int root = -1;
+    for (const auto& n : stepB.nodes){
+        if (hasParent.find(n.val) == hasParent.end()){
+            root = n.val;
+            break;
+        }
+    }
+    
+    function<void(int, int)> getDepth = [&](int val, int depth){
+        if (depth > maxDepth) maxDepth = depth;
+        const NodeSnapshot* n = byVal[val];
+        if (n->leftVal != -1 and byVal.count(n->leftVal)){getDepth(n->leftVal, depth + 1);}
+        if (n->rightVal != -1 and byVal.count(n->rightVal)){getDepth(n->rightVal, depth + 1);}
+    };
+    
+    if (root != -1){getDepth(root, 0);}
+
+    float maxTreeWidth = (1440.f - 20.f) - (373.f + 20.f) - 70.f;
+    float maxTreeHeight = 590.f - 20.f - 70.f;
+
+    float baseX = 55.f;
+    float baseY = 85.f;
+    float naturalWidth = (nodeCount > 1) ? (nodeCount - 1) * baseX : 0.f;
+
+    float scaleX = (naturalWidth > maxTreeWidth) ? maxTreeWidth / naturalWidth : 1.0f;
+    float scaleY = (maxDepth > 0 && maxDepth * baseY > maxTreeHeight) ? maxTreeHeight / (maxDepth * baseY) : 1.0f;
+    float visScale = min(scaleX, scaleY);
+        
+    float menuScale = 300.f / (naturalWidth + 70.f);
+    if (menuScale > 1.0f) menuScale = 1.0f;
+    
     float currentScale = menuScale + (visScale - menuScale) * easeP1;
     
-    const float R = (20.f + (35.f - 20.f) * easeP1) * currentScale;
-    float lineThickness = (2.f + (4.f - 2.f) * easeP1) * currentScale;
-    float mainStroke = (2.f + (3.f - 2.f) * easeP1) * currentScale;
-    int fontSize = static_cast<int>((14 + (30 - 14) * easeP1) * currentScale);
+    const float R = 35.f * currentScale;
+    float lineThickness = 4.f * currentScale;
+    float mainStroke = 3.f * currentScale;
+    int fontSize = static_cast<int>(30.f * currentScale);
     
     sf::Color edgeColor = ThemeManager::current.primary;
     
@@ -397,7 +515,7 @@ void RBTVisualizer::drawAnimatedTree(const StepState& stepA, const StepState& st
         
         if (posA.count(n.val)){
             startPos = posA[n.val];
-        } else{
+        } else {
             startPos = sf::Vector2f(300.f, 250.f);
         }
         
@@ -465,8 +583,8 @@ void RBTVisualizer::drawAnimatedTree(const StepState& stepA, const StepState& st
             textColor = sf::Color(230, 57, 70);
         } else {
             circle.setFillColor(sf::Color(172, 172, 172));
-            circle.setOutlineColor(sf::Color(67, 66, 67));
-            textColor = sf::Color(67, 66, 67);
+            circle.setOutlineColor(ThemeManager::current.textColor);
+            textColor = sf::Color(41, 42, 49);
         }
         
         mWindow->draw(circle);
@@ -574,11 +692,14 @@ void RBTVisualizer::render(bool showUI){
         
         if (cur >= 0 and cur < static_cast<int>(history.size())){
             mLayout.setDescription(history[cur].description);
+            
+            mLayout.setPseudoCode(history[cur].codeLines);
+            mLayout.setActiveCodeLine(history[cur].activeLine);
         }
             
         int total = static_cast<int>(mTree.getStepHistory().size());
         int current = mTree.getCurrentStep();
-        mLayout.setStepText("Step " + std::to_string(current + 1) + " / " + std::to_string(total));
+        mLayout.setStepText("Step " + to_string(current + 1) + " / " + to_string(total));
         mLayout.draw(*mWindow);
             
         mWindow->draw(mTitleNum);
@@ -599,7 +720,7 @@ void RBTVisualizer::render(bool showUI){
             mRandomBtn.draw(*mWindow);
             mUploadBtn.draw(*mWindow);
         } else {
-            if (sf::FloatRect(sf::Vector2f(251.f, 176.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+            if (sf::FloatRect(sf::Vector2f(213.f, 150.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
                 mNewHoverStroke.draw(*mWindow);
             }
             mNewBtn.draw(*mWindow);
@@ -621,12 +742,12 @@ void RBTVisualizer::render(bool showUI){
             
             if (mShowCursor){
                 float textWidth = mInsertInputText.getLocalBounds().size.x;
-                float cursorX = mInputValue.empty() ? 85.f : 85.f + textWidth + 2.f;
-                mInsertCursorLine.setPosition(sf::Vector2f(cursorX, 240.f));
+                float cursorX = mInputValue.empty() ? 47.f : 47.f + textWidth + 2.f;
+                mInsertCursorLine.setPosition(sf::Vector2f(cursorX, 214.f));
                 mWindow->draw(mInsertCursorLine);
             }
         } else {
-            if (sf::FloatRect(sf::Vector2f(70.f, 230.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+            if (sf::FloatRect(sf::Vector2f(32.f, 204.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
                 mInsertHoverStroke.draw(*mWindow);
             }
             mInsertBtn.draw(*mWindow);
@@ -648,12 +769,12 @@ void RBTVisualizer::render(bool showUI){
             
             if (mShowCursor){
                 float textWidth = mDeleteInputText.getLocalBounds().size.x;
-                float cursorX = mInputValue.empty() ? 85.f : 85.f + textWidth + 2.f;
-                mDeleteCursorLine.setPosition(sf::Vector2f(cursorX, 294.f));
+                float cursorX = mInputValue.empty() ? 47.f : 47.f + textWidth + 2.f;
+                mDeleteCursorLine.setPosition(sf::Vector2f(cursorX, 268.f));
                 mWindow->draw(mDeleteCursorLine);
             }
         } else {
-            if (sf::FloatRect(sf::Vector2f(70.f, 284.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+            if (sf::FloatRect(sf::Vector2f(32.f, 258.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
                 mDeleteHoverStroke.draw(*mWindow);
             }
             mDeleteBtn.draw(*mWindow);
@@ -675,12 +796,12 @@ void RBTVisualizer::render(bool showUI){
             
             if (mShowCursor){
                 float textWidth = mSearchInputText.getLocalBounds().size.x;
-                float cursorX = mInputValue.empty() ? 85.f : 85.f + textWidth + 2.f;
-                mSearchCursorLine.setPosition(sf::Vector2f(cursorX, 348.f));
+                float cursorX = mInputValue.empty() ? 47.f : 47.f + textWidth + 2.f;
+                mSearchCursorLine.setPosition(sf::Vector2f(cursorX, 322.f));
                 mWindow->draw(mSearchCursorLine);
             }
         } else {
-            if (sf::FloatRect(sf::Vector2f(70.f, 338.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+            if (sf::FloatRect(sf::Vector2f(32.f, 312.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
                 mSearchHoverStroke.draw(*mWindow);
             }
             mSearchBtn.draw(*mWindow);
@@ -718,27 +839,61 @@ std::map<int, sf::Vector2f> RBTVisualizer::computeLayout(const std::vector<NodeS
 
     map<int, sf::Vector2f> pos;
     int inorderIdx = 0;
-    
+        
     float p = mTransitionProgress;
-    
     float easeP = p * p * (3.0f - 2.0f * p);
-    
+        
     int nodeCount = static_cast<int>(nodes.size());
-    float menuScale = (nodeCount > 7) ? (7.0f / (float)nodeCount) : 1.0f;
-    float visScale = (nodeCount > 8) ? (8.0f / (float)nodeCount) : 1.0f;
-    float currentScale = menuScale + (visScale - menuScale) * easeP;
-    float xSpacing = (40.f + (70.f - 40.f) * easeP) * currentScale;
-    float ySpacing = (60.f + (100.f - 60.f) * easeP) * currentScale;
     
-    float totalWidth = (nodeCount - 1) * xSpacing;
+    float safeLeft = 373.f + 20.f;
+    float safeRight = 1440.f - 20.f;
+    float safeTop = 130.f;
+    float safeBottom = 590.f;
+        
+    float maxTreeWidth = (safeRight - safeLeft) - 70.f;
+    float maxTreeHeight = (safeBottom - safeTop) - 70.f;
+
+    int maxDepth = 0;
+    function<void(int, int)> getDepth = [&](int val, int depth){
+        if (depth > maxDepth) maxDepth = depth;
+        const NodeSnapshot* n = byVal[val];
+        if (n->leftVal != -1 and byVal.count(n->leftVal)){
+            getDepth(n->leftVal, depth + 1);
+        }
+        
+        if (n->rightVal != -1 and byVal.count(n->rightVal)){
+            getDepth(n->rightVal, depth + 1);
+        }
+    };
+        
+    if (root != -1){getDepth(root, 0);}
+        
+    float baseX = 55.f;
+    float baseY = 85.f;
+        
+    float naturalWidth = (nodeCount > 1) ? (nodeCount - 1) * baseX : 0.f;
+        
+    float scaleX = (naturalWidth > maxTreeWidth) ? maxTreeWidth / naturalWidth : 1.0f;
+    float scaleY = (maxDepth > 0 && maxDepth * baseY > maxTreeHeight) ? maxTreeHeight / (maxDepth * baseY) : 1.0f;
+    float visScale = min(scaleX, scaleY);
+        
+    float menuScale = 300.f / (naturalWidth + 70.f);
+    if (menuScale > 1.0f){menuScale = 1.0f;}
+    
+    float currentScale = menuScale + (visScale - menuScale) * easeP;
+        
+    float xSpacing = baseX * currentScale;
+    float ySpacing = baseY * currentScale;
+        
+    float totalWidth = (nodeCount > 1) ? (nodeCount - 1) * xSpacing : 0.f;
+    float visCenterX = (safeLeft + safeRight) / 2.0f;
     float menuCenterX = 900.f;
-    float visCenterX = 700.f;
         
     float menuX = menuCenterX - totalWidth / 2.0f;
     float visX = visCenterX - totalWidth / 2.0f;
         
     float menuY = 300.f;
-    float visY = 200.f;
+    float visY = safeTop + 35.f * currentScale;
         
     float xOffset = menuX + (visX - menuX) * easeP;
     float yStart = menuY + (visY - menuY) * easeP;
@@ -802,3 +957,4 @@ void RBTVisualizer::resetPlayUI(){
     mShowUndoBtn = false;
     mAutoPlayClock.restart();
 }
+

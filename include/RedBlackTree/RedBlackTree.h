@@ -19,6 +19,9 @@ struct StepState {
     int highlightedNode;
     
     std::vector<NodeSnapshot> nodes;
+    
+    std::vector<std::string> codeLines;
+    int activeLine = -1;
 };
 
 class RedBlackTree {
@@ -42,7 +45,7 @@ private:
     void collectSnapshot(RedBlackNode *node, std::vector<NodeSnapshot>& nodes);
     void inorderCollect(RedBlackNode *root, std::vector<int>& data, std::vector<std::string>& colors);
     
-    void saveStep(std::string description, int highlightedNode = -1);
+    void saveStep(std::string description, int highlightedNode = -1, int activeLine = -1, const std::vector<std::string>& codeLines = {});
     
     RedBlackNode *mpBackupRoot;
     RedBlackNode *cloneNode(RedBlackNode *node, RedBlackNode *parent);

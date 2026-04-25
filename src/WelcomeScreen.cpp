@@ -2,37 +2,6 @@
 #include "ThemeManager.h"
 #include "Common.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-sf::ConvexShape WelcomeScreen::createRoundedRect(sf::Vector2f size, float radius){
-    int pointsPerCorner = 15;
-    sf::ConvexShape shape(pointsPerCorner * 4);
-    int index = 0;
-    
-    for(int i = 0; i < pointsPerCorner; ++i){
-        float angle = i * (M_PI / 2) / (pointsPerCorner - 1);
-        shape.setPoint(index++, sf::Vector2f(size.x - radius + radius * sin(angle), radius - radius * cos(angle)));
-    }
-    
-    for(int i = 0; i < pointsPerCorner; ++i){
-        float angle = M_PI / 2 + i * (M_PI / 2) / (pointsPerCorner - 1);
-        shape.setPoint(index++, sf::Vector2f(size.x - radius + radius * sin(angle), size.y - radius - radius * cos(angle)));
-    }
-    
-    for(int i = 0; i < pointsPerCorner; ++i){
-        float angle = M_PI + i * (M_PI / 2) / (pointsPerCorner - 1);
-        shape.setPoint(index++, sf::Vector2f(radius + radius * sin(angle), size.y - radius - radius * cos(angle)));
-    }
-    
-    for(int i = 0; i < pointsPerCorner; ++i){
-        float angle = 3 * M_PI / 2 + i * (M_PI / 2) / (pointsPerCorner - 1);
-        shape.setPoint(index++, sf::Vector2f(radius + radius * sin(angle), radius - radius * cos(angle)));
-    }
-    return shape;
-}
-
 sf::VertexArray WelcomeScreen::createGradientRoundedRect(sf::Vector2f size, float radius, sf::Vector2f pos, sf::Color cBottomLeft, sf::Color cTopRight){
     int pointsPerCorner = 15;
     int totalPoints = pointsPerCorner * 4;

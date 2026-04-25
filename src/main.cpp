@@ -107,7 +107,6 @@ int main(){
                     if (mouseEvent->button == sf::Mouse::Button::Left){
                         sf::Vector2f mPos(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
                                     
-                        // Nếu bấm vào nút mBtnColor (Theme) thì bật Popup
                         sf::FloatRect colorBtnBounds(sf::Vector2f(494.f, 715.f), sf::Vector2f(145.f, 145.f));
                         if (colorBtnBounds.contains(mPos)){
                             settingsScreen.toggleThemePopup();

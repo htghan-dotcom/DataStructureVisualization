@@ -30,7 +30,7 @@ public:
                     sf::Color(217, 217, 217),
                     sf::Color(245, 245, 240),
                     sf::Color(255, 255, 255),
-                    sf::Color(0, 0, 0)
+                    sf::Color(41, 42, 49)
                 };
             }
             
@@ -41,7 +41,7 @@ public:
                     sf::Color(217, 217, 217),
                     sf::Color(255, 245, 248),
                     sf::Color(255, 255, 255),
-                    sf::Color(0, 0, 0)
+                    sf::Color(41, 42, 49)
                 };
             }
             
@@ -52,7 +52,7 @@ public:
                     sf::Color(217, 217, 217),
                     sf::Color(248, 250, 252),
                     sf::Color(255, 255, 255),
-                    sf::Color(0, 0, 0)
+                    sf::Color(41, 42, 49)
                 };
             }
             
@@ -63,7 +63,8 @@ public:
                     sf::Color(217, 217, 217),
                     sf::Color(255, 253, 240),
                     sf::Color(255, 255, 255),
-                    sf::Color(0, 0, 0) };
+                    sf::Color(41, 42, 49)
+                };
             }
         } else {
             // ================= DARK MODE =================

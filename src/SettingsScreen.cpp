@@ -2,38 +2,6 @@
 #include "ThemeManager.h"
 #include "Common.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-sf::ConvexShape SettingsScreen::createRoundedRect(sf::Vector2f size, float radius){
-    int pointsPerCorner = 15;
-    sf::ConvexShape shape(pointsPerCorner * 4);
-    int index = 0;
-    
-    for (int i = 0; i < pointsPerCorner; ++i){
-        float angle = i * (M_PI / 2) / (pointsPerCorner - 1);
-        shape.setPoint(index++, sf::Vector2f(size.x - radius + radius * sin(angle), radius - radius * cos(angle)));
-    }
-    
-    for (int i = 0; i < pointsPerCorner; ++i){
-        float angle = M_PI / 2 + i * (M_PI / 2) / (pointsPerCorner - 1);
-        shape.setPoint(index++, sf::Vector2f(size.x - radius + radius * sin(angle), size.y - radius - radius * cos(angle)));
-    }
-    
-    for (int i = 0; i < pointsPerCorner; ++i){
-        float angle = M_PI + i * (M_PI / 2) / (pointsPerCorner - 1);
-        shape.setPoint(index++, sf::Vector2f(radius + radius * sin(angle), size.y - radius - radius * cos(angle)));
-    }
-    
-    for (int i = 0; i < pointsPerCorner; ++i){
-        float angle = 3 * M_PI / 2 + i * (M_PI / 2) / (pointsPerCorner - 1);
-        shape.setPoint(index++, sf::Vector2f(radius + radius * sin(angle), radius - radius * cos(angle)));
-    }
-    
-    return shape;
-}
-
 void SettingsScreen::setupButton(TriButton& btn, float x, float y){
     btn.outer = createRoundedRect({145.f, 145.f}, 50.f);
     btn.outer.setPosition(sf::Vector2f(x, y));
@@ -67,7 +35,7 @@ SettingsScreen::SettingsScreen(float w, float h)
     mTitleSettings.setFont(mFontBold);
     mTitleSettings.setString("SETTINGS");
     mTitleSettings.setCharacterSize(90);
-    mTitleSettings.setFillColor(sf::Color::Black);
+    mTitleSettings.setFillColor(ThemeManager::current.textColor);
     
     sf::FloatRect sBounds = mTitleSettings.getLocalBounds();
     mTitleSettings.setOrigin(sf::Vector2f(sBounds.position.x + sBounds.size.x / 2.0f, 0.0f));
@@ -77,19 +45,19 @@ SettingsScreen::SettingsScreen(float w, float h)
     mLabelAboutUs.setString("About Us");
     mLabelAboutUs.setCharacterSize(65);
     mLabelAboutUs.setPosition(sf::Vector2f(233.f, 251.f));
-    mLabelAboutUs.setFillColor(sf::Color::Black);
+    mLabelAboutUs.setFillColor(ThemeManager::current.textColor);
 
     mLabelMusic.setFont(mFontBold);
     mLabelMusic.setString("Music");
     mLabelMusic.setCharacterSize(50);
     mLabelMusic.setPosition(sf::Vector2f(954.f, 265.f));
-    mLabelMusic.setFillColor(sf::Color::Black);
+    mLabelMusic.setFillColor(ThemeManager::current.textColor);
 
     mLabelThemes.setFont(mFontBold);
     mLabelThemes.setString("Themes");
     mLabelThemes.setCharacterSize(50);
     mLabelThemes.setPosition(sf::Vector2f(233.f, 757.f));
-    mLabelThemes.setFillColor(sf::Color::Black);
+    mLabelThemes.setFillColor(ThemeManager::current.textColor);
 
     setupButton(mBtnColor, 494.f, 715.f);
     setupButton(mBtnFont, 676.f, 715.f);
@@ -98,7 +66,7 @@ SettingsScreen::SettingsScreen(float w, float h)
     mBtnFont.label.emplace(mFontRegular);
     mBtnFont.label->setString("Inter");
     mBtnFont.label->setCharacterSize(40);
-    mBtnFont.label->setFillColor(sf::Color::Black);
+    mBtnFont.label->setFillColor(ThemeManager::current.textColor);
     
     sf::FloatRect textBounds = mBtnFont.label->getLocalBounds();
     mBtnFont.label->setOrigin(sf::Vector2f(textBounds.position.x + textBounds.size.x / 2.0f, textBounds.position.y + textBounds.size.y / 2.0f));
@@ -156,7 +124,7 @@ SettingsScreen::SettingsScreen(float w, float h)
     mThemePopupTitle.setFont(mFontBold);
     mThemePopupTitle.setString("THEME COLOR");
     mThemePopupTitle.setCharacterSize(80);
-    mThemePopupTitle.setFillColor(sf::Color::Black);
+    mThemePopupTitle.setFillColor(ThemeManager::current.textColor);
     mThemePopupTitle.setPosition(sf::Vector2f(428.f, 160.f));
     
     if (mTickTex.loadFromFile("assets/images/tickIcon.png")){
@@ -183,7 +151,7 @@ SettingsScreen::SettingsScreen(float w, float h)
             tb.label.emplace(mFontBold);
             tb.label->setString(colorNames[i]);
             tb.label->setCharacterSize(45);
-            tb.label->setFillColor(sf::Color::Black);
+            tb.label->setFillColor(ThemeManager::current.textColor);
             sf::FloatRect lb = tb.label->getLocalBounds();
             tb.label->setOrigin(sf::Vector2f(lb.position.x + lb.size.x/2.f, 0.f));
             tb.label->setPosition(sf::Vector2f(curX + 72.5f, 441.f));
@@ -210,7 +178,7 @@ SettingsScreen::SettingsScreen(float w, float h)
         mToggleText.setFont(mFontBold);
         mToggleText.setString("Light");
         mToggleText.setCharacterSize(45);
-        mToggleText.setFillColor(sf::Color::Black);
+        mToggleText.setFillColor(ThemeManager::current.textColor);
         sf::FloatRect tb = mToggleText.getLocalBounds();
         mToggleText.setOrigin(sf::Vector2f(tb.position.x + tb.size.x/2.f, tb.position.y + tb.size.y/2.f));
         mToggleText.setPosition(sf::Vector2f(toggleX + 145.f + 114.f, toggleY + 72.5f));

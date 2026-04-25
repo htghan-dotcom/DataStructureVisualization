@@ -1,6 +1,55 @@
 #include "Common.h"
 #include "RedBlackTree.h"
 
+const vector<string> PSEUDO_SEARCH = {
+    "current = root",
+    "while current != NULL:",
+    "   if val == current.val: return current // found",
+    "   if val < current.val: current = current.left",
+    "   if val > current.val: current = current.right",
+    "return NULL // not found"
+};
+
+const vector<string> PSEUDO_INSERT = {
+    "BST insert node X (RED)",
+    "while RED-RED conflict with parent P:\n    checking uncle U",
+    "ensure root is BLACK"
+};
+
+const vector<string> PSEUDO_FIXINSERTION = {
+    "checking unlce U:",
+    "   if U is RED:\n      recolor P and U to BLACK, G to RED & check G",
+    "   elif U is BLACK & X is inner child:\n      rotate at P & check P",
+    "   else U is BLACK & X is outer child:\n      rotate at G & swap color of G and P"
+};
+
+const vector<string> PSEUDO_DELETE = {
+    "BST delete node V, replacement U",
+    "if either V or U is RED:\n   recolor U to BLACK",
+    "else while V and U is BLACK (double BLACK conflict):\n   check sibling S of U",
+    "if U is root:\n   recolor root to BLACK"
+};
+
+const vector<string> PSEUDO_FIXDELETION1 = {
+    "checking sibling S of U:",
+    "   if S is RED:\n      rotate at parent P, swap color of P and S",
+    "   else S is BLACK:\n      check nephews"
+};
+
+const vector<string> PSEUDO_FIXDELETION2 = {
+    "checking nephews:",
+    "   if S is BLACK and both nephews are BLACK:\n      recolor S to RED & check P",
+    "   elif S is BLACK and outer nephew O is RED:\n      rotate at P & recolor O to BLACK",
+    "   else S is BLACK and only inner nephew I is RED:\n      rotate at S & swap color of S and I"
+};
+
+const vector<string> PSEUDO_FIXDELETION3 = {
+    "checking parent P:",
+    "   if P is RED:\n      recolor P to BLACK",
+    "   else P is BLACK:\n      P is U & check sibling S of U"
+};
+
+
 RedBlackTree::RedBlackTree(){
     mpRoot = nullptr;
     mpBackupRoot = nullptr;
@@ -66,80 +115,133 @@ void RedBlackTree::rotateRight(RedBlackNode *x){
 }
 
 void RedBlackTree::fixInsertion(RedBlackNode *node){
+    // ENSURE ROOT ALWAYS BLACK
     if (!node->getParent() or !node->getParent()->isRed()){
-        if (node == mpRoot and node->getColor() != Color::BLACK){
-            mpRoot->setColor(Color::BLACK);
-            saveStep("Root must be BLACK. \nRecolor Root to BLACK", mpRoot->getVal());
-        }
+        saveStep("ROOT must be BLACK. \nRecolor ROOT to BLACK", mpRoot->getVal(), 2, PSEUDO_INSERT);
+
+        mpRoot->setColor(Color::BLACK);
         return;
     }
     
     RedBlackNode *parent = node->getParent();
     RedBlackNode *grandparent = parent->getParent();
     
-    saveStep("RED-RED conflict between " + to_string(node->getVal()) + "\nand Parent " + to_string(parent->getVal()) + ".\nChecking Uncle", parent->getVal());
+    // RED-RED conflict
+    saveStep("RED-RED conflict between " + to_string(node->getVal()) + " and parent " + to_string(parent->getVal()) + ".\nChecking uncle", parent->getVal(), 1, PSEUDO_INSERT);
 
     if (parent == grandparent->getLeft()){
+        // LEFT parent
         RedBlackNode *uncle = grandparent->getRight();
         
         if (!uncle or !uncle->isRed()){
-            string uncleName = uncle ? to_string(uncle->getVal()) : "NULL";
-            saveStep("Uncle " + uncleName + " is BLACK.\nRotate.", uncle ? uncle->getVal() : grandparent->getVal());
+            // BLACK uncle
+            bool isDummyUncle = false;
+            
+            if (!uncle){
+                uncle = new RedBlackNode(0);
+                uncle->setDummy(true);
+                uncle->setColor(Color::BLACK);
+                uncle->setParent(grandparent);
+                grandparent->setRight(uncle);
+                isDummyUncle = true;
+            }
+            
+            string uncleName = isDummyUncle ? "NULL" : to_string(uncle->getVal());
+            saveStep("Uncle " + uncleName + " is BLACK.\nRotate.", uncle->getVal(), 0, PSEUDO_FIXINSERTION);
             
             if (node == parent->getRight()){
-                saveStep("Node is RIGHT child (LR case).\nRotate LEFT at Parent " + to_string(parent->getVal()), parent->getVal());
+                // LEFT-RIGHT case
+                saveStep("Node is RIGHT child (inner).\nRotate LEFT at parent " + to_string(parent->getVal()), parent->getVal(), 2, PSEUDO_FIXINSERTION);
+                
                 rotateLeft(parent);
                 fixInsertion(parent);
             } else {
-                saveStep("Node is LEFT child (LL case).\nRotate RIGHT at Grandparent " + to_string(grandparent->getVal()), grandparent->getVal());
+                // LEFT-LEFT case
+                saveStep("Node is LEFT child (outer).\nRotate RIGHT at grandparent " + to_string(grandparent->getVal()), grandparent->getVal(), 3, PSEUDO_FIXINSERTION);
+                
                 parent->setColor(Color::BLACK);
                 grandparent->setColor(Color::RED);
                 rotateRight(grandparent);
             }
+            
+            if (isDummyUncle){
+                grandparent->setRight(nullptr);
+                delete uncle;
+                uncle = nullptr;
+            }
         } else {
-            saveStep("Uncle " + to_string(uncle->getVal()) + " is RED.\nRecolor.", uncle->getVal());
+            // RED unlce
+            saveStep("Uncle " + to_string(uncle->getVal()) + " is RED.\nRecolor.", uncle->getVal(), 0, PSEUDO_FIXINSERTION);
+            
+            saveStep("Recolor parent & uncle to BLACK,\ngrandparent to RED", grandparent->getVal(), 1, PSEUDO_FIXINSERTION);
             
             parent->setColor(Color::BLACK);
             uncle->setColor(Color::BLACK);
             grandparent->setColor(Color::RED);
             
-            saveStep("Recolor Parent & Uncle to BLACK,\nGrandparent to RED", grandparent->getVal());
             
             fixInsertion(grandparent);
         }
     } else {
+        // RIGHT parent
         RedBlackNode *uncle = grandparent->getLeft();
         
         if (!uncle or !uncle->isRed()){
-            string uncleName = uncle ? to_string(uncle->getVal()) : "NULL";
-            saveStep("Uncle " + uncleName + " is BLACK.\nRotate.", uncle ? uncle->getVal() : grandparent->getVal());
+            // BLACK uncle
+            bool isDummyUncle = false;
+            
+            if (!uncle){
+                uncle = new RedBlackNode(0);
+                uncle->setDummy(true);
+                uncle->setColor(Color::BLACK);
+                uncle->setParent(grandparent);
+                grandparent->setLeft(uncle);
+                isDummyUncle = true;
+            }
+            
+            string uncleName = isDummyUncle ? "NULL" : to_string(uncle->getVal());
+            saveStep("Uncle " + uncleName + " is BLACK.\nRotate.", uncle->getVal(), 0, PSEUDO_FIXINSERTION);
             
             if (node == parent->getLeft()){
-                saveStep("Node is LEFT child (RL case).\nRotate RIGHT at Parent " + to_string(parent->getVal()), parent->getVal());
+                // RIGHT-LEFT case
+                saveStep("Node is LEFT child (inner).\nRotate RIGHT at parent " + to_string(parent->getVal()), parent->getVal(), 2, PSEUDO_FIXINSERTION);
+                
                 rotateRight(parent);
                 fixInsertion(parent);
             } else {
-                saveStep("Node is RIGHT child (RR case).\nRotate LEFT at Grandparent " + to_string(grandparent->getVal()), grandparent->getVal());
+                // RIGHT-RIGHT case
+                saveStep("Node is RIGHT child (outer).\nRotate LEFT at grandparent " + to_string(grandparent->getVal()), grandparent->getVal(), 3, PSEUDO_FIXINSERTION);
+                
                 parent->setColor(Color::BLACK);
                 grandparent->setColor(Color::RED);
                 rotateLeft(grandparent);
             }
+            
+            if (isDummyUncle){
+                grandparent->setLeft(nullptr);
+                delete uncle;
+                uncle = nullptr;
+            }
+            
         } else {
-            saveStep("Uncle " + to_string(uncle->getVal()) + " is RED.\nRecolor.", uncle->getVal());
+            // RED uncle
+            saveStep("Uncle " + to_string(uncle->getVal()) + " is RED.\nRecolor.", uncle->getVal(), 0, PSEUDO_FIXINSERTION);
+            
+            saveStep("RecolorpParent & uncle to BLACK,\ngrandparent to RED", grandparent->getVal(), 1, PSEUDO_FIXINSERTION);
             
             parent->setColor(Color::BLACK);
             uncle->setColor(Color::BLACK);
             grandparent->setColor(Color::RED);
-            
-            saveStep("Recolor Parent & Uncle to BLACK,\nGrandparent to RED", grandparent->getVal());
             
             fixInsertion(grandparent);
         }
     }
     
+    // ENSURE ROOT ALWAYS BLACK
     if (mpRoot->isRed()){
+        saveStep("Fix completed. Recolor ROOT back to BLACK.", mpRoot->getVal(), 2, PSEUDO_INSERT);
+        
         mpRoot->setColor(Color::BLACK);
-        saveStep("Fix completed. Recolor ROOT back to BLACK.", mpRoot->getVal());
     }
 }
 
@@ -147,8 +249,11 @@ void RedBlackTree::fixDeletion(RedBlackNode *node){
     if (!node){return;}
     
     if (node == mpRoot){
+        // double-BLACK at root
+        saveStep("Double-BLACK reached ROOT.\nRecolor ROOT to BLACK.", mpRoot->getVal(), 3, PSEUDO_DELETE);
+
         node->setColor(Color::BLACK);
-        saveStep("Double-BLACK reached ROOT.\nRecolor ROOT to BLACK.", mpRoot->getVal());
+        
         return;
     }
     
@@ -156,47 +261,62 @@ void RedBlackTree::fixDeletion(RedBlackNode *node){
     if (!parent){return;}
     RedBlackNode *sibling;
     
+    saveStep("Double-BLACK conflict at " + to_string(node->getVal()) + ".\nChecking sibling", parent->getVal(), 2, PSEUDO_DELETE);
+    
     if (node == parent->getLeft()){
+        // RIGHT sibling
         sibling = parent->getRight();
-        if (!sibling){
-            fixDeletion(parent);
-            return;
-        }
         
-        if (sibling and sibling->isRed()){
-            saveStep("Sibling " + to_string(sibling->getVal()) + " is RED.\nRecolor & Rotate LEFT at Parent.", parent->getVal());
+        if (sibling->isRed()){
+            // RED sibling
+            saveStep("Sibling " + to_string(sibling->getVal()) + " is RED.\nRotate & Recolor.", sibling->getVal(), 0, PSEUDO_FIXDELETION1);
+            
+            saveStep("Rotate LEFT at parent & Recolor parent to RED and sibling to BLACK", parent->getVal(), 1, PSEUDO_FIXDELETION1);
+            
             parent->setColor(Color::RED);
             sibling->setColor(Color::BLACK);
             rotateLeft(parent);
             fixDeletion(node);
+            
             return;
         }
         
+        // BLACK sibling
+        saveStep("Sibling " + to_string(sibling->getVal()) + " is BLACK.\nChecking nephews.", sibling->getVal(), 2, PSEUDO_FIXDELETION1);
+        
         if (sibling and (!sibling->getLeft() or !sibling->getLeft()->isRed()) and (!sibling->getRight() or !sibling->getRight()->isRed())){
-            saveStep("Sibling " + to_string(sibling->getVal()) + " and Nephews are BLACK.\nRecolor Sibling to RED.", sibling->getVal());
+            // both nephews are BLACK
+            saveStep("Both nephews are BLACK.\nRecolor sibling to RED & Checking parent.", sibling->getVal(), 1, PSEUDO_FIXDELETION2);
+            
             sibling->setColor(Color::RED);
             
             if (parent->isRed()){
-                saveStep("Parent is RED.\nRecolor Parent to BLACK.", parent->getVal());
+                // RED parent
+                saveStep("Parent is RED.\nRecolor parent to BLACK.", parent->getVal(), 1, PSEUDO_FIXDELETION3);
+                
                 parent->setColor(Color::BLACK);
             } else {
-                saveStep("Parent is BLACK.\nDouble-Black moves up to Parent.", parent->getVal());
+                // BLACK parent
+                saveStep("Parent is BLACK.\nDouble-BLACK moves up to parent.", parent->getVal(), 2, PSEUDO_FIXDELETION3);
+                
                 fixDeletion(parent);
             }
             return;
         }
         
-        saveStep("Sibling is BLACK.\nChecking Nephews.", sibling->getVal());
-        
         if (!sibling->getRight() or !sibling->getRight()->isRed()){
-            saveStep("RIGHT Nephew is BLACK.\nRecolor & Rotate RIGHT at Sibling.", sibling->getVal());
+            // RIGHT-LEFT case
+            saveStep("RIGHT nephew is BLACK (inner RED).\nRotate RIGHT at sibling & Recolor sibling to RED and nephew to BLACK", sibling->getVal(), 3, PSEUDO_FIXDELETION2);
+            
             sibling->getLeft()->setColor(Color::BLACK);
             sibling->setColor(Color::RED);
             rotateRight(sibling);
             sibling = parent->getRight();
         }
         
-        saveStep("RIGHT Nephew is RED.\nRecolor & Rotate LEFT at Parent.", parent->getVal());
+        // RIGHT-RIGHT case
+        saveStep("RIGHT nephew is RED (outer RED).\nRotate LEFT at Parent & Recolor nephew to BLACK.", parent->getVal(), 2, PSEUDO_FIXDELETION2);
+        
         sibling->setColor(parent->getColor());
         parent->setColor(Color::BLACK);
         sibling->getRight()->setColor(Color::BLACK);
@@ -204,46 +324,60 @@ void RedBlackTree::fixDeletion(RedBlackNode *node){
         
         if (node){node->setColor(Color::BLACK);}
     } else {
+        // LEFT sibling
         sibling = parent->getLeft();
-        if (!sibling){
-            fixDeletion(parent);
-            return;
-        }
         
         if (sibling and sibling->isRed()){
-            saveStep("Sibling " + to_string(sibling->getVal()) + " is RED.\nRecolor & Rotate RIGHT at Parent.", parent->getVal());
+            // RED Sibling
+            saveStep("Sibling " + to_string(sibling->getVal()) + " is RED.\nRotate & Recolor.", sibling->getVal(), 0, PSEUDO_FIXDELETION1);
+            
+            saveStep("Rotate RIGHT at parent & Recolor parent to RED and sibling to BLACK", parent->getVal(), 1, PSEUDO_FIXDELETION1);
+            
             parent->setColor(Color::RED);
             sibling->setColor(Color::BLACK);
             rotateRight(parent);
             fixDeletion(node);
+            
+
             return;
         }
         
+        // BLACK sibling
+        saveStep("Sibling " + to_string(sibling->getVal()) + " is BLACK.\nChecking nephews.", sibling->getVal(), 2, PSEUDO_FIXDELETION1);
+        
         if (sibling and (!sibling->getRight() or !sibling->getRight()->isRed()) and (!sibling->getLeft() or !sibling->getLeft()->isRed())){
-            saveStep("Sibling " + to_string(sibling->getVal()) + " and Nephews are BLACK.\nRecolor Sibling to RED.", sibling->getVal());
+            // both nephews are BLACK
+            saveStep("Both nephews are BLACK.\nRecolor sibling to RED & Checking parent.", sibling->getVal(), 1, PSEUDO_FIXDELETION2);
             sibling->setColor(Color::RED);
             
+            
             if (parent->isRed()){
-                saveStep("Parent is RED.\nRecolor Parent to BLACK.", parent->getVal());
+                // RED parent
+                saveStep("Parent is RED.\nRecolor parent to BLACK.", parent->getVal(), 1, PSEUDO_FIXDELETION3);
+                
                 parent->setColor(Color::BLACK);
             } else {
-                saveStep("Parent is BLACK.\nDouble-BLACK moves up to Parent.", parent->getVal());
+                // BLACK parent
+                saveStep("Parent is BLACK.\nDouble-BLACK moves up to parent.", parent->getVal(), 2, PSEUDO_FIXDELETION3);
+                
                 fixDeletion(parent);
             }
             return;
         }
-        
-        saveStep("Sibling is BLACK.\nChecking Nephews", sibling->getVal());
-        
+                
         if (!sibling->getLeft() or !sibling->getLeft()->isRed()){
-            saveStep("LEFT Nephew is BLACK.\nRecolor & Rotate LEFT at Sibling.", sibling->getVal());
+            // LEFT-RIGHT case
+            saveStep("LEFT nephew is BLACK (inner RED).\nRotate LEFT at sibling & Recolor sibling to RED and nephew to BLACK", sibling->getVal(), 3, PSEUDO_FIXDELETION2);
+            
             sibling->getRight()->setColor(Color::BLACK);
             sibling->setColor(Color::RED);
             rotateLeft(sibling);
             sibling = parent->getLeft();
         }
         
-        saveStep("LEFT Nephew is RED.\nRecolor & Rotate RIGHT at Parent.", parent->getVal());
+        // RIGHT-RIGHT case
+        saveStep("RIGHT nephew is RED (outer RED).\nRotate LEFT at parent & Recolor nephew to BLACK.", parent->getVal(), 2, PSEUDO_FIXDELETION2);
+        
         sibling->setColor(parent->getColor());
         parent->setColor(Color::BLACK);
         sibling->getLeft()->setColor(Color::BLACK);
@@ -352,10 +486,13 @@ void RedBlackTree::inorderCollect(RedBlackNode *root, vector<int>& data, vector<
     inorderCollect(root->getRight(), data, colors);
 }
 
-void RedBlackTree::saveStep(string description, int highlightedNode){
+void RedBlackTree::saveStep(string description, int highlightedNode, int activeLine, const vector<string>& codeLines){
     StepState step;
     step.description = description;
     step.highlightedNode = highlightedNode;
+    
+    step.codeLines = codeLines;
+    step.activeLine = activeLine;
     
     inorderCollect(mpRoot, step.treeData, step.nodeColors);
     collectSnapshot(mpRoot, step.nodes);
@@ -403,68 +540,76 @@ bool RedBlackTree::insert(int val){
     RedBlackNode *newNode = new RedBlackNode(val);
     
     if (!mpRoot){
+        // empty tree
         mpRoot = newNode;
         mpRoot->setColor(Color::BLACK);
-        
-        saveStep("Tree is empty. Set " + to_string(val) + " as Root (BLACK)", val);
+        saveStep("Tree is empty. Set " + to_string(val) + " as ROOT (BLACK)", val, 0, PSEUDO_INSERT);
         return true;
     }
     
     RedBlackNode *current = mpRoot;
     RedBlackNode *parent = nullptr;
     
+    saveStep("Searching for insertion position for " + to_string(val), -1, 0, PSEUDO_SEARCH);
+    
     while (current){
         parent = current;
-        
         if (val < current->getVal()){
-            saveStep("Compare " + to_string(val) + " < " + to_string(current->getVal()) + ". Go LEFT", current->getVal());
+            saveStep("Compare " + to_string(val) + " < " + to_string(current->getVal()) + ". Go LEFT", current->getVal(), 3, PSEUDO_SEARCH);
             current = current->getLeft();
         }
+        
         else if (val > current->getVal()){
-            saveStep("Compare " + to_string(val) + " > " + to_string(current->getVal()) + ". Go RIGHT", current->getVal());
+            saveStep("Compare " + to_string(val) + " > " + to_string(current->getVal()) + ". Go RIGHT", current->getVal(), 4, PSEUDO_SEARCH);
             current = current->getRight();
         }
+        
         else {
             delete newNode;
-            saveStep("Insertion failed - Duplicate value " + to_string(val), current->getVal());
+            saveStep("Insertion failed - Duplicate value " + to_string(val), current->getVal(), 5, PSEUDO_SEARCH);
             return false;
         }
     }
     
     newNode->setParent(parent);
     if (val < parent->getVal()){
+        
         parent->setLeft(newNode);
-    }
-    else {
+    } else {
+        
         parent->setRight(newNode);
     }
     
-    saveStep("Attach " + to_string(val) + " as child (Red)", val);
+    saveStep("Attach " + to_string(val) + " as child (RED)", val, 0, PSEUDO_INSERT);
     
     fixInsertion(newNode);
     
-    saveStep("Insertion completed!", val);
-    
+    saveStep("Insertion completed!", val, 3, PSEUDO_INSERT);
     return true;
 }
 
 bool RedBlackTree::remove(int val){
     RedBlackNode *targetNode = mpRoot;
+    
+    saveStep("Searching for node " + to_string(val) + " to delete", -1, 0, PSEUDO_SEARCH);
+    
     while (targetNode){
         if (val == targetNode->getVal()){
+            saveStep("Found node " + to_string(val) + ". Start deletion process.", targetNode->getVal(), 2, PSEUDO_SEARCH);
             break;
         }
+        
         if (val < targetNode->getVal()){
-            saveStep("Compare " + to_string(val) + " < " + to_string(targetNode->getVal()) + ". Go LEFT", targetNode->getVal());
+            saveStep("Compare " + to_string(val) + " < " + to_string(targetNode->getVal()) + ". Go LEFT", targetNode->getVal(), 3, PSEUDO_SEARCH);
             targetNode = targetNode->getLeft();
         } else {
-            saveStep("Compare " + to_string(val) + " > " + to_string(targetNode->getVal()) + ". Go RIGHT", targetNode->getVal());
+            saveStep("Compare " + to_string(val) + " > " + to_string(targetNode->getVal()) + ". Go RIGHT", targetNode->getVal(), 4, PSEUDO_SEARCH);
             targetNode = targetNode->getRight();
         }
     }
 
     if (!targetNode){
-        saveStep("Remove failed!\nValue " + to_string(val) + " not found in tree.");
+        saveStep("Remove failed!\nValue " + to_string(val) + " not found in tree.", -1, 5, PSEUDO_SEARCH);
         return false;
     }
 
@@ -473,7 +618,9 @@ bool RedBlackTree::remove(int val){
     RedBlackNode *dummy = nullptr;
     
     if (!targetNode->getLeft() and !targetNode->getRight()){
-        saveStep("Node " + to_string(val) + " is a LEAF.\nRemove directly.", targetNode->getVal());
+        // leaf node
+        saveStep("Node " + to_string(val) + " is a LEAF.\nRemove directly.", targetNode->getVal(), 0, PSEUDO_DELETE);
+        
         if (originalColor == Color::BLACK){
             dummy = new RedBlackNode(0);
             dummy->setDummy(true);
@@ -484,34 +631,43 @@ bool RedBlackTree::remove(int val){
             transplant(targetNode, nullptr);
         }
     }
+    
     else if (!targetNode->getLeft()){
-        saveStep("Node " + to_string(val) + " has only RIGHT child.\nReplace with RIGHT child.", targetNode->getVal());
+        // one child
+        saveStep("Node " + to_string(val) + " has only RIGHT child.\nReplace with RIGHT child.", targetNode->getVal(), 0, PSEUDO_DELETE);
         replaceNode = targetNode->getRight();
         transplant(targetNode, targetNode->getRight());
     }
+    
     else if (!targetNode->getRight()){
-        saveStep("Node " + to_string(val) + " has only LEFT child.\nReplace with LEFT child.", targetNode->getVal());
+        // one child
+        saveStep("Node " + to_string(val) + " has only LEFT child.\nReplace with LEFT child.", targetNode->getVal(), 0, PSEUDO_DELETE);
         replaceNode = targetNode->getLeft();
         transplant(targetNode, targetNode->getLeft());
-    } else {
-        saveStep("Node has TWO children.\nFinding Successor", targetNode->getVal());
+    }
+    
+    else {
+        // two children
+        saveStep("Node has TWO children.\nFinding successor", targetNode->getVal(), 0, PSEUDO_DELETE);
         RedBlackNode *successor = findMin(targetNode->getRight());
         originalColor = successor->getColor();
 
         if (!successor->getRight() and originalColor == Color::BLACK){
+            // leaf successor
             dummy = new RedBlackNode(0);
             dummy->setDummy(true);
             dummy->setColor(Color::BLACK);
             replaceNode = dummy;
         } else {
+            // has one child
             replaceNode = successor->getRight();
         }
 
-        saveStep("Successor found: " + to_string(successor->getVal()) + ".\nReplacing node with Successor.", successor->getVal());
+        saveStep("Successor found: " + to_string(successor->getVal()) + ".\nReplacing node with successor.", successor->getVal(), 0, PSEUDO_DELETE);
 
         if (successor == targetNode->getRight()){
-            if (dummy) successor->setRight(dummy);
-            if (replaceNode) replaceNode->setParent(successor);
+            if (dummy){successor->setRight(dummy);}
+            if (replaceNode){replaceNode->setParent(successor);}
         } else {
             transplant(successor, replaceNode);
             successor->setRight(targetNode->getRight());
@@ -527,15 +683,20 @@ bool RedBlackTree::remove(int val){
     delete targetNode;
 
     if (originalColor == Color::BLACK){
+        // BLACK delete
         if (replaceNode != nullptr and replaceNode->isRed()){
-            saveStep("Replacement node " + to_string(replaceNode->getVal()) + " is RED.\nRecolor to BLACK.", replaceNode->getVal());
+            // RED replacement
+            saveStep("Replacement node " + to_string(replaceNode->getVal()) + " is RED.\nRecolor to BLACK.", replaceNode->getVal(), 1, PSEUDO_DELETE);
+            
             replaceNode->setColor(Color::BLACK);
         } else {
-            saveStep("Removed node was BLACK.\nDouble-BLACK violation! FIXING", replaceNode ? replaceNode->getVal() : -1);
+            // BLACK replacement
+            saveStep("Double-BLACK conflict! FIXING", replaceNode ? replaceNode->getVal() : -1, 2, PSEUDO_DELETE);
             fixDeletion(replaceNode);
         }
     } else {
-        saveStep("Removed node was RED.\nNo violation. Tree remains balanced.");
+        // RED delete
+        saveStep("Removed node was RED.\nTree remains balanced.", -1, 1, PSEUDO_DELETE);
     }
 
     if (dummy){
@@ -543,41 +704,10 @@ bool RedBlackTree::remove(int val){
         delete dummy;
     }
 
-    if (mpRoot){ mpRoot->setColor(Color::BLACK); }
-    saveStep("Removal completed!");
+    if (mpRoot){mpRoot->setColor(Color::BLACK);}
+    saveStep("Deletion completed!", -1, 3, PSEUDO_DELETE);
         
     return true;
-}
-
-
-bool RedBlackTree::update(int oldVal, int newVal){
-    saveStep("Updating " + to_string(oldVal) + " to " + to_string(newVal));
-    
-    RedBlackNode *targetNode = searchNode(oldVal);
-    if (!targetNode){
-        saveStep("Update failed - value " + to_string(oldVal) + " not found");
-        return false;
-    }
-    
-    if (oldVal == newVal){
-        saveStep("Update skipped - value are identical", oldVal);
-        return true;
-    }
-    
-    if (searchNode(newVal)){
-        saveStep("Update failed - new value " + to_string(newVal) + " already exists", newVal);
-        return false;
-    }
-    
-    if (remove(oldVal)){
-        if (insert(newVal)){
-            saveStep("Update successful: " + to_string(oldVal) + "->" + to_string(newVal), newVal);
-            return true;
-        }
-    }
-    
-    saveStep("Update failed");
-    return false;
 }
 
 void RedBlackTree::nextStep(){
@@ -678,27 +808,30 @@ void RedBlackTree::restore(){
 
 bool RedBlackTree::search(int val){
     if (!mpRoot){
-        saveStep("Tree is empty. Cannot find " + to_string(val), -1);
+        saveStep("Tree is empty. Cannot find " + to_string(val), -1, 5, PSEUDO_SEARCH);
         return false;
     }
 
     RedBlackNode *current = mpRoot;
+    saveStep("Start searching. current = root", current->getVal(), 0, PSEUDO_SEARCH);
 
     while (current){
         if (val == current->getVal()){
-            saveStep("Found node " + to_string(val) + "!", current->getVal());
+            saveStep("Found node " + to_string(val) + "!", current->getVal(), 2, PSEUDO_SEARCH);
             return true;
         }
+        
         else if (val < current->getVal()){
-            saveStep("Compare " + to_string(val) + " < " + to_string(current->getVal()) + ". Go LEFT", current->getVal());
+            saveStep("Compare " + to_string(val) + " < " + to_string(current->getVal()) + ". Go LEFT", current->getVal(), 3, PSEUDO_SEARCH);
             current = current->getLeft();
         }
+        
         else {
-            saveStep("Compare " + to_string(val) + " > " + to_string(current->getVal()) + ". Go RIGHT", current->getVal());
+            saveStep("Compare " + to_string(val) + " > " + to_string(current->getVal()) + ". Go RIGHT", current->getVal(), 4, PSEUDO_SEARCH);
             current = current->getRight();
         }
     }
 
-    saveStep("Value " + to_string(val) + " not found in the tree.", -1);
+    saveStep("Value " + to_string(val) + " not found in the tree.", -1, 5, PSEUDO_SEARCH);
     return false;
 }

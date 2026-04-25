@@ -8,11 +8,14 @@ class AppLayout {
 private:
     sf::RectangleShape mFooter;
     sf::Text mHeaderText;
-    sf::RectangleShape mDescriptionBox;
+    sf::ConvexShape mDescriptionBox;
     sf::Text mDescriptionText;
     sf::Font mFontBold;
     sf::Font mFontRegular;
     sf::Texture mHomeTex;
+    
+    std::vector<std::string> mCodeLines;
+    int mActiveCodeLine = -1;
     
     sf::Texture mSkipBackTex, mPauseTex, mSkipForwardTex, mStartTex;
     ImageButton mSkipBackBtn, mPauseBtn, mSkipForwardBtn, mStartBtn;
@@ -25,8 +28,6 @@ private:
     SpeedSlider mSpeedSlider;
 
     bool mIsPaused = false;
-
-    sf::ConvexShape createRoundedRect(sf::Vector2f size, float radius);
     
 public:
     ImageButton mHomeBtn;
@@ -36,6 +37,9 @@ public:
     void update(sf::Vector2i mousePos);
     void draw(sf::RenderWindow& window);
     void setDescription(const std::string& text);
+    
+    void setPseudoCode(const std::vector<std::string>& codeLines);
+    void setActiveCodeLine(int lineIndex);
     
     bool isPaused() const {return mIsPaused;}
     void setPaused(bool paused);

@@ -176,7 +176,8 @@ public:
         mFill.setFillColor(ThemeManager::current.primary);
         mThumb.setFillColor(ThemeManager::current.primary);
         
-        mTrack.setFillColor(ThemeManager::isDark ? sf::Color(41, 42, 49) : sf::Color(255, 255, 255));
+        mTrack.setFillColor(ThemeManager::current.screenBg);
+        
         mLabelText.setFillColor(ThemeManager::current.textColor);
         mValText.setFillColor(ThemeManager::current.textColor);
             

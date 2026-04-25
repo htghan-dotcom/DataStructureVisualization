@@ -42,7 +42,6 @@ private:
     bool mSettingPressed = false;
     bool mIsSettingHovered = false;
 
-    sf::ConvexShape createRoundedRect(sf::Vector2f size, float radius);
     sf::VertexArray createGradientRoundedRect(sf::Vector2f size, float radius, sf::Vector2f pos, sf::Color cBottomLeft, sf::Color cTopRight);
 
 public:

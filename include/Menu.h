@@ -76,9 +76,4 @@ public:
     sf::Color getCardColor(int index) const {return mCards[index].bgColor;}
     
     int getActiveDS() const {return mActiveIdx;}
-
-    sf::FloatRect getThumbnailBounds(int index) const {
-        float cardX = mCards[index].bgShape.getPosition().x;
-        return sf::FloatRect({cardX + 20.f, 60.f}, {mCards[index].currentWidth - 40.f, mWindowHeight * 0.5f});
-    }
 };
