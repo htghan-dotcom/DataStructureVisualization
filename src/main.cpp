@@ -1,11 +1,13 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include "WelcomeScreen.h"
+#include "SettingsScreen.h"
 #include "Menu.h"
 #include "RBTVisualizer.h"
 #include "DLLVisualizer.h"
 #include "Common.h"
 
-enum class AppState { WELCOME, MENU, EXPANDING, VISUALIZER, SHRINKING };
+enum class AppState { WELCOME, MENU, SETTINGS, EXPANDING, VISUALIZER, SHRINKING };
 
 sf::View getLetterboxView(sf::View view, unsigned int windowWidth, unsigned int windowHeight){
     float windowRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
@@ -16,7 +18,7 @@ sf::View getLetterboxView(sf::View view, unsigned int windowWidth, unsigned int 
     if (windowRatio > viewRatio){
         sizeX = viewRatio / windowRatio;
         posX = (1.0f - sizeX) / 2.0f;
-    } else{
+    } else {
         sizeY = windowRatio / viewRatio;
         posY = (1.0f - sizeY) / 2.0f;
     }
@@ -48,10 +50,20 @@ int main(){
     mainView = getLetterboxView(mainView, window.getSize().x, window.getSize().y);
     window.setView(mainView);
     
-    WelcomeScreen welcomeScreen;
+    WelcomeScreen welcomeScreen(LOGIC_W, LOGIC_H);
     MainMenu mainMenu(LOGIC_W, LOGIC_H);
+    SettingsScreen settingsScreen(LOGIC_W, LOGIC_H);
     RBTVisualizer rbtVisualizer(window);
     DLLVisualizer dllVisualizer(window);
+    
+    sf::Music bgMusic;
+    if (!bgMusic.openFromFile("assets/audio/bg_music.ogg")){
+        cerr << "Cannot load bg_music.ogg" << endl;
+    } else {
+        bgMusic.setLooping(true);
+        bgMusic.setVolume(40.f);
+        bgMusic.play();
+    }
     
     AppState currentState = AppState::WELCOME;
 
@@ -61,7 +73,6 @@ int main(){
     sf::FloatRect fullScreenRect(sf::Vector2f(0.f, 0.f), sf::Vector2f(LOGIC_W, LOGIC_H));
     sf::Color activeBgColor;
     
-
     while (window.isOpen()){
         sf::Vector2f worldPos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
         sf::Vector2i mousePos(static_cast<int>(worldPos.x), static_cast<int>(worldPos.y));
@@ -76,11 +87,12 @@ int main(){
                 window.setView(mainView);
             }
             
-            if (currentState == AppState::MENU){
+            if (currentState == AppState::MENU or currentState == AppState::SETTINGS){
                 if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()){
                     if (keyEvent->code == sf::Keyboard::Key::Escape){
                         currentState = AppState::WELCOME;
                         welcomeScreen.resetStart();
+                        if (currentState == AppState::SETTINGS) settingsScreen.mGoBack = false;
                     }
                 }
             }
@@ -88,8 +100,25 @@ int main(){
             if (currentState == AppState::WELCOME){
                 welcomeScreen.update(mousePos, event);
             }
-
-            if (currentState == AppState::VISUALIZER and activeDS == 2){
+            
+            else if (currentState == AppState::SETTINGS){
+                settingsScreen.update(mousePos, event);
+                            
+                if (event and event->is<sf::Event::MouseButtonPressed>()){
+                    auto mouseEvent = event->getIf<sf::Event::MouseButtonPressed>();
+                    if (mouseEvent->button == sf::Mouse::Button::Left){
+                        sf::Vector2f mPos(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                                    
+                        sf::FloatRect colorBtnBounds(sf::Vector2f(494.f, 715.f), sf::Vector2f(145.f, 145.f));
+                        if (colorBtnBounds.contains(mPos)){
+                            settingsScreen.toggleThemePopup();
+                        }
+                                    
+                    }
+                }
+            }
+            
+            else if (currentState == AppState::VISUALIZER and activeDS == 2){
                 if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()){
                     if (keyEvent->code == sf::Keyboard::Key::Escape){
                         currentState = AppState::SHRINKING;
@@ -139,7 +168,8 @@ int main(){
         
         if (currentState == AppState::WELCOME){
             sf::RectangleShape welcomeBg(fullScreenRect.size);
-            welcomeBg.setFillColor(sf::Color::White);
+            
+            welcomeBg.setFillColor(ThemeManager::current.screenBg);
             window.draw(welcomeBg);
             
             welcomeScreen.update(mousePos, nullopt);
@@ -148,11 +178,30 @@ int main(){
             if (welcomeScreen.isStartPressed()){
                 currentState = AppState::MENU;
             }
+
+            else if (welcomeScreen.isSettingPressed()){
+                currentState = AppState::SETTINGS;
+                welcomeScreen.resetSetting();
+            }
+        }
+
+        else if (currentState == AppState::SETTINGS){
+            sf::RectangleShape settingsBg(fullScreenRect.size);
+            settingsBg.setFillColor(ThemeManager::current.screenBg);
+            window.draw(settingsBg);
+            
+            settingsScreen.update(mousePos, nullopt);
+            settingsScreen.draw(window);
+            
+            if (settingsScreen.mGoBack){
+                currentState = AppState::WELCOME;
+                settingsScreen.mGoBack = false;
+            }
         }
 
         else if (currentState == AppState::MENU){
             sf::RectangleShape menuBg(fullScreenRect.size);
-            menuBg.setFillColor(sf::Color(250, 250, 250));
+            menuBg.setFillColor(ThemeManager::current.screenBg);
             window.draw(menuBg);
 
             auto selected = mainMenu.update(window);
@@ -200,7 +249,6 @@ int main(){
                 animProgress = 1.0f;
                 currentState = AppState::VISUALIZER;
             }
-            
             else if (animProgress <= 0.0f){
                 animProgress = 0.0f;
                 currentState = AppState::MENU;
@@ -228,12 +276,12 @@ int main(){
             );
 
             sf::RectangleShape menuBg(fullScreenRect.size);
-            menuBg.setFillColor(sf::Color(250, 250, 250));
+            menuBg.setFillColor(ThemeManager::current.screenBg);
             window.draw(menuBg);
 
             sf::RectangleShape animBg(currentRect.size);
             animBg.setPosition(currentRect.position);
-            animBg.setFillColor(activeBgColor);
+            animBg.setFillColor(ThemeManager::current.bg);
             window.draw(animBg);
             
             if (activeDS == 2){
@@ -247,7 +295,7 @@ int main(){
         
         else if (currentState == AppState::VISUALIZER){
             sf::RectangleShape fullBg(fullScreenRect.size);
-            fullBg.setFillColor(activeBgColor);
+            fullBg.setFillColor(ThemeManager::current.bg);
             window.draw(fullBg);
             
             if (activeDS == 2){

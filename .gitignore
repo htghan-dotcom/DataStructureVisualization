@@ -1,5 +1,55 @@
+# macOS
 .DS_Store
 **/.DS_Store
-build/
+._*
+
+# Compiled files
+*.o
+*.obj
+*.exe
+*.out
+*.app
+*.dll
+*.so
+*.dylib
+*.lib
+*.a
+
+# IDE
+.vscode/
+.idea/
 *.xcodeproj
 *.xcworkspace
+xcuserdata/
+.vs/
+
+# Build directories
+build/
+bin/
+lib/
+Debug/
+Release/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Project specific
+*.backup
+*.bak
+*.tmp
+*.log
+
+# Assets
+!assets/audio/bg_music.ogg
+!assets/fonts/*.ttf
+!assets/images/*.png
+
+# Temp
+temp/
+tmp/
+*.cache
+
+# OS
+Thumbs.db
+desktop.ini

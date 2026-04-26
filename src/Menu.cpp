@@ -1,4 +1,5 @@
 #include "Menu.h"
+#include "ThemeManager.h"
 #include "Common.h"
 
 MainMenu::MainMenu(float w, float h)
@@ -12,10 +13,10 @@ MainMenu::MainMenu(float w, float h)
     vector<string> names = {"Doubly\nLinked List", "Hash\nTable", "Red - Black\nTree", "Graph"};
     
     vector<sf::Color> colors = {
-        sf::Color(226, 239, 255),
-        sf::Color(234, 252, 235),
         sf::Color(246, 247, 240),
-        sf::Color(251, 240, 245)
+        sf::Color(246, 247, 240),
+        sf::Color(246, 247, 240),
+        sf::Color(246, 247, 240),
     };
     
     float defWidth = mWindowWidth / static_cast<float>(names.size());
@@ -24,8 +25,7 @@ MainMenu::MainMenu(float w, float h)
     }
     
     if (!mExitTex.loadFromFile("assets/images/exitButton.png")){cerr << "Cannot load exitButton.png" << endl;}
-    mExitTex.setSmooth(true);
-    mExitTex.generateMipmap();
+    mExitTex.setSmooth(true); mExitTex.generateMipmap();
     
     mExitBtn.setup(mExitTex, 43.f, 62.f, 48.f, 48.f);
     mExitBtn.setCallback([this](){
@@ -88,10 +88,12 @@ void MainMenu::draw(sf::RenderTarget& target){
         card.bgShape.setPosition(sf::Vector2f(drawX, 0.f));
         
         float t = card.elementsAlpha / 255.f;
+        sf::Color baseBg = ThemeManager::current.screenBg;
+        sf::Color targetBg = ThemeManager::current.bg;
         
-        uint8_t r = static_cast<uint8_t>(255 + (card.bgColor.r - 255) * t);
-        uint8_t g = static_cast<uint8_t>(255 + (card.bgColor.g - 255) * t);
-        uint8_t b = static_cast<uint8_t>(255 + (card.bgColor.b - 255) * t);
+        uint8_t r = static_cast<uint8_t>(baseBg.r + (targetBg.r - baseBg.r) * t);
+        uint8_t g = static_cast<uint8_t>(baseBg.g + (targetBg.g - baseBg.g) * t);
+        uint8_t b = static_cast<uint8_t>(baseBg.b + (targetBg.b - baseBg.b) * t);
         
         card.bgShape.setFillColor(sf::Color(r, g, b));
         target.draw(card.bgShape);
@@ -101,36 +103,31 @@ void MainMenu::draw(sf::RenderTarget& target){
         card.numText.setPosition(sf::Vector2f(drawX + paddingX, card.textYPos - 30.f));
         card.nameText.setPosition(sf::Vector2f(drawX + paddingX, card.textYPos));
         
+        card.numText.setFillColor(ThemeManager::current.primary);
+        card.nameText.setFillColor(ThemeManager::current.textColor);
+        
         target.draw(card.numText);
         target.draw(card.nameText);
 
         if (card.elementsAlpha > 5.f){
             float btnW = 230.f;
             float btnH = 67.f;
-            float radius = btnH / 2.f;
             float btnX = drawX + 65.f;
             float btnY = 842.f;
             
-            sf::Color btnColor(220, 220, 220, static_cast<uint8_t>(card.elementsAlpha));
+            sf::Color pColor = ThemeManager::current.primary;
             
-            sf::CircleShape leftCircle(radius);
-            leftCircle.setPosition(sf::Vector2f(btnX, btnY));
-            leftCircle.setFillColor(btnColor);
-
-            sf::CircleShape rightCircle(radius);
-            rightCircle.setPosition(sf::Vector2f(btnX + btnW - btnH, btnY));
-            rightCircle.setFillColor(btnColor);
-
-            sf::RectangleShape centerRect(sf::Vector2f(btnW - btnH, btnH));
-            centerRect.setPosition(sf::Vector2f(btnX + radius, btnY));
-            centerRect.setFillColor(btnColor);
-                    
-            target.draw(leftCircle);
-            target.draw(rightCircle);
-            target.draw(centerRect);
+            sf::ConvexShape pillBtn = createRoundedRect({btnW, btnH}, btnH / 2.f);
+            pillBtn.setPosition(sf::Vector2f(btnX, btnY));
+            pillBtn.setFillColor(pColor);
+            target.draw(pillBtn);
             
             sf::FloatRect viewBounds = card.viewMoreText.getLocalBounds();
-            card.viewMoreText.setFillColor(sf::Color(30, 30, 30, static_cast<uint8_t>(card.elementsAlpha)));
+            
+            sf::Color textCol = ThemeManager::current.bg;
+            textCol.a = static_cast<uint8_t>(card.elementsAlpha);
+            card.viewMoreText.setFillColor(textCol);
+            
             card.viewMoreText.setPosition(sf::Vector2f(
                 btnX + (btnW - viewBounds.size.x) / 2.f,
                 btnY + (btnH - viewBounds.size.y) / 2.f - 5.f
@@ -141,5 +138,7 @@ void MainMenu::draw(sf::RenderTarget& target){
         drawX += card.currentWidth;
     }
     
+    mExitBtn.mSprite->setColor(ThemeManager::current.primary);
     mExitBtn.draw(target);
 }
+
