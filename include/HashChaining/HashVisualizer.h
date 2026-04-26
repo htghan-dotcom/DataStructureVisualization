@@ -2,9 +2,11 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <optional>
+#include <unordered_map>
 
 #include "AppLayout.h"
 #include "GUI.h"
+#include "ThemeManager.h"
 #include "HashChaining/HashChaining.h"
 
 class HashVisualizer {
@@ -14,35 +16,12 @@ private:
     sf::Font mFontBold;
 
     HashChaining mHash;
-    AppLayout mLayout;
+    AppLayout    mLayout;
 
-    // ── Title labels (bottom-left, mirroring RBT "03 / Red-Black / Tree") ──
+    // ── Title labels ──
     sf::Text mTitleNum;
     sf::Text mTitleHash;
     sf::Text mTitleChain;
-
-    // ── Playback image buttons ──
-    sf::Texture mSkipBackTex;
-    sf::Texture mPauseTex;
-    sf::Texture mSkipForwardTex;
-    sf::Texture mStartTex;
-
-    ImageButton mSkipBackBtn;
-    ImageButton mPauseBtn;
-    ImageButton mSkipForwardBtn;
-    ImageButton mStartBtn;
-
-    sf::Clock mAutoPlayClock;
-    bool mIsPaused = false;
-
-    // ── Step counter pill ──
-    sf::CircleShape    mStepBgLeft;
-    sf::CircleShape    mStepBgRight;
-    sf::RectangleShape mStepBgCenter;
-    sf::Text           mStepText;
-
-    RoundedButton mStepBackBtn;
-    RoundedButton mStepForwardBtn;
 
     // ── Sidebar action buttons ──
     RoundedButton mClearBtn;
@@ -52,12 +31,10 @@ private:
     RoundedButton mSearchBtn;
     RoundedButton mUndoBtn;
 
-    SpeedSlider mSpeedSlider;
-
-    bool mGoHome     = false;
+    bool mGoHome      = false;
     bool mShowUndoBtn = false;
 
-    // ── Expand states (only one open at a time) ──
+    // ── Expand states ──
     bool mIsInsertExpanded = false;
     bool mIsDeleteExpanded = false;
     bool mIsSearchExpanded = false;
@@ -96,29 +73,32 @@ private:
     sf::Text      mSearchInputText;
     sf::RectangleShape mSearchCursorLine;
 
-    // ── New expand widgets (Random / From File) ──
+    // ── New expand widgets ──
     RoundedButton mNewHoverStroke;
     RoundedButton mNewExpandedStroke;
     RoundedButton mNewExpandedBg;
     RoundedButton mRandomBtn;
     RoundedButton mUploadBtn;
 
-    // ── Animation / step state ──
-    int   mCurrentStep = 0;   // index into mHash.getSteps()
-    float mStepAnimProgress = 1.0f;
-    int   mTargetStep = -1;
+    // ── Step / autoplay state ──
+    int       mCurrentStep      = 0;
+    float     mStepAnimProgress = 1.0f;
+    int       mTargetStep       = -1;
+    sf::Clock mAutoPlayClock;
 
-    // ── Bucket / node rendering helpers ──
-    // (kept from original HashVisualizer)
+    // ── Bucket layout cache ──
     float mBucketStartX = 0.f;
     float mBucketRowY   = 0.f;
     float mBucketW      = 80.f;
     float mBucketH      = 58.f;
     float mBucketGapX   = 88.f;
 
-    // ── Private helpers ──
-    void resetPlayUI();
+    // ── Color cache ──
+    std::unordered_map<int,int> mColorIdx;
+
+    // ── Helpers ──
     void runAction(int action, int value, int oldValue = -1);
+    void doRandom();
 
     void drawRoundedRect(sf::RenderWindow& window, const sf::FloatRect& rect,
                          float radius, const sf::Color& fill,
@@ -134,6 +114,5 @@ public:
     void update(const std::optional<sf::Event>& event);
     void render(bool showUI = true);
     bool checkReturnHome();
-    void setTransitionProgress(float p) { /* unused but keeps call-site compatible */ }
+    void setTransitionProgress(float) {}
 };
-

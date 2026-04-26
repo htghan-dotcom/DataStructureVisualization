@@ -16,15 +16,13 @@ elseif(EXISTS "C:/SFML/lib/cmake/SFML")
     set(SFML_DIR "C:/SFML/lib/cmake/SFML" CACHE PATH "SFML cmake dir")
 endif()
 
-find_package(SFML 3 COMPONENTS Graphics Window System REQUIRED)
-
+find_package(SFML 3 COMPONENTS Graphics Window System Audio REQUIRED)
 # ─────────────────────────────────────────────
 #  Source files
 # ─────────────────────────────────────────────
 file(GLOB_RECURSE COMMON_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 list(REMOVE_ITEM COMMON_SOURCES
     "${CMAKE_SOURCE_DIR}/src/main.cpp"
-    "${CMAKE_SOURCE_DIR}/src/main_hash.cpp"
 )
 
 if(COMMON_SOURCES STREQUAL "")
@@ -54,6 +52,7 @@ macro(add_ds_executable TARGET_NAME MAIN_FILE)
         SFML::Graphics
         SFML::Window
         SFML::System
+        SFML::Audio
     )
 
     if(WIN32)
@@ -96,4 +95,3 @@ endmacro()
 #  Executables
 # ────────────────────────────cmake -S . -B build─────────────────
 add_ds_executable(DataStructureVisualization "src/main.cpp")
-add_ds_executable(HashVisualizer             "src/main_hash.cpp")
