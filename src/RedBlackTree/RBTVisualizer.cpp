@@ -1,4 +1,4 @@
-#include "RBTVisualizer.h"
+#include "RedBlackTree/RBTVisualizer.h"
 #include "ThemeManager.h"
 #include "tinyfiledialogs.h"
 #include "Common.h"
@@ -42,7 +42,7 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     if (!mFontBold.openFromFile("assets/fonts/Inter-Bold.ttf") or !mFontRegular.openFromFile("assets/fonts/Inter-Regular.ttf")){
         cerr << "Cannot load font!" << endl;
     }
-    
+
     mClearBtn.refreshText();
     mNewBtn.refreshText();
     mInsertBtn.refreshText();
@@ -529,7 +529,7 @@ void RBTVisualizer::drawAnimatedTree(const StepState& stepA, const StepState& st
         line.setOrigin(sf::Vector2f(0.f, lineThickness / 2.0f));
         line.setPosition(p1);
         line.setFillColor(edgeColor);
-        line.setRotation(sf::radians(atan2(dir.y, dir.x)));
+        line.setRotation(sf::radians(std::atan2(dir.y, dir.x)));
         mWindow->draw(line);
     };
 

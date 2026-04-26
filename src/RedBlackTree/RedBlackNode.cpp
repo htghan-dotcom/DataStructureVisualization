@@ -1,5 +1,5 @@
 #include "Common.h"
-#include "RedBlackNode.h"
+#include "RedBlackTree/RedBlackNode.h"
 
 RedBlackNode::RedBlackNode(int val){
     mVal = val;
