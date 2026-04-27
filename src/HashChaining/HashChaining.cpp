@@ -11,7 +11,7 @@ using namespace std;
 vector<ChainSnapshot> HashChaining::captureSnapshot() const {
     vector<ChainSnapshot> snap(size);
     for (int i = 0; i < size; i++) {
-        Node* cur = table[i];
+        HashNode* cur = table[i];
         while (cur) {
             snap[i].vals.push_back(cur->val);
             cur = cur->next;
@@ -42,7 +42,7 @@ void HashChaining::addInternal(int key, bool keepSteps) {
               1, idx, -1, false);
 
     // Checking if key already exists
-    Node* cur = table[idx];
+    HashNode* cur = table[idx];
     while (cur) {
         PUSH_STEP("Checking node " + to_string(cur->val) + " for duplicate",
                   1, idx, cur->val, false);
@@ -61,7 +61,7 @@ void HashChaining::addInternal(int key, bool keepSteps) {
               2, idx, -1, false);
 
     // Actually insert
-    Node* p = new Node(key);
+    HashNode* p = new HashNode(key);
     p->next = table[idx];
     table[idx] = p;
 
@@ -94,7 +94,7 @@ bool HashChaining::deleteInternal(int key, bool keepSteps) {
         PUSH_STEP("Found " + to_string(key) + " at head of bucket. Deleting...",
                   12, idx, key, true);
 
-        Node* tmp = table[idx];
+        HashNode* tmp = table[idx];
         table[idx] = table[idx]->next;
         delete tmp;
 
@@ -106,7 +106,7 @@ bool HashChaining::deleteInternal(int key, bool keepSteps) {
     // Traverse
     PUSH_STEP("Checking node " + to_string(table[idx]->val),
               14, idx, table[idx]->val, false);
-    Node* cur = table[idx];
+    HashNode* cur = table[idx];
     while (cur->next) {
         PUSH_STEP("Checking node " + to_string(cur->next->val),
                   14, idx, cur->next->val, false);
@@ -123,7 +123,7 @@ bool HashChaining::deleteInternal(int key, bool keepSteps) {
     PUSH_STEP("Found " + to_string(key) + " in the middle. Unlinking...",
               16, idx, key, true);
 
-    Node* tmp = cur->next;
+    HashNode* tmp = cur->next;
     cur->next = tmp->next;
     delete tmp;
 
@@ -142,7 +142,7 @@ int HashChaining::searchImpl(int key) {
     PUSH_STEP("Go to bucket [" + to_string(idx) + "]",
               5, idx, -1, false);
 
-    Node* cur = table[idx];
+    HashNode* cur = table[idx];
     while (cur) {
         PUSH_STEP("Checking node " + to_string(cur->val),
                   6, idx, cur->val, false);
@@ -184,8 +184,8 @@ void HashChaining::update(int oldKey, int newKey) {
 
 void HashChaining::clear() {
     for (int i = 0; i < size; i++) {
-        Node* cur = table[i];
-        while (cur) { Node* tmp = cur; cur = cur->next; delete tmp; }
+        HashNode* cur = table[i];
+        while (cur) { HashNode* tmp = cur; cur = cur->next; delete tmp; }
         table[i] = nullptr;
     }
 }
@@ -196,14 +196,14 @@ void HashChaining::generateRandom(int count) {
     for (int i = 0; i < count; i++) {
         int val = rand() % 1000;
         int idx = hashFunction(val);
-        Node* cur = table[idx];
+        HashNode* cur = table[idx];
         bool isDup = false;
         while (cur) {
             if (cur->val == val) { isDup = true; break; }
             cur = cur->next;
         }
         if (!isDup) {
-            Node* p = new Node(val);
+            HashNode* p = new HashNode(val);
             p->next = table[idx];
             table[idx] = p;
         }
@@ -222,14 +222,14 @@ void HashChaining::loadFromFile(const string& filename) {
     int val;
     while (fin >> val) {
         int idx = hashFunction(val);
-        Node* cur = table[idx];
+        HashNode* cur = table[idx];
         bool isDup = false;
         while (cur) {
             if (cur->val == val) { isDup = true; break; }
             cur = cur->next;
         }
         if (!isDup) {
-            Node* p = new Node(val);
+            HashNode* p = new HashNode(val);
             p->next = table[idx];
             table[idx] = p;
         }
@@ -238,6 +238,12 @@ void HashChaining::loadFromFile(const string& filename) {
     PUSH_STEP("Loaded data from file.", -1, -1, -1, false);
 }
 
-vector<Node*>      HashChaining::getTable() const { return table; }
+void HashChaining::clearTableUI() {
+    clear();
+    steps.clear();
+    PUSH_STEP("Hash table cleared.", -1, -1, -1, false);
+}
+
+vector<HashNode*>      HashChaining::getTable() const { return table; }
 int                HashChaining::getSize()  const { return size; }
 vector<HashStepInfo> HashChaining::getSteps() const { return steps; }

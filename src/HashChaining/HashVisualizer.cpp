@@ -3,6 +3,7 @@
 #include "Common.h"
 #include <cmath>
 #include <cstdlib>
+#include <cstdint>
 
 // ── Layout constants (sidebar) ──────────────────────────────
 static constexpr float SB_X  = 70.f;
@@ -17,17 +18,132 @@ static constexpr float Y_SEARCH = 338.f;
 static constexpr float NEW_X    = 251.f;
 static constexpr float FOOTER_Y = 882.f;
 
-// ── Pastel palette ───────────────────────────────────────────
-static const sf::Color PAL[][2] = {
-    {{188,214,245,220},{210,230,255,220}},
-    {{245,188,210,220},{255,210,230,220}},
-    {{188,240,210,220},{210,255,230,220}},
-    {{245,235,155,220},{255,248,190,220}},
-    {{220,195,245,220},{238,220,255,220}},
-    {{245,210,180,220},{255,230,205,220}},
-    {{175,230,240,220},{205,245,255,220}},
-    {{240,200,200,220},{255,225,225,220}},
-};
+HashVisualizer::HashColorTheme HashVisualizer::getHashTheme() {
+    HashColorTheme t;
+    
+    if (!ThemeManager::isDark) {
+        // ==========================================
+        // ☀️ LIGHT MODE TEMPLATES
+        // ==========================================
+        if (ThemeManager::currentType == ThemeType::DEFAULT) {
+            t.bucketFill            = sf::Color(160, 200, 160); // Xanh lá nhạt
+            t.bucketBorder          = sf::Color(120, 165, 120); // Xanh lá đậm
+            t.nodeFill              = sf::Color(205, 198, 222); // Tím Lavender nhạt
+            t.nodeBorder            = sf::Color(180, 165, 205); // Tím đậm hơn chút
+            t.arrow                 = sf::Color(150, 140, 170); // Mũi tên tím xám
+            
+            // Highlight (vàng)
+            t.bucketHighlightFill   = sf::Color(245, 205, 95);
+            t.bucketHighlightBorder = sf::Color(215, 160, 60);
+            t.nodeHighlightFill     = sf::Color(155, 178, 192); // xanh
+            t.nodeHighlightBorder   = sf::Color(106, 139, 161);
+            t.highlightText         = sf::Color::White;
+        }
+        else if (ThemeManager::currentType == ThemeType::PINKY) {
+            t.bucketFill            = sf::Color(243, 204, 151); // #f3cc97
+            t.bucketBorder          = sf::Color(220, 150, 70);  // cam vàng đậm hơn
+            t.nodeFill              = sf::Color(251, 217, 229); // #fbd9e5
+            t.nodeBorder            = sf::Color(242, 131, 175); // #f283af
+            t.arrow                 = sf::Color(180, 150, 160); // trung tính hơi ấm
+
+            // Highlight (vàng cam)
+            t.bucketHighlightFill   = sf::Color(249, 203, 214);
+            t.bucketHighlightBorder = sf::Color(226, 139, 145);
+            t.nodeHighlightFill     = sf::Color(255, 210, 130);
+            t.nodeHighlightBorder   = sf::Color(230, 160, 90);
+            t.highlightText         = sf::Color(230, 160, 90);
+        }
+        else if (ThemeManager::currentType == ThemeType::NAVY) {
+            t.bucketFill            = sf::Color(148, 194, 218); // #94c2da
+            t.bucketBorder          = sf::Color(78, 124, 178);  // #4e7cb2
+            t.nodeFill              = sf::Color(239, 232, 224); // #efe8e0
+            t.nodeBorder            = sf::Color(130, 170, 210); // xanh dương nhạt hơn
+            t.arrow                 = sf::Color(140, 150, 170); // xám xanh
+
+            // Highlight (vàng + hồng)
+            t.bucketHighlightFill   = sf::Color(255, 210, 110);
+            t.bucketHighlightBorder = sf::Color(220, 160, 70);
+            t.nodeHighlightFill     = sf::Color(249, 203, 214);
+            t.nodeHighlightBorder   = sf::Color(226, 139, 145);
+            t.highlightText         = sf::Color(226, 139, 145);
+        }
+        else if (ThemeManager::currentType == ThemeType::GOLDEN) {
+            t.bucketFill            = sf::Color(252, 200, 138); // #fcc88a
+            t.bucketBorder          = sf::Color(200, 150, 70);  // vàng golden sẫm
+            t.nodeFill              = sf::Color(241, 195, 179); // #f1c3b3
+            t.nodeBorder            = sf::Color(231, 152, 151); // #e79897
+            t.arrow                 = sf::Color(170, 140, 120); // nâu xám ấm
+
+            // Highlight
+            t.bucketHighlightFill   = sf::Color(239, 195, 194);
+            t.bucketHighlightBorder = sf::Color(210, 168, 170);
+            t.nodeHighlightFill     = sf::Color(255, 225, 150);
+            t.nodeHighlightBorder   = sf::Color(230, 180, 110);
+            t.highlightText         = sf::Color(230, 180, 110);
+        }
+    } else {
+        // ==========================================
+        // 🌙 DARK MODE TEMPLATES
+        // ==========================================
+        if (ThemeManager::currentType == ThemeType::DEFAULT) {
+            t.bucketFill            = sf::Color(110, 145, 110);
+            t.bucketBorder          = sf::Color(85, 120, 85);
+            t.nodeFill              = sf::Color(150, 145, 175);
+            t.nodeBorder            = sf::Color(125, 110, 160);
+            t.arrow                 = sf::Color(120, 115, 140);
+            
+            // Highlight
+            t.bucketHighlightFill   = sf::Color(220, 180, 80);
+            t.bucketHighlightBorder = sf::Color(190, 140, 55);
+            t.nodeHighlightFill     = sf::Color(120, 145, 160); // xanh trầm lại
+            t.nodeHighlightBorder   = sf::Color(85, 110, 130);
+            t.highlightText         = sf::Color::White;
+        }
+        else if (ThemeManager::currentType == ThemeType::PINKY) {
+            t.bucketFill            = sf::Color(180, 150, 110);
+            t.bucketBorder          = sf::Color(150, 105, 55);
+            t.nodeFill              = sf::Color(190, 155, 170);
+            t.nodeBorder            = sf::Color(180, 95, 130);
+            t.arrow                 = sf::Color(140, 115, 120);
+
+            // Highlight
+            t.bucketHighlightFill   = sf::Color(210, 170, 180); // hồng trầm lại
+            t.bucketHighlightBorder = sf::Color(185, 115, 120);
+            t.nodeHighlightFill     = sf::Color(235, 185, 110);
+            t.nodeHighlightBorder   = sf::Color(200, 145, 80);
+            t.highlightText         = sf::Color::White;
+        }
+        else if (ThemeManager::currentType == ThemeType::NAVY) {
+            t.bucketFill            = sf::Color(95, 130, 150);
+            t.bucketBorder          = sf::Color(60, 90, 130);
+            t.nodeFill              = sf::Color(170, 165, 155);
+            t.nodeBorder            = sf::Color(100, 130, 165);
+            t.arrow                 = sf::Color(110, 120, 140);
+
+            // Highlight
+            t.bucketHighlightFill   = sf::Color(235, 190, 95);
+            t.bucketHighlightBorder = sf::Color(190, 140, 60);
+            t.nodeHighlightFill     = sf::Color(210, 170, 180); // hồng trầm
+            t.nodeHighlightBorder   = sf::Color(185, 115, 120);
+            t.highlightText         = sf::Color::White;
+        }
+        else if (ThemeManager::currentType == ThemeType::GOLDEN) {
+            t.bucketFill            = sf::Color(185, 145, 100);
+            t.bucketBorder          = sf::Color(145, 110, 55);
+            t.nodeFill              = sf::Color(175, 140, 125);
+            t.nodeBorder            = sf::Color(165, 110, 110);
+            t.arrow                 = sf::Color(135, 110, 95);
+
+            // Highlight
+            t.bucketHighlightFill   = sf::Color(200, 165, 165); // hồng beige trầm
+            t.bucketHighlightBorder = sf::Color(175, 140, 145);
+            t.nodeHighlightFill     = sf::Color(240, 200, 120);
+            t.nodeHighlightBorder   = sf::Color(205, 160, 85);
+            t.highlightText         = sf::Color::White;
+        }
+    }
+    return t;
+}
 
 // ── Pseudocode tables ─────────────────────────────────────────
 static const std::vector<std::string> PSEUDO_INSERT = {
@@ -154,7 +270,8 @@ HashVisualizer::HashVisualizer(sf::RenderWindow& window)
       mShowMenuBtn(mFontBold, ">", 32.f,  150.f, 45.f, 45.f, 22.5f, ThemeManager::current.secondary)
 {
     if (!mFontBold.openFromFile("assets/fonts/Inter-Bold.ttf") ||
-        !mFontRegular.openFromFile("assets/fonts/Inter-Regular.ttf"))
+        !mFontRegular.openFromFile("assets/fonts/Inter-Regular.ttf") ||
+        !mFontMedium.openFromFile("assets/fonts/Inter-Medium.otf"))
         cerr << "HashVisualizer: cannot load fonts" << endl;
 
     if (!mDiceTex.loadFromFile("assets/images/randomButton.png"))
@@ -234,11 +351,9 @@ HashVisualizer::HashVisualizer(sf::RenderWindow& window)
 
     // ── Sidebar callbacks ─────────────────────────────────────
     mClearBtn.setCallback([this](){
-        mHash.clear();
-        mHash.generateRandom(0);
-        mCurrentStep = std::max(0, (int)mHash.getSteps().size()-1);
+        mHash.clearTableUI(); // Gọi hàm mới tạo
+        mCurrentStep = 0;
         mTargetStep  = -1;
-        mLayout.setDescription("Hash table cleared.");
         mLayout.setPaused(true);
         mShowUndoBtn = false;
     });
@@ -335,88 +450,113 @@ void HashVisualizer::renderBuckets(sf::RenderWindow& window){
     float totalW=n*mBucketGapX-(mBucketGapX-mBucketW);
     mBucketStartX=(1440.f-totalW)*0.5f;
     mBucketRowY=FOOTER_Y-mBucketH-55.f;
-
+    HashColorTheme theme = getHashTheme();
     for (int i=0;i<n;++i){
         float px=mBucketStartX+i*mBucketGapX, py=mBucketRowY;
         bool isTarget=(i==targetBucket);
 
-        sf::Color fill  =isTarget?sf::Color(255,235,180,230):sf::Color(195,218,240,200);
-        sf::Color border=isTarget?sf::Color(220,150, 60,220):sf::Color(130,170,210,200);
+        // BUCKET COLOR SYNC WITH THEME
+        sf::Color fill   = isTarget ? theme.bucketHighlightFill : theme.bucketFill;
+        sf::Color border = isTarget ? theme.bucketHighlightBorder : theme.bucketBorder;
 
-        // Tint with theme primary when targeted
-        if (isTarget) border=ThemeManager::current.primary;
-
-        drawRoundedRect(window,sf::FloatRect(sf::Vector2f(px,py),sf::Vector2f(mBucketW,mBucketH)),10.f,fill,border,3.5f);
-
-        sf::Text lbl(mFontRegular,"H"+std::to_string(i),18);
-        lbl.setFillColor(sf::Color(60,80,130));
+        drawRoundedRect(window, sf::FloatRect(sf::Vector2f(px,py), sf::Vector2f(mBucketW,mBucketH)), 10.f, fill, border, 3.5f);
+    
+        sf::Text lbl(mFontMedium, "H" + std::to_string(i), 18);
+        lbl.setFillColor(ThemeManager::current.textColor);
         sf::FloatRect lb=lbl.getLocalBounds();
         lbl.setPosition(sf::Vector2f(px+(mBucketW-lb.size.x)*0.5f-lb.position.x,
                                      py+(mBucketH-lb.size.y)*0.5f-lb.position.y));
         window.draw(lbl);
 
-        sf::Text idx(mFontRegular,std::to_string(i),11);
-        idx.setFillColor(sf::Color(120,140,180));
+        sf::Text idx(mFontMedium, std::to_string(i), 11);
+        sf::Color dimText = ThemeManager::current.textColor;
+        dimText.a = 150; // Small text
+        idx.setFillColor(dimText);
         sf::FloatRect ib=idx.getLocalBounds();
-        idx.setPosition(sf::Vector2f(px+(mBucketW-ib.size.x)*0.5f-ib.position.x,py+mBucketH+4.f));
+        idx.setPosition(sf::Vector2f(px+(mBucketW-ib.size.x)*0.5f-ib.position.x, py+mBucketH+4.f));
         window.draw(idx);
     }
 }
 
-// ── renderNodes ──────────────────────────────────────────────
+// ── renderNodes (Fade In/Out & Theme Color) ────────────────
 void HashVisualizer::renderNodes(sf::RenderWindow& window){
-    auto steps=mHash.getSteps();
+    auto steps = mHash.getSteps();
     if (steps.empty()) return;
 
-    int si=std::max(0,std::min(mCurrentStep,(int)steps.size()-1));
-    const auto& step=steps[si];
-    const auto& snap=step.tableSnapshot;
-    if (snap.empty()) return;
+    int si = std::max(0, std::min(mCurrentStep, (int)steps.size()-1));
+    int ti = (mTargetStep != -1) ? mTargetStep : si;
 
-    int targetBucket=step.targetBucket;
-    int targetVal   =step.targetVal;
+    const auto& currentSnap = steps[si].tableSnapshot;
+    const auto& targetSnap = steps[ti].tableSnapshot;
+    if (currentSnap.empty()) return;
 
-    float nodeW=mBucketW, nodeH=46.f, gapY=72.f;
+    int targetBucket = steps[si].targetBucket;
+    int targetVal    = steps[si].targetVal;
 
-    for (int i=0;i<(int)snap.size();++i){
-        float bx=mBucketStartX+i*mBucketGapX, by=mBucketRowY;
-        const auto& chain=snap[i].vals;
-        for (int depth=0;depth<(int)chain.size();++depth){
-            int nv=chain[depth];
-            float px=bx, py=by-(depth+1)*gapY;
+    float nodeW = mBucketW, nodeH = 46.f, gapY = 72.f;
 
-            if (mColorIdx.find(nv)==mColorIdx.end())
-                mColorIdx[nv]=(int)mColorIdx.size()%8;
-            auto c1=PAL[mColorIdx[nv]][0];
-            auto c2=PAL[mColorIdx[nv]][1];
+    for (int i = 0; i < (int)currentSnap.size(); ++i){
+        float bx = mBucketStartX + i * mBucketGapX, by = mBucketRowY;
+        std::vector<int> allNodes = currentSnap[i].vals;
+        for (int val : targetSnap[i].vals) {
+            if (std::find(allNodes.begin(), allNodes.end(), val) == allNodes.end()) {
+                allNodes.push_back(val);
+            }
+        }
 
-            bool isTarget=(nv==targetVal&&i==targetBucket);
-            if (isTarget){ c1=sf::Color(255,170,170,230); c2=sf::Color(255,200,185,230); }
+        for (int depth = 0; depth < (int)allNodes.size(); ++depth){
+            int nv = allNodes[depth];
+            
+            // LOGIC FADE IN / FADE OUT
+            bool inCurrent = (std::find(currentSnap[i].vals.begin(), currentSnap[i].vals.end(), nv) != currentSnap[i].vals.end());
+            bool inTarget = (std::find(targetSnap[i].vals.begin(), targetSnap[i].vals.end(), nv) != targetSnap[i].vals.end());
+            
+            float alphaMult = 1.0f;
+            if (inCurrent && !inTarget) alphaMult = std::max(0.f, 1.0f - mStepAnimProgress * 3.0f); // Đang bị xóa -> Nhạt dần
+            else if (!inCurrent && inTarget) alphaMult = std::min(1.0f, mStepAnimProgress * 3.0f);   // Đang được thêm -> Đậm dần
+            
+            if (alphaMult <= 0.01f) continue;
+            std::uint8_t alpha = static_cast<std::uint8_t>(255 * alphaMult);
 
-            sf::Color outline=isTarget?ThemeManager::current.primary:sf::Color(160,180,220,180);
-            drawRoundedRect(window,sf::FloatRect(sf::Vector2f(px,py),sf::Vector2f(nodeW,nodeH)),10.f,c1,outline,3.f);
+            int realDepth = depth; 
+            if (inTarget) {
+                auto it = std::find(targetSnap[i].vals.begin(), targetSnap[i].vals.end(), nv);
+                realDepth = std::distance(targetSnap[i].vals.begin(), it);
+            } else if (inCurrent) {
+                auto it = std::find(currentSnap[i].vals.begin(), currentSnap[i].vals.end(), nv);
+                realDepth = std::distance(currentSnap[i].vals.begin(), it);
+            }
+            float px = bx, py = by - (realDepth + 1) * gapY;
 
-            sf::RectangleShape tint(sf::Vector2f(nodeW*0.5f-2.f,nodeH-4.f));
-            tint.setPosition(sf::Vector2f(px+nodeW*0.5f,py+2.f));
-            tint.setFillColor(sf::Color(c2.r,c2.g,c2.b,120));
-            window.draw(tint);
+            // CHANGE NODE COLOR TO THEME
+            HashColorTheme theme = getHashTheme();
+            bool isTarget = (nv == targetVal && i == targetBucket);
 
-            sf::Text valText(mFontRegular,std::to_string(nv),14);
-            valText.setFillColor(sf::Color(40,40,80));
-            sf::FloatRect vb=valText.getLocalBounds();
-            valText.setPosition(sf::Vector2f(px+(nodeW-vb.size.x)*0.5f-vb.position.x,
-                                             py+(nodeH-vb.size.y)*0.5f-vb.position.y));
+            sf::Color fillCol   = isTarget ? theme.nodeHighlightFill : theme.nodeFill;
+            sf::Color borderCol = isTarget ? theme.nodeHighlightBorder : theme.nodeBorder;
+
+            sf::Color arrowCol  = isTarget ? theme.nodeHighlightBorder : theme.arrow;
+            sf::Color textCol   = isTarget ? theme.highlightText : ThemeManager::current.textColor;
+    
+            fillCol.a = alpha; textCol.a = alpha; borderCol.a = alpha;
+
+            drawRoundedRect(window, sf::FloatRect(sf::Vector2f(px,py), sf::Vector2f(nodeW,nodeH)), 10.f, fillCol, borderCol, 3.f);
+
+            sf::Text valText(mFontMedium, std::to_string(nv), 16);
+            valText.setFillColor(textCol);
+            sf::FloatRect vb = valText.getLocalBounds();
+            valText.setPosition(sf::Vector2f(px + (nodeW - vb.size.x) * 0.5f - vb.position.x,
+                                             py + (nodeH - vb.size.y) * 0.5f - vb.position.y));
             window.draw(valText);
 
-            sf::Color arrowCol=isTarget?ThemeManager::current.primary:sf::Color(140,170,210,180);
-            if (depth==0)
-                drawArrowUp(window,sf::Vector2f(bx+nodeW*0.5f,by),sf::Vector2f(px+nodeW*0.5f,py+nodeH+1.f),arrowCol);
-            else
-                drawArrowUp(window,sf::Vector2f(px+nodeW*0.5f,by-depth*gapY),sf::Vector2f(px+nodeW*0.5f,py+nodeH+1.f),arrowCol);
+            // sf::Color arrowCol = isTarget ? ThemeManager::current.primary : sf::Color(140,170,210, alpha);
+            arrowCol.a = alpha;
+            
+            if (realDepth == 0) drawArrowUp(window, sf::Vector2f(bx + nodeW*0.5f, by), sf::Vector2f(px + nodeW*0.5f, py + nodeH + 1.f), arrowCol);
+            else drawArrowUp(window, sf::Vector2f(px + nodeW*0.5f, by - realDepth*gapY), sf::Vector2f(px + nodeW*0.5f, py + nodeH + 1.f), arrowCol);
         }
     }
 }
-
 // ── update ───────────────────────────────────────────────────
 void HashVisualizer::update(const std::optional<sf::Event>& event){
     sf::Vector2f worldPos=mWindow->mapPixelToCoords(sf::Mouse::getPosition(*mWindow));
@@ -442,17 +582,6 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
     if (mIsSearchExpanded){ mConfirmSearchBtn.update(mousePos); mSearchDiceBtn.update(mousePos); }
     if (mIsUpdateExpanded){ mConfirmUpdateBtn.update(mousePos); }
 
-    // Auto-play
-    // if (!mLayout.isPaused()){
-    //     float dur=1.f/std::max(0.1f,mLayout.getSpeed());
-    //     int total=(int)mHash.getSteps().size();
-    //     if (mAutoPlayClock.getElapsedTime().asSeconds()>=dur){
-    //         if (mCurrentStep<total-1) mCurrentStep++;
-    //         else mLayout.setPaused(true);
-    //         mAutoPlayClock.restart();
-    //     }
-    // }
-
     if (!event) return;
 
     if (const auto* me=event->getIf<sf::Event::MouseButtonPressed>()){
@@ -463,7 +592,7 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
                 // Click Hide (<)
                 if (sf::FloatRect({382.f, 150.f}, {45.f, 45.f}).contains(worldPos)) {
                     mIsSidebarVisible = false;
-                    mIsInsertExpanded = mIsDeleteExpanded = mIsSearchExpanded = mIsNewExpanded = false;
+                    mIsInsertExpanded = mIsDeleteExpanded = mIsSearchExpanded = mIsNewExpanded = mIsUpdateExpanded = false;
                     inside = true;
                 }
                 // NEW BUTTON
@@ -602,7 +731,7 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
                     digit=(int)ke->code-(int)sf::Keyboard::Key::Num0;
                 else if (ke->code>=sf::Keyboard::Key::Numpad0&&ke->code<=sf::Keyboard::Key::Numpad9)
                     digit=(int)ke->code-(int)sf::Keyboard::Key::Numpad0;
-                if (digit!=-1&&mInputValue.size()<4) mInputValue+=std::to_string(digit);
+                if (digit!=-1&&mInputValue.size()<3) mInputValue+=std::to_string(digit);
             }
         }
         else if (mIsUpdateExpanded) {
@@ -699,7 +828,7 @@ void HashVisualizer::render(bool showUI){
     // Sidebar theme colors
     sf::Color sbCol=ThemeManager::current.secondary;
     sf::Color hlCol=ThemeManager::current.primary;
-    for (auto* b:{&mClearBtn,&mNewBtn,&mInsertBtn,&mDeleteBtn,&mSearchBtn,&mUndoBtn,
+    for (auto* b:{&mClearBtn,&mNewBtn,&mInsertBtn,&mDeleteBtn,&mSearchBtn,&mUndoBtn, &mUpdateBtn,
                   &mInsertHoverStroke,&mInsertExpandedStroke,
                   &mDeleteHoverStroke,&mDeleteExpandedStroke,
                   &mSearchHoverStroke,&mSearchExpandedStroke,
@@ -708,19 +837,22 @@ void HashVisualizer::render(bool showUI){
     for (auto* b:{&mInsertHoverStroke,&mInsertExpandedStroke,
                   &mDeleteHoverStroke,&mDeleteExpandedStroke,
                   &mSearchHoverStroke,&mSearchExpandedStroke,
+                  &mUpdateHoverStroke,&mUpdateExpandedStroke,
                   &mNewHoverStroke,&mNewExpandedStroke})
         b->setThemeColor(hlCol);
-    for (auto* b:{&mInsertExpandedBg,&mDeleteExpandedBg,&mSearchExpandedBg,&mNewExpandedBg})
+    for (auto* b:{&mInsertExpandedBg,&mDeleteExpandedBg,&mSearchExpandedBg, &mUpdateExpandedBg, &mNewExpandedBg})
         b->setThemeColor(sbCol);
-    for (auto* b:{&mConfirmAddBtn,&mConfirmRemoveBtn,&mConfirmSearchBtn,&mRandomBtn,&mUploadBtn})
+    for (auto* b:{&mConfirmAddBtn,&mConfirmRemoveBtn,&mConfirmSearchBtn, &mConfirmUpdateBtn, &mRandomBtn,&mUploadBtn})
         b->setThemeColor(ThemeManager::current.bg);
 
     sf::Vector2f worldPos=mWindow->mapPixelToCoords(sf::Mouse::getPosition(*mWindow));
     
     if (!mIsSidebarVisible) {
+        mShowMenuBtn.setThemeColor(ThemeManager::current.secondary);
         mShowMenuBtn.draw(*mWindow);
     }
     else {
+        mHideMenuBtn.setThemeColor(ThemeManager::current.secondary);
         mHideMenuBtn.draw(*mWindow);
         if (mShowUndoBtn){ mUndoBtn.setThemeColor(sbCol); mUndoBtn.draw(*mWindow); }
         else             { mClearBtn.setThemeColor(sbCol); mClearBtn.draw(*mWindow); }
