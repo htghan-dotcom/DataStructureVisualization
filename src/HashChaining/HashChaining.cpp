@@ -20,8 +20,8 @@ vector<ChainSnapshot> HashChaining::captureSnapshot() const {
     return snap;
 }
 
-// ── Helper: push a step with current snapshot ──────────────────
-// (inline lambda in each method — avoids repetition)
+// Helper: push a step with current snapshot
+// (inline lambda in each method - avoids repetition)
 #define PUSH_STEP(desc, lid, bucket, val, fnd) \
     steps.push_back({(desc), (lid), (bucket), (val), (fnd), captureSnapshot()})
 
@@ -41,7 +41,21 @@ void HashChaining::addInternal(int key, bool keepSteps) {
     PUSH_STEP("Go to bucket [" + to_string(idx) + "]",
               1, idx, -1, false);
 
-    // snapshot BEFORE inserting → shows bucket still empty/old
+    // Checking if key already exists
+    Node* cur = table[idx];
+    while (cur) {
+        PUSH_STEP("Checking node " + to_string(cur->val) + " for duplicate",
+                  1, idx, cur->val, false);
+                  
+        if (cur->val == key) {
+            PUSH_STEP(to_string(key) + " already exists! Cancel insertion.",
+                      1, idx, key, true);
+            return; 
+        }
+        cur = cur->next;
+    }
+
+    // snapshot BEFORE inserting, showing bucket still empty
     PUSH_STEP("Inserting " + to_string(key)
               + " at head of bucket [" + to_string(idx) + "]",
               2, idx, -1, false);
@@ -51,7 +65,7 @@ void HashChaining::addInternal(int key, bool keepSteps) {
     p->next = table[idx];
     table[idx] = p;
 
-    // snapshot AFTER inserting → node is now visible
+    // snapshot AFTER inserting, node is now visible
     PUSH_STEP("Done. Node " + to_string(key) + " added at bucket ["
               + to_string(idx) + "].",
               3, idx, key, false);
@@ -89,8 +103,9 @@ bool HashChaining::deleteInternal(int key, bool keepSteps) {
                   13, idx, -1, false);
         return true;
     }
-
     // Traverse
+    PUSH_STEP("Checking node " + to_string(table[idx]->val),
+              14, idx, table[idx]->val, false);
     Node* cur = table[idx];
     while (cur->next && cur->next->val != key) {
         PUSH_STEP("Checking node " + to_string(cur->next->val),

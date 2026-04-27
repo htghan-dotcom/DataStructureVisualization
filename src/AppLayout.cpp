@@ -36,7 +36,11 @@ AppLayout::AppLayout()
       mStepText(mFontRegular),
       mSpeedSlider(mFontRegular, 956.f, 917.f),
       mStepBackBtn(mFontRegular, "Step back", 326.f, 896.f, 165.f, 49.f, 24.5f, sf::Color::White),
-      mStepForwardBtn(mFontRegular, "Step forward", 504.f, 896.f, 201.f, 49.f, 24.5f, sf::Color::White)
+      mStepForwardBtn(mFontRegular, "Step forward", 504.f, 896.f, 201.f, 49.f, 24.5f, sf::Color::White),
+      mHideDescBtn(mFontBold, ">", 915.f, 150.f, 45.f, 80.f, 22.5f, sf::Color::White),
+      mShowDescBtn(mFontBold, "<", 1375.f, 150.f, 45.f, 80.f, 22.5f, sf::Color::White),
+      mHidePseudoBtn(mFontBold, ">", 915.f, 395.f, 45.f, 80.f, 22.5f, sf::Color::White),
+      mShowPseudoBtn(mFontBold, "<", 1375.f, 395.f, 45.f, 80.f, 22.5f, sf::Color::White)
 {
     if (!mFontBold.openFromFile("assets/fonts/Inter-Bold.ttf") or !mFontRegular.openFromFile("assets/fonts/Inter-Regular.ttf")){
         cerr << "Cannot load font!" << endl;
@@ -53,17 +57,28 @@ AppLayout::AppLayout()
     mHeaderText.setFont(mFontBold);
     mHeaderText.setString("Data Structure Visualization");
     mHeaderText.setCharacterSize(30);
-    mHeaderText.setPosition({130.f, 68.f});
+    mHeaderText.setPosition({95.f, 68.f});
 
-    mHomeBtn.setup(mHomeTex, 67.f, 60.f, 55.f, 55.f);
-    mHomeBtn.setCallback([this]() { mGoHome = true; });
+    mHomeBtn.setup(mHomeTex, 32.f, 60.f, 55.f, 55.f);
+    mHomeBtn.setCallback([this](){ mGoHome = true; });
     
-    mDescriptionBox.setSize({400.f, 150.f});
-    mDescriptionBox.setPosition({1018.f, 165.f});
+    mDescriptionBox = createRoundedRect(sf::Vector2f(450.f, 80.f), 20.f);
+    mDescriptionBox.setPosition(sf::Vector2f(970.f, 150.f));
+    mDescriptionBox.setFillColor(ThemeManager::current.secondary);
     
     mDescriptionText.setFont(mFontRegular);
-    mDescriptionText.setCharacterSize(20);
-    mDescriptionText.setPosition({1040.f, 185.f});
+    mDescriptionText.setFillColor(ThemeManager::current.primary);
+    mDescriptionText.setCharacterSize(22);
+    mDescriptionText.setPosition(sf::Vector2f(990.f, 175.f));
+
+    mPseudoBox = createRoundedRect(sf::Vector2f(450.f, 380.f), 20.f);
+    mPseudoBox.setPosition(sf::Vector2f(970.f, 245.f));
+    mPseudoBox.setFillColor(ThemeManager::current.secondary);
+
+    mHideDescBtn.setCallback([this](){ mIsDescVisible = false; });
+    mShowDescBtn.setCallback([this](){ mIsDescVisible = true; });
+    mHidePseudoBtn.setCallback([this](){ mIsPseudoVisible = false; });
+    mShowPseudoBtn.setCallback([this](){ mIsPseudoVisible = true; });
     
     if (!mSkipBackTex.loadFromFile("assets/images/skipbackButton.png")){cerr << "Check lai anh skipback" << endl;}
     if (!mPauseTex.loadFromFile("assets/images/pauseButton.png")){cerr << "Check lai anh pause" << endl;}
@@ -114,6 +129,10 @@ void AppLayout::update(sf::Vector2i mousePos){
     mSkipBackBtn.update(mousePos);
     mPauseBtn.update(mousePos);
     mSkipForwardBtn.update(mousePos);
+    if (mIsDescVisible) mHideDescBtn.update(mousePos);
+    else mShowDescBtn.update(mousePos);
+    if (mIsPseudoVisible) mHidePseudoBtn.update(mousePos);
+    else mShowPseudoBtn.update(mousePos);
     mStartBtn.update(mousePos);
     mStepBackBtn.update(mousePos);
     mStepForwardBtn.update(mousePos);
@@ -121,14 +140,63 @@ void AppLayout::update(sf::Vector2i mousePos){
 
 void AppLayout::draw(sf::RenderWindow& window){
     mFooter.setFillColor(ThemeManager::current.secondary);
-    mDescriptionBox.setFillColor(ThemeManager::current.secondary);
     mHeaderText.setFillColor(ThemeManager::current.textColor);
-    mDescriptionText.setFillColor(ThemeManager::current.textColor);
 
     window.draw(mFooter);
     window.draw(mHeaderText);
-    window.draw(mDescriptionBox);
-    window.draw(mDescriptionText);
+
+    mHideDescBtn.setThemeColor(ThemeManager::current.secondary);
+    mShowDescBtn.setThemeColor(ThemeManager::current.secondary);
+    mHidePseudoBtn.setThemeColor(ThemeManager::current.secondary);
+    mShowPseudoBtn.setThemeColor(ThemeManager::current.secondary);
+
+    if (mIsDescVisible) {
+        mDescriptionBox.setFillColor(ThemeManager::current.secondary);
+        mDescriptionText.setFillColor(ThemeManager::current.textColor);
+        
+        window.draw(mDescriptionBox);
+        window.draw(mDescriptionText);
+        mHideDescBtn.draw(window);
+    } else {
+        mShowDescBtn.draw(window);
+    }
+
+   if (mIsPseudoVisible) {
+        mPseudoBox.setFillColor(ThemeManager::current.secondary);
+        window.draw(mPseudoBox);
+        
+        float boxX = mPseudoBox.getPosition().x;
+        float boxY = mPseudoBox.getPosition().y;
+        float boxW = 450.f;
+        
+        float startX = boxX + 20.f;
+        float currentY = boxY + 20.f; 
+        
+        for (int i = 0; i < mCodeLines.size(); ++i){
+            sf::Text lineText(i == mActiveCodeLine ? mFontBold : mFontRegular, mCodeLines[i], 22);
+            lineText.setPosition(sf::Vector2f(startX, currentY));
+            
+            if (i == mActiveCodeLine){
+                sf::FloatRect textBounds = lineText.getGlobalBounds();
+                
+                sf::RectangleShape hgBg(sf::Vector2f(boxW, textBounds.size.y + 14.f));
+                hgBg.setPosition(sf::Vector2f(boxX, textBounds.position.y - 7.f));
+                hgBg.setFillColor(ThemeManager::current.bg);
+                window.draw(hgBg);
+                
+                lineText.setFillColor(ThemeManager::current.primary);
+            } else {
+                lineText.setFillColor(ThemeManager::current.textColor);
+            }
+
+            window.draw(lineText);
+            currentY += lineText.getLocalBounds().size.y + 15.f;
+        }
+        
+        mHidePseudoBtn.draw(window);
+    } else {
+        mShowPseudoBtn.draw(window);
+    }
 
     sf::Color iconCol = ThemeManager::current.textColor;
     if(mSkipBackBtn.mSprite) mSkipBackBtn.mSprite->setColor(iconCol);
