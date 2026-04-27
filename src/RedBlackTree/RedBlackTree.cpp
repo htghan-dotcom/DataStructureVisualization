@@ -1,5 +1,5 @@
 #include "Common.h"
-#include "RedBlackTree.h"
+#include "RedBlackTree/RedBlackTree.h"
 
 const vector<string> PSEUDO_SEARCH = {
     "current = root",

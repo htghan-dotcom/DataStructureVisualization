@@ -27,6 +27,15 @@ private:
     RoundedButton mStepBackBtn, mStepForwardBtn;
     SpeedSlider mSpeedSlider;
 
+    sf::ConvexShape mPseudoBox;
+
+    RoundedButton mHideDescBtn;
+    RoundedButton mShowDescBtn;
+    RoundedButton mHidePseudoBtn;
+    RoundedButton mShowPseudoBtn;
+
+    bool mIsDescVisible = true;
+    bool mIsPseudoVisible = true;
     bool mIsPaused = false;
     
 public:
@@ -58,4 +67,9 @@ public:
     void setSkipForwardCallback(std::function<void()> cb){mSkipForwardCb = cb;}
     void setStepBackCallback(std::function<void()> cb){mStepBackCb = cb;}
     void setStepForwardCallback(std::function<void()> cb){mStepForwardCb = cb;}
+
+    std::vector<std::string> mCodeLines;
+    std::vector<int> mActiveCodeLines;
+    void setPseudoCode(const std::vector<std::string>& codeLines) { mCodeLines = codeLines; }
+    void setActiveCodeLines(const std::vector<int>& lines) { mActiveCodeLines = lines; }
 };
