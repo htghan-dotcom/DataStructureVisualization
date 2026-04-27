@@ -53,3 +53,5 @@ tmp/
 # OS
 Thumbs.db
 desktop.ini
+
+CMakeLists.txt

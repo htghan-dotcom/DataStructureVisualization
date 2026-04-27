@@ -1,4 +1,5 @@
 #include "DLLVisualizer.h"
+#include "ThemeManager.h"
 #include "tinyfiledialogs.h"
 #include "Common.h"
 #include <random>
@@ -11,39 +12,47 @@ DLLVisualizer::DLLVisualizer(sf::RenderWindow& window)
       mTitleDoubly(mFontBold), mTitleLinked(mFontBold), mTitleList(mFontBold), mDescriptionText(mFontRegular),
       mCodeTitleText(mFontBold),
       mStepText(mFontRegular),
-      mClearBtn(mFontRegular, "Clear list", 70.f, 176.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
-      mNewBtn(mFontRegular, "New list", 251.f, 176.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
-      mInsertBtn(mFontRegular, "Insert", 70.f, 230.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
-      mDeleteBtn(mFontRegular, "Delete", 70.f, 284.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
-      mSearchBtn(mFontRegular, "Search", 70.f, 338.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
-      mUndoBtn(mFontRegular, "Undo", 70.f, 176.f, 160.f, 45.f, 21.f, sf::Color(217, 217, 217)),
+      mClearBtn(mFontRegular, "Clear list", 70.f, 176.f, 160.f, 45.f, 21.f, ThemeManager::current.secondary),
+      mNewBtn(mFontRegular, "New list", 251.f, 176.f, 160.f, 45.f, 21.f, ThemeManager::current.secondary),
+      mInsertBtn(mFontRegular, "Insert", 70.f, 230.f, 160.f, 45.f, 21.f, ThemeManager::current.secondary),
+      mDeleteBtn(mFontRegular, "Delete", 70.f, 284.f, 160.f, 45.f, 21.f, ThemeManager::current.secondary),
+      mSearchBtn(mFontRegular, "Search", 70.f, 338.f, 160.f, 45.f, 21.f, ThemeManager::current.secondary),
+      mUpdateBtn(mFontRegular, "Update", 70.f, 392.f, 160.f, 45.f, 21.f, ThemeManager::current.secondary),
+      mUndoBtn(mFontRegular, "Undo", 70.f, 176.f, 160.f, 45.f, 21.f, ThemeManager::current.secondary),
       mSpeedSlider(mFontRegular, 956.f, 921.f),
-      mStepBackBtn(mFontRegular, "Step back", 326.f, 896.f, 165.f, 49.f, 24.5f, sf::Color(245, 245, 240)),
-      mStepForwardBtn(mFontRegular, "Step forward", 504.f, 896.f, 201.f, 49.f, 24.5f, sf::Color(245, 245, 240)),
+      mStepBackBtn(mFontRegular, "Step back", 326.f, 896.f, 165.f, 49.f, 24.5f, ThemeManager::current.bg),
+      mStepForwardBtn(mFontRegular, "Step forward", 504.f, 896.f, 201.f, 49.f, 24.5f, ThemeManager::current.bg),
       
-      mInsertHoverStroke(mFontRegular, "", 68.f, 228.f, 164.f, 49.f, 23.f, sf::Color(90, 150, 44)),
-      mInsertExpandedStroke(mFontRegular, "", 68.f, 228.f, 345.f, 49.f, 23.f, sf::Color(90, 150, 44)),
-      mInsertExpandedBg(mFontRegular, "", 70.f, 230.f, 341.f, 45.f, 21.f, sf::Color(217, 217, 217)),
-      mConfirmAddBtn(mFontRegular, "Add", 254.f, 233.f, 154.f, 39.f, 19.5f, sf::Color(245, 245, 240)),
+      mInsertHoverStroke(mFontRegular, "", 68.f, 228.f, 164.f, 49.f, 23.f, ThemeManager::current.primary),
+      mInsertExpandedStroke(mFontRegular, "", 68.f, 228.f, 345.f, 49.f, 23.f, ThemeManager::current.primary),
+      mInsertExpandedBg(mFontRegular, "", 70.f, 230.f, 341.f, 45.f, 21.f, ThemeManager::current.secondary),
+      mConfirmAddBtn(mFontRegular, "Add", 254.f, 233.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
       mInsertInputText(mFontRegular),
 
-      mDeleteHoverStroke(mFontRegular, "", 68.f, 282.f, 164.f, 49.f, 23.f, sf::Color(90, 150, 44)),
-      mDeleteExpandedStroke(mFontRegular, "", 68.f, 282.f, 345.f, 49.f, 23.f, sf::Color(90, 150, 44)),
-      mDeleteExpandedBg(mFontRegular, "", 70.f, 284.f, 341.f, 45.f, 21.f, sf::Color(217, 217, 217)),
-      mConfirmRemoveBtn(mFontRegular, "Remove", 254.f, 287.f, 154.f, 39.f, 19.5f, sf::Color(245, 245, 240)),
+      mDeleteHoverStroke(mFontRegular, "", 68.f, 282.f, 164.f, 49.f, 23.f, ThemeManager::current.primary),
+      mDeleteExpandedStroke(mFontRegular, "", 68.f, 282.f, 345.f, 49.f, 23.f, ThemeManager::current.primary),
+      mDeleteExpandedBg(mFontRegular, "", 70.f, 284.f, 341.f, 45.f, 21.f, ThemeManager::current.secondary),
+      mConfirmRemoveBtn(mFontRegular, "Remove", 254.f, 287.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
       mDeleteInputText(mFontRegular),
 
-      mSearchHoverStroke(mFontRegular, "", 68.f, 336.f, 164.f, 49.f, 23.f, sf::Color(90, 150, 44)),
-      mSearchExpandedStroke(mFontRegular, "", 68.f, 336.f, 345.f, 49.f, 23.f, sf::Color(90, 150, 44)),
-      mSearchExpandedBg(mFontRegular, "", 70.f, 338.f, 341.f, 45.f, 21.f, sf::Color(217, 217, 217)),
-      mConfirmSearchBtn(mFontRegular, "Search", 254.f, 341.f, 154.f, 39.f, 19.5f, sf::Color(245, 245, 240)),
+      mSearchHoverStroke(mFontRegular, "", 68.f, 336.f, 164.f, 49.f, 23.f, ThemeManager::current.primary),
+      mSearchExpandedStroke(mFontRegular, "", 68.f, 336.f, 345.f, 49.f, 23.f, ThemeManager::current.primary),
+      mSearchExpandedBg(mFontRegular, "", 70.f, 338.f, 341.f, 45.f, 21.f, ThemeManager::current.secondary),
+      mConfirmSearchBtn(mFontRegular, "Search", 254.f, 341.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
       mSearchInputText(mFontRegular),
 
-      mNewHoverStroke(mFontRegular, "", 249.f, 174.f, 164.f, 49.f, 23.f, sf::Color(90, 150, 44)),
-      mNewExpandedStroke(mFontRegular, "", 249.f, 174.f, 164.f, 157.f, 23.f, sf::Color(90, 150, 44)),
-      mNewExpandedBg(mFontRegular, "", 251.f, 176.f, 160.f, 153.f, 21.f, sf::Color(217, 217, 217)),
-      mRandomBtn(mFontRegular, "Random", 254.f, 233.f, 154.f, 39.f, 19.5f, sf::Color(245, 245, 240)),
-      mUploadBtn(mFontRegular, "From File", 254.f, 287.f, 154.f, 39.f, 19.5f, sf::Color(245, 245, 240))
+      mUpdateHoverStroke(mFontRegular, "", 68.f, 390.f, 164.f, 49.f, 23.f, ThemeManager::current.primary),
+      mUpdateExpandedStroke(mFontRegular, "", 68.f, 390.f, 345.f, 49.f, 23.f, ThemeManager::current.primary),
+      mUpdateExpandedBg(mFontRegular, "", 70.f, 392.f, 341.f, 45.f, 21.f, ThemeManager::current.secondary),
+      mConfirmUpdateBtn(mFontRegular, "Update", 254.f, 395.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
+      mUpdateInputText(mFontRegular),
+      mUpdateCursorLine(),
+
+      mNewHoverStroke(mFontRegular, "", 249.f, 174.f, 164.f, 49.f, 23.f, ThemeManager::current.primary),
+      mNewExpandedStroke(mFontRegular, "", 249.f, 174.f, 164.f, 157.f, 23.f, ThemeManager::current.primary),
+      mNewExpandedBg(mFontRegular, "", 251.f, 176.f, 160.f, 153.f, 21.f, ThemeManager::current.secondary),
+      mRandomBtn(mFontRegular, "Random", 254.f, 233.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
+      mUploadBtn(mFontRegular, "From File", 254.f, 287.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg)
 {
     initializeFonts();
     initializeTextures();
@@ -52,45 +61,45 @@ DLLVisualizer::DLLVisualizer(sf::RenderWindow& window)
     initializePseudoCodePanel();
 
     mBackground.setSize({1440.f, 960.f});
-    mBackground.setFillColor(sf::Color(245, 245, 240));
+    mBackground.setFillColor(ThemeManager::current.bg);
 
     mFooter.setSize({1440.f, 78.f});
     mFooter.setPosition({0.f, 882.f});
-    mFooter.setFillColor(sf::Color(217, 217, 217));
+    mFooter.setFillColor(ThemeManager::current.secondary);
 
     mHeaderText.setString("Data Structure Visualization");
     mHeaderText.setCharacterSize(30);
-    mHeaderText.setFillColor(sf::Color::Black);
+    mHeaderText.setFillColor(ThemeManager::current.textColor);
     mHeaderText.setPosition({130.f, 68.f});
 
     mTitleNum.setString("02");
     mTitleNum.setCharacterSize(30);
-    mTitleNum.setFillColor(sf::Color::Black);
+    mTitleNum.setFillColor(ThemeManager::current.textColor);
     mTitleNum.setPosition(sf::Vector2f(67.f, 663.f));
 
     mTitleDoubly.setString("Doubly");
     mTitleDoubly.setCharacterSize(70);
-    mTitleDoubly.setFillColor(sf::Color(52, 152, 219));
+    mTitleDoubly.setFillColor(ThemeManager::current.primary);
     mTitleDoubly.setPosition(sf::Vector2f(67.f, 695.f));
     
     mTitleLinked.setString("Linked");
     mTitleLinked.setCharacterSize(70);
-    mTitleLinked.setFillColor(sf::Color(46, 204, 113));
+    mTitleLinked.setFillColor(ThemeManager::current.primaryLight);
     mTitleLinked.setPosition(sf::Vector2f(67.f + mTitleDoubly.getLocalBounds().size.x + 10.f, 695.f));
 
     mTitleList.setString("List");
     mTitleList.setCharacterSize(70);
-    mTitleList.setFillColor(sf::Color(155, 89, 182));
+    mTitleList.setFillColor(ThemeManager::current.secondary);
     mTitleList.setPosition(sf::Vector2f(67.f, 765.f));
     
     // Description box
     mDescriptionBox.setSize({400.f, 150.f});
-    mDescriptionBox.setFillColor(sf::Color(217, 217, 217));
+    mDescriptionBox.setFillColor(ThemeManager::current.secondary);
     mDescriptionBox.setPosition({1018.f, 100.f});
 
     mDescriptionText.setString("Ready to visualize");
     mDescriptionText.setCharacterSize(16);
-    mDescriptionText.setFillColor(sf::Color::Black);
+    mDescriptionText.setFillColor(ThemeManager::current.textColor);
     mDescriptionText.setPosition({1040.f, 120.f});
 
     // Step display background
@@ -99,15 +108,15 @@ DLLVisualizer::DLLVisualizer(sf::RenderWindow& window)
         
     mStepBgLeft.setRadius(bgR);
     mStepBgLeft.setPosition(sf::Vector2f(bgX, bgY));
-    mStepBgLeft.setFillColor(bgColor);
+    mStepBgLeft.setFillColor(ThemeManager::current.screenBg);
     
     mStepBgRight.setRadius(bgR);
     mStepBgRight.setPosition(sf::Vector2f(bgX + bgW - bgH, bgY));
-    mStepBgRight.setFillColor(bgColor);
+    mStepBgRight.setFillColor(ThemeManager::current.screenBg);
     
     mStepBgCenter.setSize(sf::Vector2f(bgW - bgH, bgH));
     mStepBgCenter.setPosition(sf::Vector2f(bgX + bgR, bgY));
-    mStepBgCenter.setFillColor(bgColor);
+    mStepBgCenter.setFillColor(ThemeManager::current.screenBg);
 
     mStepText.setString("Step 0 / 0");
     mStepText.setCharacterSize(21);
@@ -134,6 +143,11 @@ DLLVisualizer::DLLVisualizer(sf::RenderWindow& window)
         generateRandomList();
         mShowUndoBtn = false;
         mIsNewExpanded = false;
+    });
+
+    mUploadBtn.setCallback([this]() {
+        mList.backup();
+        loadListFromFile();
     });
 
     mStepBackBtn.setCallback([this]() {
@@ -212,19 +226,59 @@ DLLVisualizer::DLLVisualizer(sf::RenderWindow& window)
         }
     });
 
+    mConfirmUpdateBtn.setCallback([this]() {
+        if (!mInputValue.empty()) {
+            if (!mIsUpdatePhaseTwo) {
+                try {
+                    mUpdateOldValue = stoi(mInputValue);
+                    mInputValue.clear();
+                    mIsUpdatePhaseTwo = true;
+                    mDescriptionText.setString("Enter new value for " + to_string(mUpdateOldValue));
+                } catch (...) {
+                    mDescriptionText.setString("Enter a valid old value first.");
+                }
+            } else {
+                try {
+                    int newVal = stoi(mInputValue);
+                    mList.backup();
+                    if (mList.update(mUpdateOldValue, newVal)) {
+                        mList.resetHistory("Update " + to_string(mUpdateOldValue) + " to " + to_string(newVal));
+                        mList.setCurrentStep(0);
+                        mDescriptionText.setString("Updated " + to_string(mUpdateOldValue) + " to " + to_string(newVal));
+                        mShowUndoBtn = false;
+                    } else {
+                        mList.resetHistory("Value not found");
+                        mDescriptionText.setString("Value not found");
+                    }
+                    mIsUpdateExpanded = false;
+                    mIsUpdatePhaseTwo = false;
+                    mInputValue.clear();
+                    mIsPaused = false;
+                    mAutoPlayClock.restart();
+                } catch (...) {
+                    mDescriptionText.setString("Enter a valid new value.");
+                }
+            }
+        }
+    });
+
     mClearBtn.refreshText();
     mNewBtn.refreshText();
     mInsertBtn.refreshText();
     mDeleteBtn.refreshText();
     mSearchBtn.refreshText();
+    mUpdateBtn.refreshText();
     mStepBackBtn.refreshText();
     mStepForwardBtn.refreshText();
     mConfirmAddBtn.refreshText();
     mConfirmRemoveBtn.refreshText();
     mConfirmSearchBtn.refreshText();
+    mConfirmUpdateBtn.refreshText();
     mUndoBtn.refreshText();
     mRandomBtn.refreshText();
     mUploadBtn.refreshText();
+    mUpdateBtn.refreshText();
+    mConfirmUpdateBtn.refreshText();
 
     mList.initialize();
     generateRandomList();
@@ -271,27 +325,35 @@ void DLLVisualizer::initializeButtons() {
 void DLLVisualizer::initializeInputForms() {
     mInsertInputText.setFont(mFontRegular);
     mInsertInputText.setCharacterSize(22);
-    mInsertInputText.setFillColor(sf::Color::Black);
+    mInsertInputText.setFillColor(ThemeManager::current.textColor);
     mInsertInputText.setPosition(sf::Vector2f(85.f, 238.f));
     
     mDeleteInputText.setFont(mFontRegular);
     mDeleteInputText.setCharacterSize(22);
-    mDeleteInputText.setFillColor(sf::Color::Black);
+    mDeleteInputText.setFillColor(ThemeManager::current.textColor);
     mDeleteInputText.setPosition(sf::Vector2f(85.f, 292.f));
     
     mSearchInputText.setFont(mFontRegular);
     mSearchInputText.setCharacterSize(22);
-    mSearchInputText.setFillColor(sf::Color::Black);
+    mSearchInputText.setFillColor(ThemeManager::current.textColor);
     mSearchInputText.setPosition(sf::Vector2f(85.f, 346.f));
     
+    mUpdateInputText.setFont(mFontRegular);
+    mUpdateInputText.setCharacterSize(22);
+    mUpdateInputText.setFillColor(ThemeManager::current.textColor);
+    mUpdateInputText.setPosition(sf::Vector2f(85.f, 400.f));
+
     mInsertCursorLine.setSize(sf::Vector2f(2.f, 24.f));
-    mInsertCursorLine.setFillColor(sf::Color::Black);
+    mInsertCursorLine.setFillColor(ThemeManager::current.textColor);
     
     mDeleteCursorLine.setSize(sf::Vector2f(2.f, 24.f));
-    mDeleteCursorLine.setFillColor(sf::Color::Black);
+    mDeleteCursorLine.setFillColor(ThemeManager::current.textColor);
     
     mSearchCursorLine.setSize(sf::Vector2f(2.f, 24.f));
-    mSearchCursorLine.setFillColor(sf::Color::Black);
+    mSearchCursorLine.setFillColor(ThemeManager::current.textColor);
+
+    mUpdateCursorLine.setSize(sf::Vector2f(2.f, 24.f));
+    mUpdateCursorLine.setFillColor(ThemeManager::current.textColor);
 
     mInsertDiceBtn.setup(mDiceTex, 205.f, 237.f, 30.f, 30.f);
     mInsertDiceBtn.setCallback([this]() {
@@ -311,16 +373,84 @@ void DLLVisualizer::initializeInputForms() {
 
 void DLLVisualizer::initializePseudoCodePanel() {
     mCodePanelBox.setSize({380.f, 200.f});
-    mCodePanelBox.setFillColor(sf::Color(240, 240, 245));
+    mCodePanelBox.setFillColor(ThemeManager::current.screenBg);
     mCodePanelBox.setOutlineThickness(2.f);
-    mCodePanelBox.setOutlineColor(sf::Color(100, 100, 100));
+    mCodePanelBox.setOutlineColor(ThemeManager::current.textColor);
     mCodePanelBox.setPosition({1020.f, 260.f});
 
     mCodeTitleText.setFont(mFontBold);
     mCodeTitleText.setString("Step Code");
     mCodeTitleText.setCharacterSize(14);
-    mCodeTitleText.setFillColor(sf::Color::Black);
+    mCodeTitleText.setFillColor(ThemeManager::current.textColor);
     mCodeTitleText.setPosition({1030.f, 270.f});
+}
+
+void DLLVisualizer::refreshTheme() {
+    mBackground.setFillColor(ThemeManager::current.bg);
+    mFooter.setFillColor(ThemeManager::current.secondary);
+    mDescriptionBox.setFillColor(ThemeManager::current.secondary);
+    mDescriptionText.setFillColor(ThemeManager::current.textColor);
+    mHeaderText.setFillColor(ThemeManager::current.textColor);
+    mTitleNum.setFillColor(ThemeManager::current.textColor);
+    mTitleDoubly.setFillColor(ThemeManager::current.primary);
+    mTitleLinked.setFillColor(ThemeManager::current.primaryLight);
+    mTitleList.setFillColor(ThemeManager::current.secondary);
+    mCodePanelBox.setFillColor(ThemeManager::current.screenBg);
+    mCodePanelBox.setOutlineColor(ThemeManager::current.textColor);
+    mCodeTitleText.setFillColor(ThemeManager::current.textColor);
+    mStepBgLeft.setFillColor(ThemeManager::current.screenBg);
+    mStepBgRight.setFillColor(ThemeManager::current.screenBg);
+    mStepBgCenter.setFillColor(ThemeManager::current.screenBg);
+    mStepText.setFillColor(ThemeManager::current.textColor);
+
+    mInsertInputText.setFillColor(ThemeManager::current.textColor);
+    mDeleteInputText.setFillColor(ThemeManager::current.textColor);
+    mSearchInputText.setFillColor(ThemeManager::current.textColor);
+    mUpdateInputText.setFillColor(ThemeManager::current.textColor);
+    mInsertCursorLine.setFillColor(ThemeManager::current.textColor);
+    mDeleteCursorLine.setFillColor(ThemeManager::current.textColor);
+    mSearchCursorLine.setFillColor(ThemeManager::current.textColor);
+    mUpdateCursorLine.setFillColor(ThemeManager::current.textColor);
+
+    mClearBtn.setThemeColor(ThemeManager::current.secondary);
+    mNewBtn.setThemeColor(ThemeManager::current.secondary);
+    mInsertBtn.setThemeColor(ThemeManager::current.secondary);
+    mDeleteBtn.setThemeColor(ThemeManager::current.secondary);
+    mSearchBtn.setThemeColor(ThemeManager::current.secondary);
+    mUpdateBtn.setThemeColor(ThemeManager::current.secondary);
+    mUndoBtn.setThemeColor(ThemeManager::current.secondary);
+    mStepBackBtn.setThemeColor(ThemeManager::current.bg);
+    mStepForwardBtn.setThemeColor(ThemeManager::current.bg);
+
+    mInsertHoverStroke.setThemeColor(ThemeManager::current.primary);
+    mInsertExpandedStroke.setThemeColor(ThemeManager::current.primary);
+    mDeleteHoverStroke.setThemeColor(ThemeManager::current.primary);
+    mDeleteExpandedStroke.setThemeColor(ThemeManager::current.primary);
+    mSearchHoverStroke.setThemeColor(ThemeManager::current.primary);
+    mSearchExpandedStroke.setThemeColor(ThemeManager::current.primary);
+    mUpdateHoverStroke.setThemeColor(ThemeManager::current.primary);
+    mUpdateExpandedStroke.setThemeColor(ThemeManager::current.primary);
+    mNewHoverStroke.setThemeColor(ThemeManager::current.primary);
+    mNewExpandedStroke.setThemeColor(ThemeManager::current.primary);
+
+    mInsertExpandedBg.setThemeColor(ThemeManager::current.secondary);
+    mDeleteExpandedBg.setThemeColor(ThemeManager::current.secondary);
+    mSearchExpandedBg.setThemeColor(ThemeManager::current.secondary);
+    mUpdateExpandedBg.setThemeColor(ThemeManager::current.secondary);
+    mNewExpandedBg.setThemeColor(ThemeManager::current.secondary);
+
+    mConfirmAddBtn.setThemeColor(ThemeManager::current.bg);
+    mConfirmRemoveBtn.setThemeColor(ThemeManager::current.bg);
+    mConfirmSearchBtn.setThemeColor(ThemeManager::current.bg);
+    mConfirmUpdateBtn.setThemeColor(ThemeManager::current.bg);
+    mRandomBtn.setThemeColor(ThemeManager::current.bg);
+    mUploadBtn.setThemeColor(ThemeManager::current.bg);
+
+    mHomeBtn.setThemeColor(sf::Color(230, 57, 70));
+    mPauseBtn.setThemeColor(sf::Color::Black);
+    mStartBtn.setThemeColor(sf::Color::Black);
+    mSkipBackBtn.setThemeColor(sf::Color::Black);
+    mSkipForwardBtn.setThemeColor(sf::Color::Black);
 }
 
 void DLLVisualizer::update(const optional<sf::Event>& event) {
@@ -335,9 +465,14 @@ void DLLVisualizer::update(const optional<sf::Event>& event) {
     }
     
     mNewBtn.update(mousePos);
+    if (mIsNewExpanded) {
+        mRandomBtn.update(mousePos);
+        mUploadBtn.update(mousePos);
+    }
     mInsertBtn.update(mousePos);
     mDeleteBtn.update(mousePos);
     mSearchBtn.update(mousePos);
+    mUpdateBtn.update(mousePos);
     
     // Update confirmation buttons when forms are expanded
     if (mIsInsertExpanded) {
@@ -351,6 +486,9 @@ void DLLVisualizer::update(const optional<sf::Event>& event) {
     if (mIsSearchExpanded) {
         mConfirmSearchBtn.update(mousePos);
         mSearchDiceBtn.update(mousePos);
+    }
+    if (mIsUpdateExpanded) {
+        mConfirmUpdateBtn.update(mousePos);
     }
     
     mSpeedSlider.update(mousePos);
@@ -382,9 +520,11 @@ void DLLVisualizer::update(const optional<sf::Event>& event) {
         } else if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()) {
             handleKeyInput(*keyEvent);
         } else if (const auto* textEvent = event->getIf<sf::Event::TextEntered>()) {
-            if (mIsInsertExpanded || mIsDeleteExpanded || mIsSearchExpanded) {
+            if (mIsInsertExpanded || mIsDeleteExpanded || mIsSearchExpanded || mIsUpdateExpanded) {
                 char c = static_cast<char>(textEvent->unicode);
-                if (c >= '0' && c <= '9' && mInputValue.length() < 3) {
+                if ((c >= '0' && c <= '9') && mInputValue.length() < 7) {
+                    mInputValue += c;
+                } else if (mIsUpdateExpanded && c == ' ' && !mInputValue.empty() && mInputValue.find(' ') == std::string::npos) {
                     mInputValue += c;
                 }
             }
@@ -448,9 +588,24 @@ void DLLVisualizer::handleMouseInput(const sf::Vector2f& worldPos) {
         mIsInsertExpanded = false;
         mIsDeleteExpanded = false;
         mIsNewExpanded = false;
+        mIsUpdateExpanded = false;
         mInputValue = "";
         clickedInsideAnyForm = true;
     } else if (mIsSearchExpanded && sf::FloatRect(sf::Vector2f(70.f, 338.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)) {
+        clickedInsideAnyForm = true;
+    }
+
+    // Handle Update button
+    if (!mIsUpdateExpanded && sf::FloatRect(sf::Vector2f(70.f, 392.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)) {
+        mIsUpdateExpanded = true;
+        mIsInsertExpanded = false;
+        mIsDeleteExpanded = false;
+        mIsSearchExpanded = false;
+        mIsNewExpanded = false;
+        mIsUpdatePhaseTwo = false;
+        mInputValue = "";
+        clickedInsideAnyForm = true;
+    } else if (mIsUpdateExpanded && sf::FloatRect(sf::Vector2f(70.f, 392.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)) {
         clickedInsideAnyForm = true;
     }
 
@@ -458,6 +613,8 @@ void DLLVisualizer::handleMouseInput(const sf::Vector2f& worldPos) {
         mIsInsertExpanded = false;
         mIsDeleteExpanded = false;
         mIsSearchExpanded = false;
+        mIsUpdateExpanded = false;
+        mIsUpdatePhaseTwo = false;
         mIsNewExpanded = false;
     }
 }
@@ -477,30 +634,41 @@ void DLLVisualizer::handleKeyInput(const sf::Event::KeyPressed& keyEvent) {
         return;
     }
      
-    if (!mIsInsertExpanded && !mIsDeleteExpanded && !mIsSearchExpanded) {
+    if (!mIsInsertExpanded && !mIsDeleteExpanded && !mIsSearchExpanded && !mIsUpdateExpanded) {
         if (keyEvent.code == sf::Keyboard::Key::I) {
             mIsInsertExpanded = true;
             mIsNewExpanded = false;
             mIsDeleteExpanded = false;
             mIsSearchExpanded = false;
+            mIsUpdateExpanded = false;
         }
         else if (keyEvent.code == sf::Keyboard::Key::D) {
             mIsDeleteExpanded = true;
             mIsNewExpanded = false;
             mIsInsertExpanded = false;
             mIsSearchExpanded = false;
+            mIsUpdateExpanded = false;
         }
         else if (keyEvent.code == sf::Keyboard::Key::S) {
             mIsSearchExpanded = true;
             mIsNewExpanded = false;
             mIsInsertExpanded = false;
             mIsDeleteExpanded = false;
+            mIsUpdateExpanded = false;
+        }
+        else if (keyEvent.code == sf::Keyboard::Key::U) {
+            mIsUpdateExpanded = true;
+            mIsNewExpanded = false;
+            mIsInsertExpanded = false;
+            mIsDeleteExpanded = false;
+            mIsSearchExpanded = false;
         }
         else if (keyEvent.code == sf::Keyboard::Key::N) {
             mIsNewExpanded = !mIsNewExpanded;
             mIsInsertExpanded = false;
             mIsDeleteExpanded = false;
             mIsSearchExpanded = false;
+            mIsUpdateExpanded = false;
         }
         else if (keyEvent.code == sf::Keyboard::Key::R) {
             mList.backup();
@@ -512,26 +680,37 @@ void DLLVisualizer::handleKeyInput(const sf::Event::KeyPressed& keyEvent) {
             mIsPaused = !mIsPaused;
         }
     }
-    else if (mIsInsertExpanded || mIsDeleteExpanded || mIsSearchExpanded) {
+    else if (mIsInsertExpanded || mIsDeleteExpanded || mIsSearchExpanded || mIsUpdateExpanded) {
         if (keyEvent.code == sf::Keyboard::Key::Backspace && !mInputValue.empty()) {
             mInputValue.pop_back();
         }
         else if (keyEvent.code == sf::Keyboard::Key::Enter && !mInputValue.empty()) {
-            // Logic moved to button callbacks
-            // This is kept for backward compatibility but buttons should be used instead
-            int val = stoi(mInputValue);
-            
             if (mIsInsertExpanded) {
+                int val = stoi(mInputValue);
                 mList.backup();
                 mList.resetHistory("Insert " + to_string(val));
                 mList.insertTail(val);
+                mList.setCurrentStep(0);
+                mIsInsertExpanded = false;
+                mInputValue = "";
+                mIsPaused = false;
+                mShowUndoBtn = false;
+                mAutoPlayClock.restart();
             }
             else if (mIsDeleteExpanded) {
+                int val = stoi(mInputValue);
                 mList.backup();
                 mList.resetHistory("Delete " + to_string(val));
                 mList.deleteValue(val);
+                mList.setCurrentStep(0);
+                mIsDeleteExpanded = false;
+                mInputValue = "";
+                mIsPaused = false;
+                mShowUndoBtn = false;
+                mAutoPlayClock.restart();
             }
             else if (mIsSearchExpanded) {
+                int val = stoi(mInputValue);
                 mList.resetHistory("Search for " + to_string(val));
                 int idx = mList.search(val);
                 if (idx != -1) {
@@ -539,16 +718,46 @@ void DLLVisualizer::handleKeyInput(const sf::Event::KeyPressed& keyEvent) {
                 } else {
                     mDescriptionText.setString("Value not found");
                 }
+                mList.setCurrentStep(0);
+                mIsSearchExpanded = false;
+                mInputValue = "";
+                mIsPaused = false;
+                mShowUndoBtn = false;
+                mAutoPlayClock.restart();
             }
-                
-            mList.setCurrentStep(0);
-            mIsInsertExpanded = false;
-            mIsDeleteExpanded = false;
-            mIsSearchExpanded = false;
-            mInputValue = "";
-            mIsPaused = false;
-            mShowUndoBtn = false;
-            mAutoPlayClock.restart();
+            else if (mIsUpdateExpanded) {
+                if (!mIsUpdatePhaseTwo) {
+                    try {
+                        mUpdateOldValue = stoi(mInputValue);
+                        mInputValue.clear();
+                        mIsUpdatePhaseTwo = true;
+                        mDescriptionText.setString("Enter new value for " + to_string(mUpdateOldValue));
+                    } catch (...) {
+                        mDescriptionText.setString("Enter a valid old value first.");
+                    }
+                } else {
+                    try {
+                        int newVal = stoi(mInputValue);
+                        mList.backup();
+                        if (mList.update(mUpdateOldValue, newVal)) {
+                            mList.resetHistory("Update " + to_string(mUpdateOldValue) + " to " + to_string(newVal));
+                            mList.setCurrentStep(0);
+                            mDescriptionText.setString("Updated " + to_string(mUpdateOldValue) + " to " + to_string(newVal));
+                            mShowUndoBtn = false;
+                        } else {
+                            mList.resetHistory("Value not found");
+                            mDescriptionText.setString("Value not found");
+                        }
+                        mIsUpdateExpanded = false;
+                        mIsUpdatePhaseTwo = false;
+                        mInputValue.clear();
+                        mIsPaused = false;
+                        mAutoPlayClock.restart();
+                    } catch (...) {
+                        mDescriptionText.setString("Enter a valid new value.");
+                    }
+                }
+            }
         }
         else if (keyEvent.code == sf::Keyboard::Key::R) {
             mInputValue = to_string(rand() % 99 + 1);
@@ -557,6 +766,7 @@ void DLLVisualizer::handleKeyInput(const sf::Event::KeyPressed& keyEvent) {
 }
 
 void DLLVisualizer::render(bool showUI) {
+    refreshTheme();
     if (showUI) {
         mWindow->draw(mBackground);
         mWindow->draw(mHeaderText);
@@ -576,8 +786,10 @@ void DLLVisualizer::render(bool showUI) {
         if (showUI) {
             renderPseudoCodePanel(state);
         }
-        
-        mDescriptionText.setString(state.description);
+
+        if (!mIsInsertExpanded && !mIsDeleteExpanded && !mIsSearchExpanded && !mIsUpdateExpanded) {
+            mDescriptionText.setString(state.description);
+        }
     }
 
     if (showUI) {
@@ -698,6 +910,34 @@ void DLLVisualizer::render(bool showUI) {
             }
             mSearchBtn.draw(*mWindow);
         }
+
+        // Update form
+        if (mIsUpdateExpanded) {
+            mUpdateExpandedStroke.draw(*mWindow);
+            mUpdateExpandedBg.draw(*mWindow);
+            mConfirmUpdateBtn.draw(*mWindow);
+                    
+            mUpdateInputText.setString(mInputValue);
+            mWindow->draw(mUpdateInputText);
+                    
+            if (mCursorClock.getElapsedTime().asSeconds() >= 0.5f) {
+                mShowCursor = !mShowCursor;
+                mCursorClock.restart();
+            }
+            
+            if (mShowCursor) {
+                float textWidth = mUpdateInputText.getLocalBounds().size.x;
+                float cursorX = mInputValue.empty() ? 85.f : 85.f + textWidth + 2.f;
+                mUpdateCursorLine.setPosition(sf::Vector2f(cursorX, 404.f));
+                mWindow->draw(mUpdateCursorLine);
+            }
+        } else {
+            sf::Vector2f worldPos = mWindow->mapPixelToCoords(sf::Mouse::getPosition(*mWindow));
+            if (sf::FloatRect(sf::Vector2f(70.f, 392.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)) {
+                mUpdateHoverStroke.draw(*mWindow);
+            }
+            mUpdateBtn.draw(*mWindow);
+        }
         
         mSpeedSlider.draw(*mWindow);
         mHomeBtn.draw(*mWindow);
@@ -811,7 +1051,11 @@ void DLLVisualizer::renderPseudoCodePanel(const DLLStepState& state) {
     
     while (std::getline(iss, line) && lineNum < maxLines) {
         sf::Text codeText(mFontMono, line, 12);
-        codeText.setFillColor(state.activeLine == lineNum ? sf::Color::Red : sf::Color::Black);
+        if (ThemeManager::isDark) {
+            codeText.setFillColor(sf::Color::Red);
+        } else {
+            codeText.setFillColor(state.activeLine == lineNum ? sf::Color::Red : sf::Color::Black);
+        }
         codeText.setPosition({1030.f, startY + lineNum * lineHeight});
         mWindow->draw(codeText);
         lineNum++;
@@ -852,11 +1096,33 @@ void DLLVisualizer::generateRandomList() {
     mList.initialize();
     random_device rd;
     mt19937 gen(rd());
-    uniform_int_distribution<> dis(1, 99);
-    for (int i = 0; i < 7; ++i) {
+    uniform_int_distribution<> dis(0, 999);
+    for (int i = 0; i < 5; ++i) {
         mList.insertTail(dis(gen));
     }
-    mList.resetHistory("Random new list");
+    mList.setCurrentStep(0);
+    mIsPaused = false;
+    mAutoPlayClock.restart();
+    mDescriptionText.setString("Random list generated.");
+}
+
+void DLLVisualizer::loadListFromFile() {
+    const char* filterPatterns[1] = {"*.txt"};
+    const char* filePath = tinyfd_openFileDialog("Choose Doubly Linked List data file", "", 1, filterPatterns, "Text Files (*.txt)", 0);
+    if (filePath != nullptr) {
+        if (mList.initFromFile(filePath)) {
+            mList.setCurrentStep(0);
+            mIsPaused = false;
+            mAutoPlayClock.restart();
+            mDescriptionText.setString("List loaded from file.");
+            mShowUndoBtn = false;
+        } else {
+            mDescriptionText.setString("Failed to load list from file.");
+        }
+    } else {
+        mDescriptionText.setString("File selection canceled.");
+    }
+    mIsNewExpanded = false;
 }
 
 bool DLLVisualizer::isEmpty() {

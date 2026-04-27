@@ -55,6 +55,7 @@ private:
     RoundedButton mInsertBtn;
     RoundedButton mDeleteBtn;
     RoundedButton mSearchBtn;
+    RoundedButton mUpdateBtn;
     
     // Step controls
     sf::CircleShape mStepBgLeft, mStepBgRight;
@@ -95,6 +96,16 @@ private:
     sf::Text mSearchInputText;
     sf::RectangleShape mSearchCursorLine;
     bool mIsSearchExpanded = false;
+
+    RoundedButton mUpdateHoverStroke;
+    RoundedButton mUpdateExpandedStroke;
+    RoundedButton mUpdateExpandedBg;
+    RoundedButton mConfirmUpdateBtn;
+    sf::Text mUpdateInputText;
+    sf::RectangleShape mUpdateCursorLine;
+    bool mIsUpdateExpanded = false;
+    bool mIsUpdatePhaseTwo = false;
+    int mUpdateOldValue = 0;
     
     // New list form components
     RoundedButton mNewHoverStroke;
@@ -130,12 +141,14 @@ private:
     void initializeButtons();
     void initializeInputForms();
     void initializePseudoCodePanel();
+    void refreshTheme();
     void renderNodeVisualization(const DLLStepState& state);
     void renderDoubleArrows(const DLLStepState& state);
     void renderPseudoCodePanel(const DLLStepState& state);
     void updatePseudoCodeLines(const DLLStepState& state);
     void handleMouseInput(const sf::Vector2f& worldPos);
     void handleKeyInput(const sf::Event::KeyPressed& keyEvent);
+    void loadListFromFile();
     
 public:
     DLLVisualizer(sf::RenderWindow& window);

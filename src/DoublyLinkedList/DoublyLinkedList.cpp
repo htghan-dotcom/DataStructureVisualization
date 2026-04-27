@@ -338,12 +338,19 @@ bool DoublyLinkedList::initFromFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) return false;
 
-    clear();
+    std::vector<int> values;
     int val;
     while (file >> val) {
-        insertTail(val);
+        values.push_back(val);
     }
     file.close();
+
+    if (values.empty()) return false;
+
+    initialize();
+    for (int value : values) {
+        insertTail(value);
+    }
     return true;
 }
 

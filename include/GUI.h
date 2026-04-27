@@ -231,5 +231,13 @@ public:
         if (mSprite) target.draw(*mSprite);
     }
 
+    void setThemeColor(sf::Color color){
+        mNormalColor = color;
+        mHoverColor = sf::Color(std::max(0, color.r - 20), std::max(0, color.g - 20), std::max(0, color.b - 20));
+        if (mSprite){
+            mSprite->setColor(mIsHovered ? mHoverColor : mNormalColor);
+        }
+    }
+
     void setCallback(std::function<void()> cb){mCallback = cb;}
 };

@@ -1,1 +1,1 @@
--ID:/study/HK2/Project/DataStructureVisualization/DataStructureVisualization/src
+-IC:/Users/Admin/Desktop/project/DataStructureVisualization/include -IC:/Users/Admin/Desktop/project/DataStructureVisualization/include/RedBlackTree -IC:/Users/Admin/Desktop/project/DataStructureVisualization/include/DoublyLinkedList -IC:/Users/Admin/Desktop/project/DataStructureVisualization/include/HashChaining -IC:/Users/Admin/Desktop/project/DataStructureVisualization/vendor -isystem "C:/Users/Admin/Desktop/SFML-3.0.2-windows-gcc-14.2.0-mingw-64-bit/SFML-3.0.2/include"
