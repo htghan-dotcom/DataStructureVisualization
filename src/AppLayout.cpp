@@ -66,7 +66,7 @@ AppLayout::AppLayout()
       mHidePseudoBtn(mFontBold, ">", 1028.f, 475.f, 45.f, 80.f, 22.5f, sf::Color::White),
       mShowPseudoBtn(mFontBold, "<", 1375.f, 475.f, 45.f, 80.f, 22.5f, sf::Color::White)
 {
-    if (!mFontBold.openFromFile("assets/fonts/Inter-Bold.ttf") or !mFontRegular.openFromFile("assets/fonts/Inter-Regular.ttf")){
+    if (!mFontBold.openFromFile("assets/fonts/Inter-Bold.ttf") or !mFontRegular.openFromFile("assets/fonts/Inter-Regular.ttf") or !mFontMedium.openFromFile("assets/fonts/Inter-Medium.otf")){
         cerr << "Cannot load font!" << endl;
     }
     if (!mHomeTex.loadFromFile("assets/images/homeButton.png")){cerr << "Cannot load homeButton.png" << endl;}
