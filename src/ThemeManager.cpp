@@ -9,6 +9,7 @@ ThemePalette ThemeManager::current = {
     sf::Color(132, 216, 68),
     sf::Color(217, 217, 217),
     sf::Color(245, 245, 240),
+    sf::Color(196, 196, 196),
     sf::Color(255, 255, 255),
-    sf::Color(0, 0, 0)
+    sf::Color(41, 42, 49)
 };

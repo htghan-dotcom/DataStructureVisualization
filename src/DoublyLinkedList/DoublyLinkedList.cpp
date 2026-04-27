@@ -16,7 +16,7 @@ void DoublyLinkedList::recordStep(const std::string& description) {
     DLLStepState state;
     state.description = description;
     
-    Node* current = head;
+    DoublyLinkedListNode* current = head;
     while (current) {
         state.nodes.push_back(DLLNodeSnapshot{current->data, false});
         current = current->next;
@@ -35,7 +35,7 @@ void DoublyLinkedList::insertTail(int value) {
     step1.activeLine = 0;
     
     // Add existing nodes
-    Node* current = head;
+    DoublyLinkedListNode* current = head;
     while (current) {
         step1.nodes.push_back(DLLNodeSnapshot{current->data, false});
         current = current->next;
@@ -47,7 +47,7 @@ void DoublyLinkedList::insertTail(int value) {
     
     // Step 2: If list is empty, just set as head and tail
     if (!head) {
-        Node* newNode = new Node(value);
+        DoublyLinkedListNode* newNode = new DoublyLinkedListNode(value);
         head = tail = newNode;
         size++;
         
@@ -59,7 +59,7 @@ void DoublyLinkedList::insertTail(int value) {
         step2.nodes.push_back(DLLNodeSnapshot{value, true});
         
         mStepHistory.push_back(step2);
-        mCurrentStep = mStepHistory.size() - 1;
+        mCurrentStep = static_cast<int>(mStepHistory.size() - 1);
         return;
     }
     
@@ -74,7 +74,7 @@ void DoublyLinkedList::insertTail(int value) {
         traverseStep.activeLine = 1;
         
         // Add all nodes, highlight current traversal node
-        Node* temp = head;
+        DoublyLinkedListNode* temp = head;
         int tempIndex = 0;
         while (temp) {
             traverseStep.nodes.push_back(DLLNodeSnapshot{temp->data, (tempIndex == nodeIndex)});
@@ -110,7 +110,7 @@ void DoublyLinkedList::insertTail(int value) {
     mStepHistory.push_back(connectStep);
     
     // Actually perform the insertion
-    Node* newNode = new Node(value);
+    DoublyLinkedListNode* newNode = new DoublyLinkedListNode(value);
     tail->next = newNode;
     newNode->prev = tail;
     tail = newNode;
@@ -130,11 +130,11 @@ void DoublyLinkedList::insertTail(int value) {
     }
     
     mStepHistory.push_back(finalStep);
-    mCurrentStep = mStepHistory.size() - 1;
+    mCurrentStep = static_cast<int>(mStepHistory.size() - 1);
 }
 
 void DoublyLinkedList::insertHead(int value) {
-    Node* newNode = new Node(value);
+    DoublyLinkedListNode* newNode = new DoublyLinkedListNode(value);
     if (!head) {
         head = tail = newNode;
     } else {
@@ -163,7 +163,7 @@ bool DoublyLinkedList::deleteValue(int value) {
         return false;
     }
 
-    Node* target = head;
+    DoublyLinkedListNode* target = head;
     for (int i = 0; i < foundIndex; ++i) {
         target = target->next;
     }
@@ -191,7 +191,7 @@ bool DoublyLinkedList::deleteValue(int value) {
         deleteStep.activeLine = 0;
     }
 
-    Node* temp = head;
+    DoublyLinkedListNode* temp = head;
     while (temp) {
         deleteStep.nodes.push_back(DLLNodeSnapshot{temp->data, temp == target});
         temp = temp->next;
@@ -234,8 +234,8 @@ bool DoublyLinkedList::deleteValue(int value) {
 }
 
 int DoublyLinkedList::search(int value) {
-    const Node* left = head;
-    const Node* right = tail;
+    const DoublyLinkedListNode* left = head;
+    const DoublyLinkedListNode* right = tail;
     int leftIndex = 0;
     int rightIndex = size - 1;
 
@@ -246,7 +246,7 @@ int DoublyLinkedList::search(int value) {
         searchStep.cppCode = "const Node* left = head;\nconst Node* right = tail;\nint leftIndex = 0;\nint rightIndex = size - 1;\nwhile (left && right && leftIndex <= rightIndex) {\n    if (left->data == value) return leftIndex;\n    if (right->data == value) return rightIndex;\n    left = left->next;\n    right = right->prev;\n    leftIndex++;\n    rightIndex--;\n}";
         searchStep.activeLine = 1;
 
-        const Node* temp = head;
+        const DoublyLinkedListNode* temp = head;
         int idx = 0;
         while (temp) {
             bool highlighted = (idx == leftIndex) || (idx == rightIndex);
@@ -264,7 +264,7 @@ int DoublyLinkedList::search(int value) {
             successStep.cppCode = "// Value found at left pointer";
             successStep.activeLine = -1;
             
-            const Node* tempNode = head;
+            const DoublyLinkedListNode* tempNode = head;
             int tempIdx = 0;
             while (tempNode) {
                 successStep.nodes.push_back(DLLNodeSnapshot{tempNode->data, (tempIdx == leftIndex)});
@@ -283,7 +283,7 @@ int DoublyLinkedList::search(int value) {
             successStep.cppCode = "// Value found at right pointer";
             successStep.activeLine = -1;
             
-            const Node* tempNode = head;
+            const DoublyLinkedListNode* tempNode = head;
             int tempIdx = 0;
             while (tempNode) {
                 successStep.nodes.push_back(DLLNodeSnapshot{tempNode->data, (tempIdx == rightIndex)});
@@ -310,7 +310,7 @@ int DoublyLinkedList::search(int value) {
     notFoundStep.cppCode = "// Value not found";
     notFoundStep.activeLine = -1;
 
-    const Node* temp = head;
+    const DoublyLinkedListNode* temp = head;
     while (temp) {
         notFoundStep.nodes.push_back(DLLNodeSnapshot{temp->data, false});
         temp = temp->next;
@@ -322,7 +322,7 @@ int DoublyLinkedList::search(int value) {
 }
 
 bool DoublyLinkedList::update(int oldValue, int newValue) {
-    Node* current = head;
+    DoublyLinkedListNode* current = head;
     while (current) {
         if (current->data == oldValue) {
             current->data = newValue;
@@ -355,9 +355,9 @@ bool DoublyLinkedList::initFromFile(const std::string& filename) {
 }
 
 void DoublyLinkedList::clear() {
-    Node* current = head;
+    DoublyLinkedListNode* current = head;
     while (current) {
-        Node* nextNode = current->next;
+        DoublyLinkedListNode* nextNode = current->next;
         delete current;
         current = nextNode;
     }
@@ -368,7 +368,7 @@ void DoublyLinkedList::clear() {
 std::vector<int> DoublyLinkedList::getElements() const {
     std::vector<int> elements;
     elements.reserve(size);
-    Node* current = head;
+    DoublyLinkedListNode* current = head;
     while (current) {
         elements.push_back(current->data);
         current = current->next;
@@ -406,7 +406,7 @@ void DoublyLinkedList::resetHistory(const std::string& initialDescription) {
     DLLStepState initialState;
     initialState.description = initialDescription;
     
-    Node* current = head;
+    DoublyLinkedListNode* current = head;
     while (current) {
         initialState.nodes.push_back(DLLNodeSnapshot{current->data, false});
         current = current->next;
@@ -420,7 +420,7 @@ void DoublyLinkedList::backup() {
     if (mBackup) delete mBackup;
     mBackup = new DoublyLinkedList();
     
-    Node* current = head;
+    DoublyLinkedListNode* current = head;
     while (current) {
         mBackup->insertTail(current->data);
         current = current->next;
@@ -434,7 +434,7 @@ void DoublyLinkedList::restore() {
     if (!mBackup) return;
     
     clear();
-    Node* current = mBackup->head;
+    DoublyLinkedListNode* current = mBackup->head;
     while (current) {
         insertTail(current->data);
         current = current->next;
@@ -446,8 +446,12 @@ void DoublyLinkedList::restore() {
 
 void DoublyLinkedList::goToFinalStep() {
     if (!mStepHistory.empty()) {
-        mCurrentStep = mStepHistory.size() - 1;
+        mCurrentStep = static_cast<int>(mStepHistory.size() - 1);
     }
+}
+
+int DoublyLinkedList::getVisualizationSpeed() const {
+    return mVisualizationSpeed;
 }
 
 void DoublyLinkedList::setVisualizationSpeed(int ms) {

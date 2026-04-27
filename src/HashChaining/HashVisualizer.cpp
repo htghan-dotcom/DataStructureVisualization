@@ -182,29 +182,29 @@ static const std::vector<std::string> PSEUDO_DELETE = {
 static std::pair<int, std::vector<int>> lidToPseudo(int lid){
     switch(lid){
         // INSERT (0-3)
-        case 0: return {0, {1}}; 
-        case 1: return {0, {2}}; 
+        case 0: return {0, {1}};
+        case 1: return {0, {2}};
         case 2: return {0, {3, 4, 5}}; // Create & link
-        case 3: return {0, {6}}; 
+        case 3: return {0, {6}};
         
         // SEARCH (4-8, 17)
-        case 4: return {1, {1}}; 
-        case 5: return {1, {2}}; 
-        case 6: return {1, {3}}; 
-        case 7: return {1, {4}}; 
-        case 17: return {1, {5}}; 
+        case 4: return {1, {1}};
+        case 5: return {1, {2}};
+        case 6: return {1, {3}};
+        case 7: return {1, {4}};
+        case 17: return {1, {5}};
         case 8: return {1, {6}};
         
         // DELETE
-        case 9: case 10: return {2, {1}}; 
-        case 11: return {2, {2}};          
-        case 12: return {2, {3}};          
+        case 9: case 10: return {2, {1}};
+        case 11: return {2, {2}};
+        case 12: return {2, {3}};
         case 13: return {2, {3, 4}};       // Delete & Done
-        case 14: return {2, {5}};          
-        case 16: return {2, {6}};          
+        case 14: return {2, {5}};
+        case 16: return {2, {6}};
         case 19: return {2, {6, 7}};       // Delete mid & done
-        case 18: return {2, {8}};          
-        case 15: return {2, {9}};          
+        case 18: return {2, {8}};
+        case 15: return {2, {9}};
         
         default: return {-1, {}}; // Highlight none
     }
@@ -354,6 +354,7 @@ HashVisualizer::HashVisualizer(sf::RenderWindow& window)
         mHash.clearTableUI(); // Gọi hàm mới tạo
         mCurrentStep = 0;
         mTargetStep  = -1;
+        mLayout.setDescription("Hash table cleared.");
         mLayout.setPaused(true);
         mShowUndoBtn = false;
     });
@@ -446,11 +447,9 @@ void HashVisualizer::renderBuckets(sf::RenderWindow& window){
         targetBucket=steps[mCurrentStep].targetBucket;
 
     int n=mHash.getSize();
-    mBucketW=80.f; mBucketH=58.f; mBucketGapX=88.f;
-    float totalW=n*mBucketGapX-(mBucketGapX-mBucketW);
-    mBucketStartX=(1440.f-totalW)*0.5f;
-    mBucketRowY=FOOTER_Y-mBucketH-55.f;
+    
     HashColorTheme theme = getHashTheme();
+
     for (int i=0;i<n;++i){
         float px=mBucketStartX+i*mBucketGapX, py=mBucketRowY;
         bool isTarget=(i==targetBucket);
@@ -460,9 +459,10 @@ void HashVisualizer::renderBuckets(sf::RenderWindow& window){
         sf::Color border = isTarget ? theme.bucketHighlightBorder : theme.bucketBorder;
 
         drawRoundedRect(window, sf::FloatRect(sf::Vector2f(px,py), sf::Vector2f(mBucketW,mBucketH)), 10.f, fill, border, 3.5f);
-    
+
         sf::Text lbl(mFontMedium, "H" + std::to_string(i), 18);
         lbl.setFillColor(ThemeManager::current.textColor);
+
         sf::FloatRect lb=lbl.getLocalBounds();
         lbl.setPosition(sf::Vector2f(px+(mBucketW-lb.size.x)*0.5f-lb.position.x,
                                      py+(mBucketH-lb.size.y)*0.5f-lb.position.y));
@@ -493,7 +493,7 @@ void HashVisualizer::renderNodes(sf::RenderWindow& window){
     int targetBucket = steps[si].targetBucket;
     int targetVal    = steps[si].targetVal;
 
-    float nodeW = mBucketW, nodeH = 46.f, gapY = 72.f;
+    float nodeW = mBucketW, nodeH = mNodeH, gapY = mGapY;
 
     for (int i = 0; i < (int)currentSnap.size(); ++i){
         float bx = mBucketStartX + i * mBucketGapX, by = mBucketRowY;
@@ -503,22 +503,22 @@ void HashVisualizer::renderNodes(sf::RenderWindow& window){
                 allNodes.push_back(val);
             }
         }
-
+        
         for (int depth = 0; depth < (int)allNodes.size(); ++depth){
             int nv = allNodes[depth];
-            
+
             // LOGIC FADE IN / FADE OUT
             bool inCurrent = (std::find(currentSnap[i].vals.begin(), currentSnap[i].vals.end(), nv) != currentSnap[i].vals.end());
             bool inTarget = (std::find(targetSnap[i].vals.begin(), targetSnap[i].vals.end(), nv) != targetSnap[i].vals.end());
-            
+
             float alphaMult = 1.0f;
             if (inCurrent && !inTarget) alphaMult = std::max(0.f, 1.0f - mStepAnimProgress * 3.0f); // Đang bị xóa -> Nhạt dần
             else if (!inCurrent && inTarget) alphaMult = std::min(1.0f, mStepAnimProgress * 3.0f);   // Đang được thêm -> Đậm dần
-            
+
             if (alphaMult <= 0.01f) continue;
             std::uint8_t alpha = static_cast<std::uint8_t>(255 * alphaMult);
 
-            int realDepth = depth; 
+            int realDepth = depth;
             if (inTarget) {
                 auto it = std::find(targetSnap[i].vals.begin(), targetSnap[i].vals.end(), nv);
                 realDepth = std::distance(targetSnap[i].vals.begin(), it);
@@ -531,17 +531,17 @@ void HashVisualizer::renderNodes(sf::RenderWindow& window){
             // CHANGE NODE COLOR TO THEME
             HashColorTheme theme = getHashTheme();
             bool isTarget = (nv == targetVal && i == targetBucket);
-
+            
             sf::Color fillCol   = isTarget ? theme.nodeHighlightFill : theme.nodeFill;
             sf::Color borderCol = isTarget ? theme.nodeHighlightBorder : theme.nodeBorder;
-
+            
             sf::Color arrowCol  = isTarget ? theme.nodeHighlightBorder : theme.arrow;
             sf::Color textCol   = isTarget ? theme.highlightText : ThemeManager::current.textColor;
     
             fillCol.a = alpha; textCol.a = alpha; borderCol.a = alpha;
-
+            
             drawRoundedRect(window, sf::FloatRect(sf::Vector2f(px,py), sf::Vector2f(nodeW,nodeH)), 10.f, fillCol, borderCol, 3.f);
-
+            
             sf::Text valText(mFontMedium, std::to_string(nv), 16);
             valText.setFillColor(textCol);
             sf::FloatRect vb = valText.getLocalBounds();
@@ -557,6 +557,7 @@ void HashVisualizer::renderNodes(sf::RenderWindow& window){
         }
     }
 }
+
 // ── update ───────────────────────────────────────────────────
 void HashVisualizer::update(const std::optional<sf::Event>& event){
     sf::Vector2f worldPos=mWindow->mapPixelToCoords(sf::Mouse::getPosition(*mWindow));
@@ -683,103 +684,107 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
         }
     }
     else if (const auto* ke=event->getIf<sf::Event::KeyPressed>()){
-        if (ke->code==sf::Keyboard::Key::Z&&(ke->control||ke->system)){
+        if (ke->code==sf::Keyboard::Key::Z && (ke->control || ke->system)){
             mShowUndoBtn=false; mLayout.setPaused(true);
-            mIsInsertExpanded=mIsDeleteExpanded=mIsSearchExpanded=mIsNewExpanded=false;
-            mInputValue="";
+            mIsInsertExpanded=mIsDeleteExpanded=mIsSearchExpanded=mIsNewExpanded=mIsUpdateExpanded=false;
+            mInputValue=""; mInputOld=""; mInputNew="";
         }
-        else if (ke->code==sf::Keyboard::Key::I){
-            mIsInsertExpanded=true; mIsNewExpanded=mIsDeleteExpanded=mIsSearchExpanded=false; mInputValue="";
+        else if (ke->code == sf::Keyboard::Key::I) {
+            mIsInsertExpanded = true; mIsDeleteExpanded = mIsSearchExpanded = mIsUpdateExpanded = mIsNewExpanded = false; mInputValue = "";
         }
-        else if (ke->code==sf::Keyboard::Key::D){
-            mIsDeleteExpanded=true; mIsNewExpanded=mIsInsertExpanded=mIsSearchExpanded=false; mInputValue="";
+        else if (ke->code == sf::Keyboard::Key::D) {
+            mIsDeleteExpanded = true; mIsInsertExpanded = mIsSearchExpanded = mIsUpdateExpanded = mIsNewExpanded = false; mInputValue = "";
         }
-        else if (ke->code==sf::Keyboard::Key::S){
-            mIsSearchExpanded=true; mIsNewExpanded=mIsInsertExpanded=mIsDeleteExpanded=false; mInputValue="";
+        else if (ke->code == sf::Keyboard::Key::S) {
+            mIsSearchExpanded = true; mIsInsertExpanded = mIsDeleteExpanded = mIsUpdateExpanded = mIsNewExpanded = false; mInputValue = "";
         }
-        else if (ke->code==sf::Keyboard::Key::N){
-            mIsNewExpanded=!mIsNewExpanded;
-            mIsInsertExpanded=mIsDeleteExpanded=mIsSearchExpanded=false; mInputValue="";
+        else if (ke->code == sf::Keyboard::Key::U) {
+            mIsUpdateExpanded = true; mIsInsertExpanded = mIsDeleteExpanded = mIsSearchExpanded = mIsNewExpanded = false; mEditingOld = true; mInputOld = ""; mInputNew = "";
         }
-        else if (ke->code==sf::Keyboard::Key::Space){
+        else if (ke->code == sf::Keyboard::Key::N) {
+            mIsNewExpanded = true; mIsInsertExpanded = mIsDeleteExpanded = mIsSearchExpanded = mIsUpdateExpanded = false; mInputValue = "";
+        }
+        else if (ke->code == sf::Keyboard::Key::Space) {
             mLayout.setPaused(!mLayout.isPaused());
             if (!mLayout.isPaused()) mAutoPlayClock.restart();
         }
-        else if (ke->code==sf::Keyboard::Key::R){
-            if (mIsInsertExpanded||mIsDeleteExpanded||mIsSearchExpanded)
-                mInputValue=std::to_string(rand()%999+1);
-            else{ doRandom(); mIsNewExpanded=false; }
-        }
-        // ADD UPDATE
-        else if (ke->code==sf::Keyboard::Key::U){
-            mIsUpdateExpanded=true; mIsNewExpanded=mIsInsertExpanded=mIsDeleteExpanded=mIsSearchExpanded=false; 
-            mInputOld=""; mInputNew=""; mEditingOld=true;
-        }
-        else if (mIsInsertExpanded||mIsDeleteExpanded||mIsSearchExpanded){
-            if (ke->code==sf::Keyboard::Key::Backspace&&!mInputValue.empty())
-                mInputValue.pop_back();
-            else if (ke->code==sf::Keyboard::Key::Enter&&!mInputValue.empty()){
-                int val=std::stoi(mInputValue);
-                if      (mIsInsertExpanded) runAction(1,val);
-                else if (mIsDeleteExpanded) runAction(2,val);
-                else if (mIsSearchExpanded) runAction(3,val);
-                mIsInsertExpanded=mIsDeleteExpanded=mIsSearchExpanded=false; mInputValue="";
-            }
-            else{
-                int digit=-1;
-                if (ke->code>=sf::Keyboard::Key::Num0&&ke->code<=sf::Keyboard::Key::Num9)
-                    digit=(int)ke->code-(int)sf::Keyboard::Key::Num0;
-                else if (ke->code>=sf::Keyboard::Key::Numpad0&&ke->code<=sf::Keyboard::Key::Numpad9)
-                    digit=(int)ke->code-(int)sf::Keyboard::Key::Numpad0;
-                if (digit!=-1&&mInputValue.size()<3) mInputValue+=std::to_string(digit);
+        else if (ke->code == sf::Keyboard::Key::R) {
+            if (mIsInsertExpanded || mIsDeleteExpanded || mIsSearchExpanded) {
+                mInputValue = std::to_string(rand() % 999 + 1);
+            } else if (mIsUpdateExpanded) {
+            } else {
+                doRandom(); mIsNewExpanded = false; mShowUndoBtn = false;
             }
         }
-        else if (mIsUpdateExpanded) {
-            if (ke->code == sf::Keyboard::Key::Tab) {
-                mEditingOld = !mEditingOld;
-            }
-            else if (ke->code == sf::Keyboard::Key::Backspace) {
+        else if (ke->code == sf::Keyboard::Key::Backspace) {
+            if (mIsInsertExpanded || mIsDeleteExpanded || mIsSearchExpanded) {
+                if (!mInputValue.empty()) mInputValue.pop_back();
+            } else if (mIsUpdateExpanded) {
                 if (mEditingOld && !mInputOld.empty()) mInputOld.pop_back();
                 else if (!mEditingOld && !mInputNew.empty()) mInputNew.pop_back();
             }
-            else if (ke->code == sf::Keyboard::Key::Enter && !mInputOld.empty() && !mInputNew.empty()) {
-                runAction(4, std::stoi(mInputNew), std::stoi(mInputOld));
-                mIsUpdateExpanded=false; mInputOld=""; mInputNew="";
+        }
+        else if (ke->code == sf::Keyboard::Key::Enter) {
+            if (mIsInsertExpanded && !mInputValue.empty()) {
+                runAction(1, std::stoi(mInputValue)); mIsInsertExpanded = false; mInputValue = "";
             }
-            else {
-                int digit = -1;
-                if (ke->code >= sf::Keyboard::Key::Num0 && ke->code <= sf::Keyboard::Key::Num9)
-                    digit = (int)ke->code - (int)sf::Keyboard::Key::Num0;
-                else if (ke->code >= sf::Keyboard::Key::Numpad0 && ke->code <= sf::Keyboard::Key::Numpad9)
-                    digit = (int)ke->code - (int)sf::Keyboard::Key::Numpad0;
+            else if (mIsDeleteExpanded && !mInputValue.empty()) {
+                runAction(2, std::stoi(mInputValue)); mIsDeleteExpanded = false; mInputValue = "";
+            }
+            else if (mIsSearchExpanded && !mInputValue.empty()) {
+                runAction(3, std::stoi(mInputValue)); mIsSearchExpanded = false; mInputValue = "";
+            }
+            else if (mIsUpdateExpanded && !mInputOld.empty() && !mInputNew.empty()) {
+                runAction(4, std::stoi(mInputNew), std::stoi(mInputOld)); mIsUpdateExpanded = false; mInputOld = ""; mInputNew = "";
+            }
+        }
+        else if (ke->code == sf::Keyboard::Key::Tab) {
+            if (mIsUpdateExpanded) mEditingOld = !mEditingOld;
+        }
+        else {
+            int digit = -1;
+            if (ke->code >= sf::Keyboard::Key::Num0 && ke->code <= sf::Keyboard::Key::Num9)
+                digit = (int)ke->code - (int)sf::Keyboard::Key::Num0;
+            else if (ke->code >= sf::Keyboard::Key::Numpad0 && ke->code <= sf::Keyboard::Key::Numpad9)
+                digit = (int)ke->code - (int)sf::Keyboard::Key::Numpad0;
 
-                if (digit != -1) {
+            if (digit != -1) {
+                if (mIsInsertExpanded || mIsDeleteExpanded || mIsSearchExpanded) {
+                    if (mInputValue.size() < 4) mInputValue += std::to_string(digit);
+                } else if (mIsUpdateExpanded) {
                     if (mEditingOld && mInputOld.size() < 3) mInputOld += std::to_string(digit);
                     else if (!mEditingOld && mInputNew.size() < 3) mInputNew += std::to_string(digit);
                 }
             }
         }
     }
-} 
+}
+
 // ── render ───────────────────────────────────────────────────
 void HashVisualizer::render(bool showUI){
-    auto steps=mHash.getSteps();
-    int total=(int)steps.size();
+    if (showUI) {
+        setTransitionProgress(1.0f);
+    } else if (mTransitionProgress == 1.0f) {
+        setTransitionProgress(0.0f);
+    }
+    
+    auto steps = mHash.getSteps();
+    int total  = (int)steps.size();
 
     // Step animation
     if (mTargetStep != -1 && mTargetStep != mCurrentStep) {
         float speedMult = std::max(0.1f, mLayout.getSpeed());
-        float frameDelta = (1.f / 60.f) * speedMult; 
+        float frameDelta = (1.f / 60.f) * speedMult;
         
         mStepAnimProgress += frameDelta;
         
         if (mStepAnimProgress >= 1.f) {
             mCurrentStep = mTargetStep;
             if (!mLayout.isPaused() && mCurrentStep < total - 1) {
-                mTargetStep = mCurrentStep + 1; 
+                mTargetStep = mCurrentStep + 1;
                 mStepAnimProgress = 0.f;
             } else {
-                mTargetStep = -1; 
+                mTargetStep = -1;
                 mStepAnimProgress = 1.f;
             }
         }
@@ -788,13 +793,16 @@ void HashVisualizer::render(bool showUI){
         mTargetStep = mCurrentStep + 1;
         mStepAnimProgress = 0.f;
     }
+    
+    computeHashLayout();
+    renderBuckets(*mWindow);
+    renderNodes  (*mWindow);
+    
     if (!showUI) return;
 
     if (mCurrentStep >= total && total > 0) mCurrentStep = total - 1;
     if (mCurrentStep < 0) mCurrentStep = 0;
 
-    renderBuckets(*mWindow);
-    renderNodes  (*mWindow);
 
     // Step text
     if (total==0) mLayout.setStepText("Step 0 / 0");
@@ -804,16 +812,16 @@ void HashVisualizer::render(bool showUI){
     if (mCurrentStep>=0 && mCurrentStep<total) {
         mLayout.setDescription(steps[mCurrentStep].description);
         
-        int currentLid = steps[mCurrentStep].lineID; 
+        int currentLid = steps[mCurrentStep].lineID;
         
         auto [tableIdx, activeLines] = lidToPseudo(currentLid);
         
         if (tableIdx == 0) mLayout.setPseudoCode(PSEUDO_INSERT);
         else if (tableIdx == 1) mLayout.setPseudoCode(PSEUDO_SEARCH);
         else if (tableIdx == 2) mLayout.setPseudoCode(PSEUDO_DELETE);
-        else mLayout.setPseudoCode({}); 
+        else mLayout.setPseudoCode({});
 
-        mLayout.setActiveCodeLines(activeLines); 
+        mLayout.setActiveCodeLines(activeLines);
     }
     mLayout.draw(*mWindow);
 
@@ -951,19 +959,19 @@ void HashVisualizer::render(bool showUI){
             float baseY = 366.f;
             sf::Color boxFill = ThemeManager::current.bg;
             sf::Color activeBorder = ThemeManager::current.primary;
-            sf::Color inactiveBorder = sf::Color(200, 200, 200);    
+            sf::Color inactiveBorder = sf::Color(200, 200, 200);
 
-            drawRoundedRect(*mWindow, sf::FloatRect({35.f, baseY + 3.f}, {70.f, 39.f}), 19.5f, 
+            drawRoundedRect(*mWindow, sf::FloatRect({35.f, baseY + 3.f}, {70.f, 39.f}), 19.5f,
                             boxFill, mEditingOld ? activeBorder : inactiveBorder, 2.f);
-            drawRoundedRect(*mWindow, sf::FloatRect({135.f, baseY + 3.f}, {70.f, 39.f}), 19.5f, 
+            drawRoundedRect(*mWindow, sf::FloatRect({135.f, baseY + 3.f}, {70.f, 39.f}), 19.5f,
                             boxFill, !mEditingOld ? activeBorder : inactiveBorder, 2.f);
             
             sf::Text arrowText(mFontBold, "->", 20);
             arrowText.setFillColor(ThemeManager::current.textColor);
-            arrowText.setPosition(sf::Vector2f(108.f, baseY + 9.f)); 
+            arrowText.setPosition(sf::Vector2f(108.f, baseY + 9.f));
             mWindow->draw(arrowText);
 
-            mUpdateInputText.setCharacterSize(18); 
+            mUpdateInputText.setCharacterSize(18);
             mUpdateInputText.setFillColor(ThemeManager::current.textColor);
 
             mUpdateInputText.setString(mInputOld);
@@ -981,7 +989,7 @@ void HashVisualizer::render(bool showUI){
             if (mShowCursor) {
                 float cursorX;
                 if (mEditingOld) {
-                    cursorX = 35.f + (70.f + oldBounds.size.x)/2.f + 2.f; 
+                    cursorX = 35.f + (70.f + oldBounds.size.x)/2.f + 2.f;
                 } else {
                     cursorX = 135.f + (70.f + newBounds.size.x)/2.f + 2.f;
                 }
@@ -995,4 +1003,67 @@ void HashVisualizer::render(bool showUI){
             mUpdateBtn.draw(*mWindow);
         }
     }
+}
+
+void HashVisualizer::computeHashLayout() {
+    // Tự lấy snapshot hiện tại để tính maxChainLen
+    auto steps = mHash.getSteps();
+    int  total = (int)steps.size();
+
+    int maxChainLen = 0;
+    if (!steps.empty() && mCurrentStep >= 0 && mCurrentStep < total) {
+        for (const auto& bucket : steps[mCurrentStep].tableSnapshot) {
+            maxChainLen = std::max(maxChainLen, (int)bucket.vals.size());
+        }
+    }
+
+    float p     = mTransitionProgress;
+    float easeP = p * p * (3.f - 2.f * p);
+
+    int   n              = mHash.getSize();
+    float baseBucketGapX = 88.f;
+    float baseBucketW    = 80.f;
+    float baseBucketH    = 58.f;
+    float baseGapY       = 72.f;
+    float baseNodeH      = 46.f;
+
+    float totalW = (float)n * baseBucketGapX - (baseBucketGapX - baseBucketW);
+
+    // ── Vis layout ──────────────────────────────────────────────
+    float visBucketRowY   = FOOTER_Y - baseBucketH - 55.f;
+    float visBucketStartX = (1440.f - totalW) * 0.5f;
+
+    float safeTop       = 150.f;
+    float naturalHeight = (float)maxChainLen * baseGapY;
+    float availH        = visBucketRowY - safeTop;
+    float visScaleY     = (naturalHeight > 0.f && naturalHeight > availH)
+                              ? availH / naturalHeight : 1.f;
+    float visGapY  = baseGapY  * visScaleY;
+    float visNodeH = baseNodeH * visScaleY;
+
+    // ── Menu thumbnail layout ────────────────────────────────────
+    float menuCenterX = 540.f;
+    float menuUsableW = 300.f;
+    float menuScaleX  = (totalW > menuUsableW) ? menuUsableW / totalW : 1.f;
+
+    float menuBucketGapX   = baseBucketGapX * menuScaleX;
+    float menuBucketW      = baseBucketW    * menuScaleX;
+    float menuBucketH      = baseBucketH    * menuScaleX;
+    float menuTotalW       = (float)n * menuBucketGapX - (menuBucketGapX - menuBucketW);
+    float menuBucketStartX = menuCenterX - menuTotalW * 0.5f;
+    float menuBucketRowY   = 395.f;
+
+    float menuUsableH = 195.f;
+    float menuScaleY  = (naturalHeight > menuUsableH) ? menuUsableH / naturalHeight : 1.f;
+    float menuGapY    = baseGapY  * menuScaleY;
+    float menuNodeH   = baseNodeH * menuScaleY;
+
+    // ── Interpolate ─────────────────────────────────────────────
+    mBucketGapX   = menuBucketGapX   + (baseBucketGapX  - menuBucketGapX)   * easeP;
+    mBucketW      = menuBucketW      + (baseBucketW      - menuBucketW)      * easeP;
+    mBucketH      = menuBucketH      + (baseBucketH      - menuBucketH)      * easeP;
+    mBucketStartX = menuBucketStartX + (visBucketStartX  - menuBucketStartX) * easeP;
+    mBucketRowY   = menuBucketRowY   + (visBucketRowY    - menuBucketRowY)   * easeP;
+    mGapY         = menuGapY         + (visGapY          - menuGapY)         * easeP;
+    mNodeH        = menuNodeH        + (visNodeH         - menuNodeH)        * easeP;
 }

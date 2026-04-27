@@ -37,7 +37,10 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
       mNewExpandedStroke(mFontRegular, "", 211.f, 148.f, 164.f, 157.f, 24.5f, ThemeManager::current.primary),
       mNewExpandedBg(mFontRegular, "", 213.f, 150.f, 160.f, 153.f, 22.5f, ThemeManager::current.secondary),
       mRandomBtn(mFontRegular, "Random", 216.f, 207.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
-      mUploadBtn(mFontRegular, "From File", 216.f, 261.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg)
+      mUploadBtn(mFontRegular, "From File", 216.f, 261.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
+
+      mHideControlsBtn(mFontBold, "<", 382.f, 150.f, 45.f, 45.f, 22.5f, ThemeManager::current.secondary),
+      mShowControlsBtn(mFontBold, ">", 32.f, 150.f, 45.f, 45.f, 22.5f, ThemeManager::current.secondary)
 {
     if (!mFontBold.openFromFile("assets/fonts/Inter-Bold.ttf") or !mFontRegular.openFromFile("assets/fonts/Inter-Regular.ttf")){
         cerr << "Cannot load font!" << endl;
@@ -54,6 +57,8 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     mUndoBtn.refreshText();
     mRandomBtn.refreshText();
     mUploadBtn.refreshText();
+    mHideControlsBtn.refreshText();
+    mShowControlsBtn.refreshText();
 
     if (!mDiceTex.loadFromFile("assets/images/randomButton.png")){cerr << "Cannot load randomButton.png" << endl;}
     mDiceTex.setSmooth(true); mDiceTex.generateMipmap();
@@ -108,6 +113,18 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
         mInputValue = "";
     });
     
+    mHideControlsBtn.setCallback([this](){
+        mIsControlsVisible = false;
+        mIsNewExpanded = false;
+        mIsInsertExpanded = false;
+        mIsDeleteExpanded = false;
+        mIsSearchExpanded = false;
+    });
+    
+    mShowControlsBtn.setCallback([this](){
+        mIsControlsVisible = true;
+    });
+    
     mLayout.setSkipBackCallback([this](){
         mTree.setCurrentStep(0);
         mTargetStep = -1;
@@ -145,22 +162,22 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     mTitleNum.setString("03");
     mTitleNum.setCharacterSize(30);
     mTitleNum.setFillColor(ThemeManager::current.textColor);
-    mTitleNum.setPosition(sf::Vector2f(32.f, 585.f));
+    mTitleNum.setPosition(sf::Vector2f(32.f, 663.f));
 
     mTitleRed.setString("Red");
     mTitleRed.setCharacterSize(70);
     mTitleRed.setFillColor(sf::Color(230, 57, 70));
-    mTitleRed.setPosition(sf::Vector2f(32.f, 617.f));
+    mTitleRed.setPosition(sf::Vector2f(32.f, 695.f));
     
     mTitleBlack.setString("-Black");
     mTitleBlack.setCharacterSize(70);
     mTitleBlack.setFillColor(ThemeManager::current.textColor);
-    mTitleBlack.setPosition(sf::Vector2f(44.f + mTitleRed.getLocalBounds().size.x, 617.f));
+    mTitleBlack.setPosition(sf::Vector2f(44.f + mTitleRed.getLocalBounds().size.x, 695.f));
 
     mTitleTree.setString("Tree");
     mTitleTree.setCharacterSize(70);
     mTitleTree.setFillColor(ThemeManager::current.primary);
-    mTitleTree.setPosition(sf::Vector2f(32.f, 687.f));
+    mTitleTree.setPosition(sf::Vector2f(32.f, 765.f));
       
     mTree.initialize();
               
@@ -184,29 +201,46 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
         mGoHome = true;
         mLayout.mGoHome = false;
     }
-    
-    if (mShowUndoBtn){
-        mUndoBtn.update(mousePos);
+        
+    if (mIsControlsVisible){
+        mHideControlsBtn.update(mousePos);
+        
+        if (mShowUndoBtn){
+            mUndoBtn.update(mousePos);
+        } else {
+            mClearBtn.update(mousePos);
+        }
+                
+        mNewBtn.update(mousePos);
+                
+        if (mIsInsertExpanded){
+            mConfirmAddBtn.update(mousePos);
+            mInsertDiceBtn.update(mousePos);
+        } else {
+            mInsertBtn.update(mousePos);
+        }
+
+        if (mIsDeleteExpanded){
+            mConfirmRemoveBtn.update(mousePos);
+            mDeleteDiceBtn.update(mousePos);
+        } else {
+            mDeleteBtn.update(mousePos);
+        }
+
+        if (mIsSearchExpanded){
+            mConfirmSearchBtn.update(mousePos);
+            mSearchDiceBtn.update(mousePos);
+        } else {
+            mSearchBtn.update(mousePos);
+        }
     } else {
-        mClearBtn.update(mousePos);
+        mShowControlsBtn.update(mousePos);
     }
     
-    mNewBtn.update(mousePos);
-    mInsertBtn.update(mousePos);
-    mDeleteBtn.update(mousePos);
-    mSearchBtn.update(mousePos);
-        
     float speedMult = mLayout.getSpeed();
     if (speedMult > 0.0f){
         int speedMs = static_cast<int>(500.f / speedMult);
         mTree.setVisualizationSpeed(speedMs);
-    }
-    
-    if (mIsInsertExpanded){
-        mConfirmAddBtn.update(mousePos);
-        mInsertDiceBtn.update(mousePos);
-    } else {
-        mInsertBtn.update(mousePos);
     }
 
     if (event){
@@ -214,119 +248,121 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
             if (mouseEvent->button == sf::Mouse::Button::Left){
                 bool clickedInsideAnyForm = false;
                 
-                if (!mIsNewExpanded and sf::FloatRect(sf::Vector2f(213.f, 150.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
-                    mIsNewExpanded = true;
-                    mShowUndoBtn = false;
-                    mIsInsertExpanded = false;
-                    mIsDeleteExpanded = false;
-                    mIsSearchExpanded = false;
-                    
-                    clickedInsideAnyForm = true;
-                }
-                
-                else if (mIsNewExpanded and sf::FloatRect(sf::Vector2f(213.f, 150.f), sf::Vector2f(160.f, 161.f)).contains(worldPos)){
-                    clickedInsideAnyForm = true;
-                    if (sf::FloatRect(sf::Vector2f(216.f, 207.f), sf::Vector2f(154.f, 39.f)).contains(worldPos)){
-                        mTree.backup();
-                        generateRandomTree();
-                        mIsNewExpanded = false;
+                if (mIsControlsVisible){
+                    if (!mIsNewExpanded and sf::FloatRect(sf::Vector2f(213.f, 150.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+                        mIsNewExpanded = true;
                         mShowUndoBtn = false;
-                    } else if (sf::FloatRect(sf::Vector2f(216.f, 261.f), sf::Vector2f(154.f, 39.f)).contains(worldPos)){
-                        mTree.backup();
-                        const char* filterPatterns[1] = { "*.txt" };
-                        const char* filePath = tinyfd_openFileDialog("Choose Red-Black Tree data file", "", 1, filterPatterns, "Text Files (*.txt)", 0);
-                        if (filePath != nullptr){
-                            mTree.initializeFromFile(filePath);
-                            mTree.resetHistory("Tree loaded from file");
-                            mLayout.setDescription("Tree loaded from file!");
-                            mShowUndoBtn = false;
-                        } else {
-                            mLayout.setDescription("Cancel load file.");
-                        }
-                        mIsNewExpanded = false;
-                    }
-                }
-
-                else if (!mIsInsertExpanded and sf::FloatRect(sf::Vector2f(32.f, 204.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
-                    mIsNewExpanded = false;
-                    mIsInsertExpanded = true;
-                    mIsDeleteExpanded = false;
-                    mIsSearchExpanded = false;
-                    
-                    mShowUndoBtn = false;
-                    mInputValue = "";
-                    clickedInsideAnyForm = true;
-                }
-                
-                else if (mIsInsertExpanded and sf::FloatRect(sf::Vector2f(32.f, 204.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
-                    clickedInsideAnyForm = true;
-                    if (sf::FloatRect(sf::Vector2f(216.f, 207.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) and !mInputValue.empty()){
-                        int val = stoi(mInputValue);
-                        mTree.backup();
-                        mTree.resetHistory("Create new node " + to_string(val) + " (RED)");
-                        mTree.insert(val);
-                        mTree.setCurrentStep(0);
                         mIsInsertExpanded = false;
-                        mInputValue = "";
-                        resetPlayUI();
-                    } else if (sf::FloatRect(sf::Vector2f(167.f, 211.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)){
-                        mInputValue = to_string(rand() % 99 + 1);
-                    }
-                }
-
-                else if (!mIsDeleteExpanded and sf::FloatRect(sf::Vector2f(32.f, 258.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
-                    mIsNewExpanded = false;
-                    mIsDeleteExpanded = true;
-                    mIsInsertExpanded = false;
-                    mIsSearchExpanded = false;
-                    
-                    mShowUndoBtn = false;
-                    mInputValue = "";
-                    clickedInsideAnyForm = true;
-                }
-                
-                else if (mIsDeleteExpanded and sf::FloatRect(sf::Vector2f(32.f, 258.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
-                    clickedInsideAnyForm = true;
-                    if (sf::FloatRect(sf::Vector2f(216.f, 261.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) and !mInputValue.empty()){
-                        int val = stoi(mInputValue);
-                        mTree.backup();
-                        mTree.resetHistory("Start to Remove " + to_string(val));
-                        mTree.remove(val);
-                        mTree.setCurrentStep(0);
                         mIsDeleteExpanded = false;
-                        mInputValue = "";
-                        resetPlayUI();
-                    } else if (sf::FloatRect(sf::Vector2f(167.f, 265.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)){
-                        mInputValue = to_string(rand() % 99 + 1);
-                    }
-                }
-                
-                else if (!mIsSearchExpanded and sf::FloatRect(sf::Vector2f(32.f, 312.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
-                    mIsNewExpanded = false;
-                    mIsSearchExpanded = true;
-                    mIsInsertExpanded = false;
-                    mIsDeleteExpanded = false;
-                    
-                    mShowUndoBtn = false;
-                    mInputValue = "";
-                    clickedInsideAnyForm = true;
-                }
-                
-                else if (mIsSearchExpanded and sf::FloatRect(sf::Vector2f(32.f, 312.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
-                    clickedInsideAnyForm = true;
-                    if (sf::FloatRect(sf::Vector2f(216.f, 315.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) and !mInputValue.empty()){
-                        int val = stoi(mInputValue);
-                        mTree.resetHistory("Start to Search for " + to_string(val));
-                        mTree.search(val);
-                        mTree.setCurrentStep(0);
                         mIsSearchExpanded = false;
+                        
+                        clickedInsideAnyForm = true;
+                    }
+                    
+                    else if (mIsNewExpanded and sf::FloatRect(sf::Vector2f(213.f, 150.f), sf::Vector2f(160.f, 161.f)).contains(worldPos)){
+                        clickedInsideAnyForm = true;
+                        if (sf::FloatRect(sf::Vector2f(216.f, 207.f), sf::Vector2f(154.f, 39.f)).contains(worldPos)){
+                            mTree.backup();
+                            generateRandomTree();
+                            mIsNewExpanded = false;
+                            mShowUndoBtn = false;
+                        } else if (sf::FloatRect(sf::Vector2f(216.f, 261.f), sf::Vector2f(154.f, 39.f)).contains(worldPos)){
+                            mTree.backup();
+                            const char* filterPatterns[1] = { "*.txt" };
+                            const char* filePath = tinyfd_openFileDialog("Choose Red-Black Tree data file", "", 1, filterPatterns, "Text Files (*.txt)", 0);
+                            if (filePath != nullptr){
+                                mTree.initializeFromFile(filePath);
+                                mTree.resetHistory("Tree loaded from file");
+                                mLayout.setDescription("Tree loaded from file!");
+                                mShowUndoBtn = false;
+                            } else {
+                                mLayout.setDescription("Cancel load file.");
+                            }
+                            mIsNewExpanded = false;
+                        }
+                    }
+                    
+                    else if (!mIsInsertExpanded and sf::FloatRect(sf::Vector2f(32.f, 204.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+                        mIsNewExpanded = false;
+                        mIsInsertExpanded = true;
+                        mIsDeleteExpanded = false;
+                        mIsSearchExpanded = false;
+                        
+                        mShowUndoBtn = false;
                         mInputValue = "";
-                        resetPlayUI();
-                    } else if (sf::FloatRect(sf::Vector2f(167.f, 319.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)){
-                        mInputValue = to_string(rand() % 99 + 1);
+                        clickedInsideAnyForm = true;
+                    }
+                    
+                    else if (mIsInsertExpanded and sf::FloatRect(sf::Vector2f(32.f, 204.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
+                        clickedInsideAnyForm = true;
+                        if (sf::FloatRect(sf::Vector2f(216.f, 207.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) and !mInputValue.empty()){
+                            int val = stoi(mInputValue);
+                            mTree.backup();
+                            mTree.resetHistory("Create new node " + to_string(val) + " (RED)");
+                            mTree.insert(val);
+                            mTree.setCurrentStep(0);
+                            mIsInsertExpanded = false;
+                            mInputValue = "";
+                            resetPlayUI();
+                        } else if (sf::FloatRect(sf::Vector2f(167.f, 211.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)){
+                            mInputValue = to_string(rand() % 99 + 1);
+                        }
+                    }
+                    
+                    else if (!mIsDeleteExpanded and sf::FloatRect(sf::Vector2f(32.f, 258.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+                        mIsNewExpanded = false;
+                        mIsDeleteExpanded = true;
+                        mIsInsertExpanded = false;
+                        mIsSearchExpanded = false;
+                        
+                        mShowUndoBtn = false;
+                        mInputValue = "";
+                        clickedInsideAnyForm = true;
+                    }
+                    
+                    else if (mIsDeleteExpanded and sf::FloatRect(sf::Vector2f(32.f, 258.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
+                        clickedInsideAnyForm = true;
+                        if (sf::FloatRect(sf::Vector2f(216.f, 261.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) and !mInputValue.empty()){
+                            int val = stoi(mInputValue);
+                            mTree.backup();
+                            mTree.resetHistory("Start to Remove " + to_string(val));
+                            mTree.remove(val);
+                            mTree.setCurrentStep(0);
+                            mIsDeleteExpanded = false;
+                            mInputValue = "";
+                            resetPlayUI();
+                        } else if (sf::FloatRect(sf::Vector2f(167.f, 265.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)){
+                            mInputValue = to_string(rand() % 99 + 1);
+                        }
+                    }
+                    
+                    else if (!mIsSearchExpanded and sf::FloatRect(sf::Vector2f(32.f, 312.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+                        mIsNewExpanded = false;
+                        mIsSearchExpanded = true;
+                        mIsInsertExpanded = false;
+                        mIsDeleteExpanded = false;
+                        
+                        mShowUndoBtn = false;
+                        mInputValue = "";
+                        clickedInsideAnyForm = true;
+                    }
+                    
+                    else if (mIsSearchExpanded and sf::FloatRect(sf::Vector2f(32.f, 312.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
+                        clickedInsideAnyForm = true;
+                        if (sf::FloatRect(sf::Vector2f(216.f, 315.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) and !mInputValue.empty()){
+                            int val = stoi(mInputValue);
+                            mTree.resetHistory("Start to Search for " + to_string(val));
+                            mTree.search(val);
+                            mTree.setCurrentStep(0);
+                            mIsSearchExpanded = false;
+                            mInputValue = "";
+                            resetPlayUI();
+                        } else if (sf::FloatRect(sf::Vector2f(167.f, 319.f), sf::Vector2f(30.f, 30.f)).contains(worldPos)){
+                            mInputValue = to_string(rand() % 99 + 1);
+                        }
                     }
                 }
-
+                    
                 if (!clickedInsideAnyForm){
                     mIsInsertExpanded = false;
                     mIsDeleteExpanded = false;
@@ -342,48 +378,35 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                 mLayout.setDescription("Undo successfully.");
                 mShowUndoBtn = false;
                 mLayout.setPaused(true);
-                
-                mIsNewExpanded = false;
-                mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false;
-                mShowUndoBtn = false;
+                mIsNewExpanded = mIsInsertExpanded = mIsDeleteExpanded = mIsSearchExpanded = false;
                 mInputValue = "";
             }
-                    
             else if (keyEvent->code == sf::Keyboard::Key::I){
-                mIsNewExpanded = false;
-                mIsInsertExpanded = true; mIsDeleteExpanded = false; mIsSearchExpanded = false;
-                mShowUndoBtn = false;
+                mIsInsertExpanded = true;
+                mIsDeleteExpanded = mIsSearchExpanded = mIsNewExpanded = false;
                 mInputValue = "";
             }
-            
             else if (keyEvent->code == sf::Keyboard::Key::D){
-                mIsNewExpanded = false;
-                mIsInsertExpanded = false; mIsDeleteExpanded = true; mIsSearchExpanded = false;
-                mShowUndoBtn = false;
+                mIsDeleteExpanded = true;
+                mIsInsertExpanded = mIsSearchExpanded = mIsNewExpanded = false;
                 mInputValue = "";
             }
-            
             else if (keyEvent->code == sf::Keyboard::Key::S){
-                mIsNewExpanded = false;
-                mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = true;
-                mShowUndoBtn = false;
+                mIsSearchExpanded = true;
+                mIsInsertExpanded = mIsDeleteExpanded = mIsNewExpanded = false;
                 mInputValue = "";
             }
-            
             else if (keyEvent->code == sf::Keyboard::Key::N){
-                mIsNewExpanded = !mIsNewExpanded;
-                mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false;
-                mShowUndoBtn = false;
+                mIsNewExpanded = true;
+                mIsInsertExpanded = mIsDeleteExpanded = mIsSearchExpanded = false;
                 mInputValue = "";
             }
-            
             else if (keyEvent->code == sf::Keyboard::Key::Space){
                 mLayout.setPaused(!mLayout.isPaused());
             }
-                    
             else if (keyEvent->code == sf::Keyboard::Key::R){
                 if (mIsInsertExpanded or mIsDeleteExpanded or mIsSearchExpanded){
-                    mInputValue = to_string(rand() % 99 + 1);
+                    mInputValue = std::to_string(rand() % 99 + 1);
                 } else {
                     mTree.backup();
                     generateRandomTree();
@@ -391,50 +414,55 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                     mIsNewExpanded = false;
                 }
             }
-                    
-            else if (mIsInsertExpanded or mIsDeleteExpanded or mIsSearchExpanded){
-                if (keyEvent->code == sf::Keyboard::Key::Backspace and !mInputValue.empty()){
-                    mInputValue.pop_back();
+            else if (keyEvent->code == sf::Keyboard::Key::Backspace){
+                if (mIsInsertExpanded or mIsDeleteExpanded or mIsSearchExpanded){
+                    if (!mInputValue.empty()){
+                        mInputValue.pop_back();
+                    }
                 }
-                
-                else if (keyEvent->code == sf::Keyboard::Key::Enter and !mInputValue.empty()){
+            }
+            else if (keyEvent->code == sf::Keyboard::Key::Enter){
+                if (mIsInsertExpanded and !mInputValue.empty()){
                     int val = stoi(mInputValue);
-                            
-                    if (mIsInsertExpanded){
-                        mTree.backup();
-                        mTree.resetHistory("Create new node " + to_string(val) + " (RED)");
-                        mTree.insert(val);
-                    }
-                    
-                    else if (mIsDeleteExpanded){
-                        mTree.backup();
-                        mTree.resetHistory("Start to Remove " + to_string(val));
-                        mTree.remove(val);
-                    }
-                    
-                    else if (mIsSearchExpanded){
-                        mTree.resetHistory("Start to Search for " + to_string(val));
-                        mTree.search(val);
-                    }
-                                
+                    mTree.backup();
+                    mTree.resetHistory("Create new node " + to_string(val) + " (RED)");
+                    mTree.insert(val);
                     mTree.setCurrentStep(0);
-                    mIsInsertExpanded = false; mIsDeleteExpanded = false; mIsSearchExpanded = false;
+                    mIsInsertExpanded = false;
                     mInputValue = "";
                     resetPlayUI();
                 }
-                
-                else {
-                    int digit = -1;
-                    if (keyEvent->code >= sf::Keyboard::Key::Num0 and keyEvent->code <= sf::Keyboard::Key::Num9){
-                        digit = static_cast<int>(keyEvent->code) - static_cast<int>(sf::Keyboard::Key::Num0);
-                    }
-                    
-                    else if (keyEvent->code >= sf::Keyboard::Key::Numpad0 and keyEvent->code <= sf::Keyboard::Key::Numpad9){
-                        digit = static_cast<int>(keyEvent->code) - static_cast<int>(sf::Keyboard::Key::Numpad0);
-                    }
-                    
-                    if (digit != -1 and mInputValue.length() < 3){
-                        mInputValue += to_string(digit);
+                else if (mIsDeleteExpanded and !mInputValue.empty()){
+                    int val = stoi(mInputValue);
+                    mTree.backup();
+                    mTree.resetHistory("Start to Remove " + to_string(val));
+                    mTree.remove(val); mTree.setCurrentStep(0);
+                    mIsDeleteExpanded = false;
+                    mInputValue = "";
+                    resetPlayUI();
+                }
+                else if (mIsSearchExpanded and !mInputValue.empty()){
+                    int val = stoi(mInputValue);
+                    mTree.resetHistory("Start to Search for " + to_string(val));
+                    mTree.search(val);
+                    mTree.setCurrentStep(0);
+                    mIsSearchExpanded = false;
+                    mInputValue = "";
+                    resetPlayUI();
+                }
+            }
+            else {
+                int digit = -1;
+                if (keyEvent->code >= sf::Keyboard::Key::Num0 and keyEvent->code <= sf::Keyboard::Key::Num9){
+                    digit = (int)keyEvent->code - (int)sf::Keyboard::Key::Num0;
+                } else if (keyEvent->code >= sf::Keyboard::Key::Numpad0 and keyEvent->code <= sf::Keyboard::Key::Numpad9){
+                    digit = (int)keyEvent->code - (int)sf::Keyboard::Key::Numpad0;
+                }
+                if (digit != -1){
+                    if (mIsInsertExpanded or mIsDeleteExpanded or mIsSearchExpanded){
+                        if (mInputValue.size() < 3){
+                            mInputValue += to_string(digit);
+                        }
                     }
                 }
             }
@@ -485,8 +513,14 @@ void RBTVisualizer::drawAnimatedTree(const StepState& stepA, const StepState& st
     
     if (root != -1){getDepth(root, 0);}
 
-    float maxTreeWidth = (1440.f - 20.f) - (373.f + 20.f) - 70.f;
-    float maxTreeHeight = 590.f - 20.f - 70.f;
+    float safeLeft = mIsControlsVisible ? (427.f + 20.f) : 20.f;
+    float safeRight = 1420.f;
+    if (mLayout.isDescVisible() or mLayout.isPseudoVisible()){ safeRight = 1028.f - 20.f; }
+    float safeTop = 150.f;
+    float safeBottom = 670.f;
+
+    float maxTreeWidth = (safeRight - safeLeft) - 70.f;
+    float maxTreeHeight = (safeBottom - safeTop) - 70.f;
 
     float baseX = 55.f;
     float baseY = 85.f;
@@ -529,7 +563,7 @@ void RBTVisualizer::drawAnimatedTree(const StepState& stepA, const StepState& st
         line.setOrigin(sf::Vector2f(0.f, lineThickness / 2.0f));
         line.setPosition(p1);
         line.setFillColor(edgeColor);
-        line.setRotation(sf::radians(std::atan2(dir.y, dir.x)));
+        line.setRotation(sf::radians(atan2(dir.y, dir.x)));
         mWindow->draw(line);
     };
 
@@ -707,104 +741,116 @@ void RBTVisualizer::render(bool showUI){
         mWindow->draw(mTitleBlack);
         mWindow->draw(mTitleTree);
 
-        if (mShowUndoBtn){
-            mUndoBtn.draw(*mWindow);
+        if (mIsControlsVisible){
+            mHideControlsBtn.setThemeColor(ThemeManager::current.secondary);
+            mHideControlsBtn.draw(*mWindow);
+            
+            if (mShowUndoBtn){
+                mUndoBtn.draw(*mWindow);
+            } else {mClearBtn.draw(*mWindow);}
+            
+            if (mShowUndoBtn){
+                mUndoBtn.draw(*mWindow);
+            } else {
+                mClearBtn.draw(*mWindow);
+            }
+            
+            if (mIsNewExpanded){
+                mNewExpandedStroke.draw(*mWindow);
+                mNewExpandedBg.draw(*mWindow);
+                mNewBtn.draw(*mWindow);
+                mRandomBtn.draw(*mWindow);
+                mUploadBtn.draw(*mWindow);
+            } else {
+                if (sf::FloatRect(sf::Vector2f(213.f, 150.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+                    mNewHoverStroke.draw(*mWindow);
+                }
+                mNewBtn.draw(*mWindow);
+            }
+            
+            if (mIsInsertExpanded){
+                mInsertExpandedStroke.draw(*mWindow);
+                mInsertExpandedBg.draw(*mWindow);
+                mConfirmAddBtn.draw(*mWindow);
+                mInsertDiceBtn.draw(*mWindow);
+                
+                mInsertInputText.setString(mInputValue);
+                mWindow->draw(mInsertInputText);
+                
+                if (mCursorClock.getElapsedTime().asSeconds() >= 0.5f){
+                    mShowCursor = !mShowCursor;
+                    mCursorClock.restart();
+                }
+                
+                if (mShowCursor){
+                    float textWidth = mInsertInputText.getLocalBounds().size.x;
+                    float cursorX = mInputValue.empty() ? 47.f : 47.f + textWidth + 2.f;
+                    mInsertCursorLine.setPosition(sf::Vector2f(cursorX, 214.f));
+                    mWindow->draw(mInsertCursorLine);
+                }
+            } else {
+                if (sf::FloatRect(sf::Vector2f(32.f, 204.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+                    mInsertHoverStroke.draw(*mWindow);
+                }
+                mInsertBtn.draw(*mWindow);
+            }
+            
+            if (mIsDeleteExpanded){
+                mDeleteExpandedStroke.draw(*mWindow);
+                mDeleteExpandedBg.draw(*mWindow);
+                mConfirmRemoveBtn.draw(*mWindow);
+                mDeleteDiceBtn.draw(*mWindow);
+                
+                mDeleteInputText.setString(mInputValue);
+                mWindow->draw(mDeleteInputText);
+                
+                if (mCursorClock.getElapsedTime().asSeconds() >= 0.5f){
+                    mShowCursor = !mShowCursor;
+                    mCursorClock.restart();
+                }
+                
+                if (mShowCursor){
+                    float textWidth = mDeleteInputText.getLocalBounds().size.x;
+                    float cursorX = mInputValue.empty() ? 47.f : 47.f + textWidth + 2.f;
+                    mDeleteCursorLine.setPosition(sf::Vector2f(cursorX, 268.f));
+                    mWindow->draw(mDeleteCursorLine);
+                }
+            } else {
+                if (sf::FloatRect(sf::Vector2f(32.f, 258.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+                    mDeleteHoverStroke.draw(*mWindow);
+                }
+                mDeleteBtn.draw(*mWindow);
+            }
+            
+            if (mIsSearchExpanded){
+                mSearchExpandedStroke.draw(*mWindow);
+                mSearchExpandedBg.draw(*mWindow);
+                mConfirmSearchBtn.draw(*mWindow);
+                mSearchDiceBtn.draw(*mWindow);
+                
+                mSearchInputText.setString(mInputValue);
+                mWindow->draw(mSearchInputText);
+                
+                if (mCursorClock.getElapsedTime().asSeconds() >= 0.5f){
+                    mShowCursor = !mShowCursor;
+                    mCursorClock.restart();
+                }
+                
+                if (mShowCursor){
+                    float textWidth = mSearchInputText.getLocalBounds().size.x;
+                    float cursorX = mInputValue.empty() ? 47.f : 47.f + textWidth + 2.f;
+                    mSearchCursorLine.setPosition(sf::Vector2f(cursorX, 322.f));
+                    mWindow->draw(mSearchCursorLine);
+                }
+            } else {
+                if (sf::FloatRect(sf::Vector2f(32.f, 312.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+                    mSearchHoverStroke.draw(*mWindow);
+                }
+                mSearchBtn.draw(*mWindow);
+            }
         } else {
-            mClearBtn.draw(*mWindow);
-        }
-            
-        if (mIsNewExpanded){
-            mNewExpandedStroke.draw(*mWindow);
-            mNewExpandedBg.draw(*mWindow);
-            mNewBtn.draw(*mWindow);
-            mRandomBtn.draw(*mWindow);
-            mUploadBtn.draw(*mWindow);
-        } else {
-            if (sf::FloatRect(sf::Vector2f(213.f, 150.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
-                mNewHoverStroke.draw(*mWindow);
-            }
-            mNewBtn.draw(*mWindow);
-        }
-                        
-        if (mIsInsertExpanded){
-            mInsertExpandedStroke.draw(*mWindow);
-            mInsertExpandedBg.draw(*mWindow);
-            mConfirmAddBtn.draw(*mWindow);
-            mInsertDiceBtn.draw(*mWindow);
-            
-            mInsertInputText.setString(mInputValue);
-            mWindow->draw(mInsertInputText);
-            
-            if (mCursorClock.getElapsedTime().asSeconds() >= 0.5f){
-                mShowCursor = !mShowCursor;
-                mCursorClock.restart();
-            }
-            
-            if (mShowCursor){
-                float textWidth = mInsertInputText.getLocalBounds().size.x;
-                float cursorX = mInputValue.empty() ? 47.f : 47.f + textWidth + 2.f;
-                mInsertCursorLine.setPosition(sf::Vector2f(cursorX, 214.f));
-                mWindow->draw(mInsertCursorLine);
-            }
-        } else {
-            if (sf::FloatRect(sf::Vector2f(32.f, 204.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
-                mInsertHoverStroke.draw(*mWindow);
-            }
-            mInsertBtn.draw(*mWindow);
-        }
-        
-        if (mIsDeleteExpanded){
-            mDeleteExpandedStroke.draw(*mWindow);
-            mDeleteExpandedBg.draw(*mWindow);
-            mConfirmRemoveBtn.draw(*mWindow);
-            mDeleteDiceBtn.draw(*mWindow);
-            
-            mDeleteInputText.setString(mInputValue);
-            mWindow->draw(mDeleteInputText);
-            
-            if (mCursorClock.getElapsedTime().asSeconds() >= 0.5f){
-                mShowCursor = !mShowCursor;
-                mCursorClock.restart();
-            }
-            
-            if (mShowCursor){
-                float textWidth = mDeleteInputText.getLocalBounds().size.x;
-                float cursorX = mInputValue.empty() ? 47.f : 47.f + textWidth + 2.f;
-                mDeleteCursorLine.setPosition(sf::Vector2f(cursorX, 268.f));
-                mWindow->draw(mDeleteCursorLine);
-            }
-        } else {
-            if (sf::FloatRect(sf::Vector2f(32.f, 258.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
-                mDeleteHoverStroke.draw(*mWindow);
-            }
-            mDeleteBtn.draw(*mWindow);
-        }
-         
-        if (mIsSearchExpanded){
-            mSearchExpandedStroke.draw(*mWindow);
-            mSearchExpandedBg.draw(*mWindow);
-            mConfirmSearchBtn.draw(*mWindow);
-            mSearchDiceBtn.draw(*mWindow);
-                    
-            mSearchInputText.setString(mInputValue);
-            mWindow->draw(mSearchInputText);
-                    
-            if (mCursorClock.getElapsedTime().asSeconds() >= 0.5f){
-                mShowCursor = !mShowCursor;
-                mCursorClock.restart();
-            }
-            
-            if (mShowCursor){
-                float textWidth = mSearchInputText.getLocalBounds().size.x;
-                float cursorX = mInputValue.empty() ? 47.f : 47.f + textWidth + 2.f;
-                mSearchCursorLine.setPosition(sf::Vector2f(cursorX, 322.f));
-                mWindow->draw(mSearchCursorLine);
-            }
-        } else {
-            if (sf::FloatRect(sf::Vector2f(32.f, 312.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
-                mSearchHoverStroke.draw(*mWindow);
-            }
-            mSearchBtn.draw(*mWindow);
+            mShowControlsBtn.setThemeColor(ThemeManager::current.secondary);
+            mShowControlsBtn.draw(*mWindow);
         }
     }
 }
@@ -845,11 +891,13 @@ std::map<int, sf::Vector2f> RBTVisualizer::computeLayout(const std::vector<NodeS
         
     int nodeCount = static_cast<int>(nodes.size());
     
-    float safeLeft = 373.f + 20.f;
-    float safeRight = 1440.f - 20.f;
-    float safeTop = 130.f;
-    float safeBottom = 590.f;
-        
+    float safeLeft = mIsControlsVisible ? (427.f + 20.f) : 20.f;
+    
+    float safeRight = 1420.f;
+    if (mLayout.isDescVisible() or mLayout.isPseudoVisible()){safeRight = 1028.f - 20.f;}
+    float safeTop = 150.f;
+    float safeBottom = 670.f;
+
     float maxTreeWidth = (safeRight - safeLeft) - 70.f;
     float maxTreeHeight = (safeBottom - safeTop) - 70.f;
 
@@ -921,7 +969,6 @@ bool RBTVisualizer::checkReturnHome(){
         mGoHome = false;
         return true;
     }
-    
     return false;
 }
 
@@ -957,4 +1004,3 @@ void RBTVisualizer::resetPlayUI(){
     mShowUndoBtn = false;
     mAutoPlayClock.restart();
 }
-

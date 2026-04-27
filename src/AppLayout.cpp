@@ -2,69 +2,50 @@
 #include "ThemeManager.h"
 #include "Common.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-// Helper function to support automatic line breaks
-static std::string wrapText(const std::string& text, float maxWidth, const sf::Font& font, unsigned int charSize) {
-    std::istringstream words(text);
-    std::string word;
-    std::string wrappedText = "";
-    std::string currentLine = "";
+static string wrapText(const std::string& text, float maxWidth, const sf::Font& font, unsigned int charSize){
+    size_t indentPos = text.find_first_not_of(" \t");
+    string indent = (indentPos == string::npos) ? "" : text.substr(0, indentPos);
+    string content = (indentPos == string::npos) ? text : text.substr(indentPos);
+    
+    if (content.empty()) return text;
+    
+    istringstream words(content);
+    string word;
+    string currentLine = "";
+    string result = "";
     sf::Text measureText(font, "", charSize);
 
-    while (words >> word) {
-        std::string testLine = currentLine.empty() ? word : currentLine + " " + word;
+    while (words >> word){
+        string testLine = currentLine.empty() ? word : currentLine + " " + word;
         measureText.setString(testLine);
         
-        // If adding new word exceeds the allowed width -> Wrap to the next line
-        if (measureText.getLocalBounds().size.x > maxWidth) {
-            wrappedText += currentLine + "\n";
+        if (measureText.getLocalBounds().size.x > maxWidth){
+            if (!result.empty()) result += "\n";
+            result += indent + currentLine;
             currentLine = word;
         } else {
             currentLine = testLine;
         }
     }
-    wrappedText += currentLine;
-    return wrappedText;
+    
+    if (!result.empty()) result += "\n";
+    result += indent + currentLine;
+    
+    return result;
 }
 
-sf::ConvexShape AppLayout::createRoundedRect(sf::Vector2f size, float radius){
-    radius = std::min(radius, std::min(size.x / 2.0f, size.y / 2.0f));
-    int pointsPerCorner = 15;
-    sf::ConvexShape shape(pointsPerCorner * 4);
-    int index = 0;
-    for (int i = 0; i < pointsPerCorner; ++i){
-        float angle = i * (M_PI / 2) / (pointsPerCorner - 1);
-        shape.setPoint(index++, sf::Vector2f(size.x - radius + radius * sin(angle), radius - radius * cos(angle)));
-    }
-    for (int i = 0; i < pointsPerCorner; ++i){
-        float angle = M_PI / 2 + i * (M_PI / 2) / (pointsPerCorner - 1);
-        shape.setPoint(index++, sf::Vector2f(size.x - radius + radius * sin(angle), size.y - radius - radius * cos(angle)));
-    }
-    for (int i = 0; i < pointsPerCorner; ++i){
-        float angle = M_PI + i * (M_PI / 2) / (pointsPerCorner - 1);
-        shape.setPoint(index++, sf::Vector2f(radius + radius * sin(angle), size.y - radius - radius * cos(angle)));
-    }
-    for (int i = 0; i < pointsPerCorner; ++i){
-        float angle = 3 * M_PI / 2 + i * (M_PI / 2) / (pointsPerCorner - 1);
-        shape.setPoint(index++, sf::Vector2f(radius + radius * sin(angle), radius - radius * cos(angle)));
-    }
-    return shape;
-}
 
 AppLayout::AppLayout()
     : mHeaderText(mFontBold),
       mDescriptionText(mFontRegular),
       mStepText(mFontRegular),
       mSpeedSlider(mFontRegular, 956.f, 917.f),
-      mStepBackBtn(mFontRegular, "Step back", 326.f, 896.f, 165.f, 49.f, 24.5f, sf::Color::White),
-      mStepForwardBtn(mFontRegular, "Step forward", 504.f, 896.f, 201.f, 49.f, 24.5f, sf::Color::White),
-      mHideDescBtn(mFontBold, ">", 1028.f, 170.f, 45.f, 80.f, 22.5f, sf::Color::White),
-      mShowDescBtn(mFontBold, "<", 1375.f, 170.f, 45.f, 80.f, 22.5f, sf::Color::White),
-      mHidePseudoBtn(mFontBold, ">", 1028.f, 475.f, 45.f, 80.f, 22.5f, sf::Color::White),
-      mShowPseudoBtn(mFontBold, "<", 1375.f, 475.f, 45.f, 80.f, 22.5f, sf::Color::White)
+      mStepBackBtn(mFontRegular, "Step back", 330.f, 896.f, 165.f, 49.f, 24.5f, ThemeManager::current.screenBg),
+      mStepForwardBtn(mFontRegular, "Step forward", 504.f, 896.f, 201.f, 49.f, 24.5f, ThemeManager::current.screenBg),
+      mHideDescBtn(mFontBold, ">", 1028.f, 170.f, 45.f, 80.f, 22.5f, ThemeManager::current.secondary),
+      mShowDescBtn(mFontBold, "<", 1375.f, 170.f, 45.f, 80.f, 22.5f, ThemeManager::current.secondary),
+      mHidePseudoBtn(mFontBold, ">", 1028.f, 475.f, 45.f, 80.f, 22.5f, ThemeManager::current.secondary),
+      mShowPseudoBtn(mFontBold, "<", 1375.f, 475.f, 45.f, 80.f, 22.5f, ThemeManager::current.secondary)
 {
     if (!mFontBold.openFromFile("assets/fonts/Inter-Bold.ttf") or !mFontRegular.openFromFile("assets/fonts/Inter-Regular.ttf") or !mFontMedium.openFromFile("assets/fonts/Inter-Medium.otf")){
         cerr << "Cannot load font!" << endl;
@@ -72,7 +53,7 @@ AppLayout::AppLayout()
     if (!mHomeTex.loadFromFile("assets/images/homeButton.png")){cerr << "Cannot load homeButton.png" << endl;}
     mHomeTex.setSmooth(true); mHomeTex.generateMipmap();
 
-    mFooter.setSize({1440.f, 78.f});
+    mFooter.setSize(sf::Vector2f(1440.f, 78.f));
     mFooter.setPosition({0.f, 882.f});
 
     mStepBgCenter = createRoundedRect(sf::Vector2f(580.f, 61.f), 50.f);
@@ -91,18 +72,18 @@ AppLayout::AppLayout()
     mDescriptionBox.setFillColor(ThemeManager::current.secondary);
     
     mDescriptionText.setFont(mFontRegular);
-    mDescriptionText.setFillColor(ThemeManager::current.primary);
+    mDescriptionText.setFillColor(ThemeManager::current.textColor);
     mDescriptionText.setCharacterSize(20);
-    mDescriptionText.setPosition(sf::Vector2f(1100.f, 165.f));
+    mDescriptionText.setPosition(sf::Vector2f(1100.f, 170.f));
 
     mPseudoBox = createRoundedRect(sf::Vector2f(330.f, 460.f), 20.f);
     mPseudoBox.setPosition(sf::Vector2f(1080.f, 285.f));
     mPseudoBox.setFillColor(ThemeManager::current.secondary);
-
-    mHideDescBtn.setCallback([this](){ mIsDescVisible = false; });
-    mShowDescBtn.setCallback([this](){ mIsDescVisible = true; });
-    mHidePseudoBtn.setCallback([this](){ mIsPseudoVisible = false; });
-    mShowPseudoBtn.setCallback([this](){ mIsPseudoVisible = true; });
+    
+    mHideDescBtn.setCallback([this](){mIsDescVisible = false;});
+    mShowDescBtn.setCallback([this](){mIsDescVisible = true;});
+    mHidePseudoBtn.setCallback([this](){mIsPseudoVisible = false;});
+    mShowPseudoBtn.setCallback([this](){mIsPseudoVisible = true;});
     
     if (!mSkipBackTex.loadFromFile("assets/images/skipbackButton.png")){cerr << "Check lai anh skipback" << endl;}
     if (!mPauseTex.loadFromFile("assets/images/pauseButton.png")){cerr << "Check lai anh pause" << endl;}
@@ -138,14 +119,26 @@ AppLayout::AppLayout()
         if (mPlayPauseCb) mPlayPauseCb();
     });
     
-    mSkipBackBtn.setCallback([this](){ if(mSkipBackCb) mSkipBackCb(); });
-    mSkipForwardBtn.setCallback([this](){ if(mSkipForwardCb) mSkipForwardCb(); });
-    mStepBackBtn.setCallback([this](){ if(mStepBackCb) mStepBackCb(); });
-    mStepForwardBtn.setCallback([this](){ if(mStepForwardCb) mStepForwardCb(); });
-
+    mSkipBackBtn.setCallback([this](){
+        if (mSkipBackCb){mSkipBackCb();}
+    });
+    
+    mSkipForwardBtn.setCallback([this](){
+        if (mSkipForwardCb){mSkipForwardCb();}
+    });
+    
+    mStepBackBtn.setCallback([this](){
+        if (mStepBackCb){mStepBackCb();}
+    });
+    
+    mStepForwardBtn.setCallback([this](){
+        if (mStepForwardCb){mStepForwardCb();}
+    });
+    
     mStepBackBtn.setCharacterSize(24);
     mStepForwardBtn.setCharacterSize(24);
-    for (auto* b : {&mStepBackBtn, &mStepForwardBtn, &mHideDescBtn, &mShowDescBtn, &mHidePseudoBtn, &mShowPseudoBtn}) {
+    
+    for (auto* b : {&mStepBackBtn, &mStepForwardBtn, &mHideDescBtn, &mShowDescBtn, &mHidePseudoBtn, &mShowPseudoBtn}){
         b->refreshText();
     }
 }
@@ -156,10 +149,18 @@ void AppLayout::update(sf::Vector2i mousePos){
     mSkipBackBtn.update(mousePos);
     mPauseBtn.update(mousePos);
     mSkipForwardBtn.update(mousePos);
-    if (mIsDescVisible) mHideDescBtn.update(mousePos);
-    else mShowDescBtn.update(mousePos);
-    if (mIsPseudoVisible) mHidePseudoBtn.update(mousePos);
-    else mShowPseudoBtn.update(mousePos);
+    if (mIsDescVisible){
+        mHideDescBtn.update(mousePos);
+    } else {
+        mShowDescBtn.update(mousePos);
+    }
+    
+    if (mIsPseudoVisible){
+        mHidePseudoBtn.update(mousePos);
+    } else {
+        mShowPseudoBtn.update(mousePos);
+    }
+    
     mStartBtn.update(mousePos);
     mStepBackBtn.update(mousePos);
     mStepForwardBtn.update(mousePos);
@@ -177,7 +178,7 @@ void AppLayout::draw(sf::RenderWindow& window){
     mHidePseudoBtn.setThemeColor(ThemeManager::current.secondary);
     mShowPseudoBtn.setThemeColor(ThemeManager::current.secondary);
 
-    if (mIsDescVisible) {
+    if (mIsDescVisible){
         mDescriptionBox.setFillColor(ThemeManager::current.secondary);
         mDescriptionText.setFillColor(ThemeManager::current.textColor);
         
@@ -188,7 +189,7 @@ void AppLayout::draw(sf::RenderWindow& window){
         mShowDescBtn.draw(window);
     }
 
-   if (mIsPseudoVisible) {
+   if (mIsPseudoVisible){
         mPseudoBox.setFillColor(ThemeManager::current.secondary);
         window.draw(mPseudoBox);
         
@@ -199,24 +200,25 @@ void AppLayout::draw(sf::RenderWindow& window){
         float startX = boxX + 20.f;
         float currentY = boxY + 20.f; 
         
-        for (int i = 0; i < (int)mCodeLines.size(); ++i){
-            bool isActive = (std::find(mActiveCodeLines.begin(), mActiveCodeLines.end(), i) != mActiveCodeLines.end());
-            std::string wrappedLine = wrapText(mCodeLines[i], 290.f, (isActive ? mFontBold : mFontRegular), 20);
-            
+        for (int i = 0; i < mCodeLines.size(); ++i){
+            bool isActive = (find(mActiveCodeLines.begin(), mActiveCodeLines.end(), i) != mActiveCodeLines.end());
+            string wrappedLine = wrapText(mCodeLines[i], 270.f, (isActive ? mFontBold : mFontRegular), 20);
+
             sf::Text lineText(isActive ? mFontBold : mFontRegular, wrappedLine, 20);
-            lineText.setPosition(sf::Vector2f(startX, currentY)); 
+            lineText.setPosition(sf::Vector2f(startX, currentY));
+            
             if (isActive){
                 sf::FloatRect textBounds = lineText.getGlobalBounds();
-                
                 sf::RectangleShape hgBg(sf::Vector2f(boxW, textBounds.size.y + 14.f));
                 hgBg.setPosition(sf::Vector2f(boxX, textBounds.position.y - 7.f));
-                hgBg.setFillColor(ThemeManager::current.bg);
+                hgBg.setFillColor(ThemeManager::current.screenBg);
                 window.draw(hgBg);
                 
                 lineText.setFillColor(ThemeManager::current.primary);
             } else {
                 lineText.setFillColor(ThemeManager::current.textColor);
             }
+
             window.draw(lineText);
             currentY += lineText.getGlobalBounds().size.y + 15.f;
         }
@@ -239,13 +241,13 @@ void AppLayout::draw(sf::RenderWindow& window){
     mSkipForwardBtn.draw(window);
     
     if (mIsPaused){
-        mStepBgCenter.setFillColor(ThemeManager::isDark ? ThemeManager::current.screenBg : sf::Color(196, 196, 196));
+        mStepBgCenter.setFillColor(ThemeManager::current.stepBg);
         window.draw(mStepBgCenter);
         
         mStartBtn.draw(window);
         
-        mStepBackBtn.setThemeColor(ThemeManager::current.bg);
-        mStepForwardBtn.setThemeColor(ThemeManager::current.bg);
+        mStepBackBtn.setThemeColor(ThemeManager::current.screenBg);
+        mStepForwardBtn.setThemeColor(ThemeManager::current.screenBg);
         
         mStepBackBtn.draw(window);
         mStepForwardBtn.draw(window);
@@ -258,7 +260,7 @@ void AppLayout::draw(sf::RenderWindow& window){
 }
 
 void AppLayout::setDescription(const std::string& text){
-    std::string wrapped = wrapText(text, 290.f, mFontRegular, 20); 
+    string wrapped = wrapText(text, 290.f, mFontRegular, 20);
     mDescriptionText.setString(wrapped);
 }
 

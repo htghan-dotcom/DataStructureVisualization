@@ -8,6 +8,7 @@ struct ThemePalette {
     sf::Color primaryLight;
     sf::Color secondary;
     sf::Color bg;
+    sf::Color stepBg;
     sf::Color screenBg;
     sf::Color textColor;
 };
@@ -29,6 +30,7 @@ public:
                     sf::Color(132, 216, 68),
                     sf::Color(217, 217, 217),
                     sf::Color(245, 245, 240),
+                    sf::Color(196, 196, 196),
                     sf::Color(255, 255, 255),
                     sf::Color(41, 42, 49)
                 };
@@ -40,6 +42,7 @@ public:
                     sf::Color(247, 131, 172),
                     sf::Color(217, 217, 217),
                     sf::Color(255, 245, 248),
+                    sf::Color(196, 196, 196),
                     sf::Color(255, 255, 255),
                     sf::Color(41, 42, 49)
                 };
@@ -51,6 +54,7 @@ public:
                     sf::Color(59, 130, 246),
                     sf::Color(217, 217, 217),
                     sf::Color(248, 250, 252),
+                    sf::Color(196, 196, 196),
                     sf::Color(255, 255, 255),
                     sf::Color(41, 42, 49)
                 };
@@ -62,6 +66,7 @@ public:
                     sf::Color(252, 211, 77),
                     sf::Color(217, 217, 217),
                     sf::Color(255, 253, 240),
+                    sf::Color(196, 196, 196),
                     sf::Color(255, 255, 255),
                     sf::Color(41, 42, 49)
                 };
@@ -74,6 +79,7 @@ public:
                     sf::Color(132, 216, 68),
                     sf::Color(67, 66, 67),
                     sf::Color(32, 39, 34),
+                    sf::Color(56, 56, 56),
                     sf::Color(41, 42, 49),
                     sf::Color(255, 255, 255)
                 };
@@ -85,6 +91,7 @@ public:
                     sf::Color(247, 131, 172),
                     sf::Color(67, 66, 67),
                     sf::Color(45, 27, 38),
+                    sf::Color(56, 56, 56),
                     sf::Color(41, 42, 49),
                     sf::Color(255, 255, 255)
                 };
@@ -96,6 +103,7 @@ public:
                     sf::Color(59, 130, 246),
                     sf::Color(67, 66, 67),
                     sf::Color(30, 41, 59),
+                    sf::Color(56, 56, 56),
                     sf::Color(41, 42, 49),
                     sf::Color(255, 255, 255)
                 };
@@ -105,6 +113,7 @@ public:
                     sf::Color(252, 211, 77),
                     sf::Color(67, 66, 67),
                     sf::Color(44, 36, 27),
+                    sf::Color(56, 56, 56),
                     sf::Color(41, 42, 49),
                     sf::Color(255, 255, 255)
                 };

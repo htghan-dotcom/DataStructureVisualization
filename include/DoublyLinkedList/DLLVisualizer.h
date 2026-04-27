@@ -1,8 +1,9 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "GUI.h"
-#include "DoublyLinkedList.h"
-#include "DLLStepState.h"
+#include "DoublyLinkedList/DoublyLinkedList.h"
+#include "DoublyLinkedList/DLLStepState.h"
+#include "AppLayout.h"
 #include <optional>
 #include <vector>
 #include <string>
@@ -10,64 +11,53 @@
 
 class DLLVisualizer {
 private:
-    // Window and rendering
     sf::RenderWindow* mWindow;
     sf::Font mFontRegular;
     sf::Font mFontBold;
-    sf::Font mFontMono;  // For pseudocode display
     
-    // Data structure
     DoublyLinkedList mList;
+    AppLayout mLayout;
     
-    // Background and layout
-    sf::RectangleShape mBackground;
-    sf::RectangleShape mFooter;
-    sf::RectangleShape mDescriptionBox;
-    sf::RectangleShape mCodePanelBox;  // Panel for pseudocode display
-    
-    // Header and title elements
-    sf::Text mHeaderText;
     sf::Text mTitleNum;
     sf::Text mTitleDoubly;
     sf::Text mTitleLinked;
     sf::Text mTitleList;
-    sf::Text mDescriptionText;
     
-    // Control button textures
-    sf::Texture mHomeTex;
-    sf::Texture mSkipBackTex;
-    sf::Texture mPauseTex;
-    sf::Texture mSkipForwardTex;
-    sf::Texture mStartTex;
+    sf::Clock mAutoPlayClock;
+
+    RoundedButton mClearBtn, mUndoBtn, mNewBtn, mInsertBtn, mDeleteBtn, mSearchBtn, mUpdateBtn;
+    
+    bool mGoHome = false;
+    float mTransitionProgress = 0.f;
+    
+    struct DLLLayout {
+        float spacing;
+        float xOffset;
+        float y;
+        float nodeRadius;
+    };
+    DLLLayout computeLayout(int nodeCount);
+    
+    bool mShowUndoBtn = false;
+    
+    bool mIsInsertExpanded = false;
+    bool mIsDeleteExpanded = false;
+    bool mIsSearchExpanded = false;
+    bool mIsUpdateExpanded = false;
+    bool mIsNewExpanded = false;
+    
+    bool mEditingOld = true;
+    std::string mInputOld = "";
+    std::string mInputNew = "";
+    
+    std::string mInputValue = "";
+    sf::Clock mCursorClock;
+    float mStepAnimProgress = 1.0f;
+    int mTargetStep = -1;
+    bool mShowCursor = true;
+
     sf::Texture mDiceTex;
-    
-    // Control buttons
-    ImageButton mHomeBtn;
-    ImageButton mSkipBackBtn;
-    ImageButton mPauseBtn;
-    ImageButton mSkipForwardBtn;
-    ImageButton mStartBtn;
-    
-    // Action buttons
-    RoundedButton mClearBtn;
-    RoundedButton mUndoBtn;
-    RoundedButton mNewBtn;
-    RoundedButton mInsertBtn;
-    RoundedButton mDeleteBtn;
-    RoundedButton mSearchBtn;
-    RoundedButton mUpdateBtn;
-    
-    // Step controls
-    sf::CircleShape mStepBgLeft, mStepBgRight;
-    sf::RectangleShape mStepBgCenter;
-    sf::Text mStepText;
-    RoundedButton mStepBackBtn;
-    RoundedButton mStepForwardBtn;
-    
-    // Speed slider
-    SpeedSlider mSpeedSlider;
-    
-    // Input form components - Insert
+
     RoundedButton mInsertHoverStroke;
     RoundedButton mInsertExpandedStroke;
     RoundedButton mInsertExpandedBg;
@@ -75,9 +65,7 @@ private:
     ImageButton mInsertDiceBtn;
     sf::Text mInsertInputText;
     sf::RectangleShape mInsertCursorLine;
-    bool mIsInsertExpanded = false;
-    
-    // Input form components - Delete
+
     RoundedButton mDeleteHoverStroke;
     RoundedButton mDeleteExpandedStroke;
     RoundedButton mDeleteExpandedBg;
@@ -85,9 +73,7 @@ private:
     ImageButton mDeleteDiceBtn;
     sf::Text mDeleteInputText;
     sf::RectangleShape mDeleteCursorLine;
-    bool mIsDeleteExpanded = false;
     
-    // Input form components - Search
     RoundedButton mSearchHoverStroke;
     RoundedButton mSearchExpandedStroke;
     RoundedButton mSearchExpandedBg;
@@ -95,7 +81,6 @@ private:
     ImageButton mSearchDiceBtn;
     sf::Text mSearchInputText;
     sf::RectangleShape mSearchCursorLine;
-    bool mIsSearchExpanded = false;
 
     RoundedButton mUpdateHoverStroke;
     RoundedButton mUpdateExpandedStroke;
@@ -103,62 +88,29 @@ private:
     RoundedButton mConfirmUpdateBtn;
     sf::Text mUpdateInputText;
     sf::RectangleShape mUpdateCursorLine;
-    bool mIsUpdateExpanded = false;
-    bool mIsUpdatePhaseTwo = false;
-    int mUpdateOldValue = 0;
     
-    // New list form components
     RoundedButton mNewHoverStroke;
     RoundedButton mNewExpandedStroke;
     RoundedButton mNewExpandedBg;
     RoundedButton mRandomBtn;
     RoundedButton mUploadBtn;
-    bool mIsNewExpanded = false;
     
-    // Pseudocode display components
-    sf::Text mCodeTitleText;
-    std::vector<sf::Text> mPseudoCodeLines;
-    std::vector<sf::Text> mCppCodeLines;
-    int mCurrentCodeStep = -1;
-    
-    // State variables
-    std::string mInputValue = "";
-    bool mShowCursor = true;
-    sf::Clock mCursorClock;
-    sf::Clock mAutoPlayClock;
-    
-    bool mIsPaused = false;
-    bool mGoHome = false;
-    bool mShowUndoBtn = false;
-    
-    float mStepAnimProgress = 1.0f;
-    int mTargetStep = -1;
-    float mTransitionProgress = 1.0f;
-    
-    // Helper methods
-    void initializeFonts();
-    void initializeTextures();
-    void initializeButtons();
-    void initializeInputForms();
-    void initializePseudoCodePanel();
-    void refreshTheme();
+    // BIẾN TÀNG HÌNH MENU
+    bool mIsControlsVisible = true;
+    RoundedButton mHideControlsBtn;
+    RoundedButton mShowControlsBtn;
+
     void renderNodeVisualization(const DLLStepState& state);
     void renderDoubleArrows(const DLLStepState& state);
-    void renderPseudoCodePanel(const DLLStepState& state);
-    void updatePseudoCodeLines(const DLLStepState& state);
-    void handleMouseInput(const sf::Vector2f& worldPos);
-    void handleKeyInput(const sf::Event::KeyPressed& keyEvent);
-    void loadListFromFile();
-    
+
 public:
     DLLVisualizer(sf::RenderWindow& window);
-    ~DLLVisualizer() = default;
-    
     void update(const std::optional<sf::Event>& event);
     void render(bool showUI = true);
-    
     bool checkReturnHome();
     void generateRandomList();
     bool isEmpty();
-    void setTransitionProgress(float p) { mTransitionProgress = p; }
+    void setTransitionProgress(float p){mTransitionProgress = p;}
+    void resetPlayUI();
+    void loadListFromFile();
 };

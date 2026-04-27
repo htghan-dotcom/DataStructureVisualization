@@ -50,7 +50,7 @@ void HashChaining::addInternal(int key, bool keepSteps) {
         if (cur->val == key) {
             PUSH_STEP(to_string(key) + " already exists! Cancel insertion.",
                       1, idx, key, true);
-            return; 
+            return;
         }
         cur = cur->next;
     }

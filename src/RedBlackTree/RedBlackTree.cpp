@@ -4,49 +4,49 @@
 const vector<string> PSEUDO_SEARCH = {
     "current = root",
     "while current != NULL:",
-    "   if val == current.val: return current // found",
-    "   if val < current.val: current = current.left",
-    "   if val > current.val: current = current.right",
+    "\tif val == current: return current // found",
+    "\tif val < current: check LEFT",
+    "\tif val > current: check RIGHT",
     "return NULL // not found"
 };
 
 const vector<string> PSEUDO_INSERT = {
     "BST insert node X (RED)",
-    "while RED-RED conflict with parent P:\n    checking uncle U",
+    "while RED-RED conflict with parent P:\n\tchecking uncle U",
     "ensure root is BLACK"
 };
 
 const vector<string> PSEUDO_FIXINSERTION = {
     "checking unlce U:",
-    "   if U is RED:\n      recolor P and U to BLACK, G to RED & check G",
-    "   elif U is BLACK & X is inner child:\n      rotate at P & check P",
-    "   else U is BLACK & X is outer child:\n      rotate at G & swap color of G and P"
+    "\tif U is RED:\n\trecolor P and U to BLACK, G to RED & check G",
+    "\telif U is BLACK & X is inner child:\n\trotate at P & check P",
+    "\telse U is BLACK & X is outer child:\n\trotate at G & swap color of G and P"
 };
 
 const vector<string> PSEUDO_DELETE = {
     "BST delete node V, replacement U",
-    "if either V or U is RED:\n   recolor U to BLACK",
-    "else while V and U is BLACK (double BLACK conflict):\n   check sibling S of U",
-    "if U is root:\n   recolor root to BLACK"
+    "if either V or U is RED:\n\trecolor U to BLACK",
+    "else while double BLACK conflict:\n\tcheck sibling S of U",
+    "if U is root:\n\trecolor root to BLACK"
 };
 
 const vector<string> PSEUDO_FIXDELETION1 = {
     "checking sibling S of U:",
-    "   if S is RED:\n      rotate at parent P, swap color of P and S",
-    "   else S is BLACK:\n      check nephews"
+    "\tif S is RED:\n\t\trotate at parent P, swap color of P and S",
+    "\telse S is BLACK:\n\t\tcheck nephews"
 };
 
 const vector<string> PSEUDO_FIXDELETION2 = {
     "checking nephews:",
-    "   if S is BLACK and both nephews are BLACK:\n      recolor S to RED & check P",
-    "   elif S is BLACK and outer nephew O is RED:\n      rotate at P & recolor O to BLACK",
-    "   else S is BLACK and only inner nephew I is RED:\n      rotate at S & swap color of S and I"
+    "\tif S is BLACK and both nephews are BLACK:\n\t\trecolor S to RED & check P",
+    "\telif S is BLACK and outer nephew O is RED:\n\t\trotate at P & recolor O to BLACK",
+    "\telse S is BLACK and only inner nephew I is RED:\n\t\trotate at S & swap color of S and I"
 };
 
 const vector<string> PSEUDO_FIXDELETION3 = {
     "checking parent P:",
-    "   if P is RED:\n      recolor P to BLACK",
-    "   else P is BLACK:\n      P is U & check sibling S of U"
+    "\tif P is RED:\n\t\trecolor P to BLACK",
+    "\telse P is BLACK:\n\t\tP is U & check sibling S of U"
 };
 
 
@@ -306,7 +306,7 @@ void RedBlackTree::fixDeletion(RedBlackNode *node){
         
         if (!sibling->getRight() or !sibling->getRight()->isRed()){
             // RIGHT-LEFT case
-            saveStep("RIGHT nephew is BLACK (inner RED).\nRotate RIGHT at sibling & Recolor sibling to RED and nephew to BLACK", sibling->getVal(), 3, PSEUDO_FIXDELETION2);
+            saveStep("RIGHT nephew is BLACK (inner RED).\nRotate RIGHT at sibling & Swap sibling and nephew color", sibling->getVal(), 3, PSEUDO_FIXDELETION2);
             
             sibling->getLeft()->setColor(Color::BLACK);
             sibling->setColor(Color::RED);
@@ -367,7 +367,7 @@ void RedBlackTree::fixDeletion(RedBlackNode *node){
                 
         if (!sibling->getLeft() or !sibling->getLeft()->isRed()){
             // LEFT-RIGHT case
-            saveStep("LEFT nephew is BLACK (inner RED).\nRotate LEFT at sibling & Recolor sibling to RED and nephew to BLACK", sibling->getVal(), 3, PSEUDO_FIXDELETION2);
+            saveStep("LEFT nephew is BLACK (inner RED).\nRotate LEFT at sibling & Swap sibling and nephew color", sibling->getVal(), 3, PSEUDO_FIXDELETION2);
             
             sibling->getRight()->setColor(Color::BLACK);
             sibling->setColor(Color::RED);

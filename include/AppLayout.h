@@ -16,8 +16,8 @@ private:
     sf::Texture mHomeTex;
     
     std::vector<std::string> mCodeLines;
-    int mActiveCodeLine = -1;
-    
+    std::vector<int> mActiveCodeLines;
+
     sf::Texture mSkipBackTex, mPauseTex, mSkipForwardTex, mStartTex;
     ImageButton mSkipBackBtn, mPauseBtn, mSkipForwardBtn, mStartBtn;
         
@@ -29,7 +29,6 @@ private:
     SpeedSlider mSpeedSlider;
 
     sf::ConvexShape mPseudoBox;
-    sf::ConvexShape createRoundedRect(sf::Vector2f size, float radius);
 
     RoundedButton mHideDescBtn;
     RoundedButton mShowDescBtn;
@@ -43,14 +42,22 @@ private:
 public:
     ImageButton mHomeBtn;
     bool mGoHome = false;
+    
+    bool isDescVisible() const {return mIsDescVisible;}
+    bool isPseudoVisible() const {return mIsPseudoVisible;}
 
     AppLayout();
     void update(sf::Vector2i mousePos);
     void draw(sf::RenderWindow& window);
     void setDescription(const std::string& text);
     
-    void setPseudoCode(const std::vector<std::string>& codeLines);
-    void setActiveCodeLine(int lineIndex);
+    void setPseudoCode(const std::vector<std::string>& codeLines){mCodeLines = codeLines;}
+    void setActiveCodeLines(const std::vector<int>& lines){mActiveCodeLines = lines;}
+    
+    void setActiveCodeLine(int lineIndex){
+        mActiveCodeLines.clear();
+        if (lineIndex >= 0) mActiveCodeLines.push_back(lineIndex);
+    }
     
     bool isPaused() const {return mIsPaused;}
     void setPaused(bool paused);
@@ -69,7 +76,4 @@ public:
     void setSkipForwardCallback(std::function<void()> cb){mSkipForwardCb = cb;}
     void setStepBackCallback(std::function<void()> cb){mStepBackCb = cb;}
     void setStepForwardCallback(std::function<void()> cb){mStepForwardCb = cb;}
-
-    std::vector<int> mActiveCodeLines;
-    void setActiveCodeLines(const std::vector<int>& lines) { mActiveCodeLines = lines; }
 };

@@ -246,12 +246,13 @@ int main(){
             }
         }
         
-        else if (currentState == AppState::EXPANDING || currentState == AppState::SHRINKING){
-            if (currentState == AppState::EXPANDING)
+        else if (currentState == AppState::EXPANDING or currentState == AppState::SHRINKING){
+            if (currentState == AppState::EXPANDING){
                 animProgress += 0.04f;
-            else
+            } else {
                 animProgress -= 0.04f;
-
+            }
+            
             if (animProgress >= 1.0f){
                 animProgress = 1.0f;
                 currentState = AppState::VISUALIZER;
@@ -260,52 +261,77 @@ int main(){
                 animProgress = 0.0f;
                 currentState = AppState::MENU;
                 
-                if (activeDS == 2 && rbtVisualizer.isEmpty())
-                    rbtVisualizer.generateRandomTree();
-                if (activeDS == 0 && dllVisualizer.isEmpty())
+                if (activeDS == 0 and dllVisualizer.isEmpty()){
                     dllVisualizer.generateRandomList();
+                }
+                
+                if (activeDS == 2 and rbtVisualizer.isEmpty()){
+                    rbtVisualizer.generateRandomTree();
+                }
             }
-                    
-            rbtVisualizer.setTransitionProgress(animProgress);
-            if (activeDS == 0)
-                dllVisualizer.setTransitionProgress(animProgress);
-            // hashVisualizer has no transition animation, setTransitionProgress is a no-op
             
-            sf::FloatRect currentRect(
-                sf::Vector2f(smoothLerp(startRect.position.x, fullScreenRect.position.x, animProgress),
-                             smoothLerp(startRect.position.y, fullScreenRect.position.y, animProgress)),
-                sf::Vector2f(smoothLerp(startRect.size.x,     fullScreenRect.size.x,     animProgress),
-                             smoothLerp(startRect.size.y,     fullScreenRect.size.y,     animProgress))
-            );
-
+            dllVisualizer.setTransitionProgress(animProgress);
+            hashVisualizer.setTransitionProgress(animProgress);
+            rbtVisualizer.setTransitionProgress(animProgress);
+            
+            sf::FloatRect currentRect(sf::Vector2f(smoothLerp(startRect.position.x,
+                                                              fullScreenRect.position.x,
+                                                              animProgress),
+                                                   smoothLerp(startRect.position.y,
+                                                              fullScreenRect.position.y,
+                                                              animProgress)
+                                                   ),
+                                      sf::Vector2f(smoothLerp(startRect.size.x,
+                                                              fullScreenRect.size.x,
+                                                              animProgress),
+                                                   smoothLerp(startRect.size.y,
+                                                              fullScreenRect.size.y,
+                                                              animProgress))
+                                      );
+            
             sf::RectangleShape menuBg(fullScreenRect.size);
             menuBg.setFillColor(ThemeManager::current.screenBg);
             window.draw(menuBg);
-
+            
             sf::RectangleShape animBg(currentRect.size);
             animBg.setPosition(currentRect.position);
             animBg.setFillColor(ThemeManager::current.bg);
             window.draw(animBg);
             
-            if (activeDS == 0)
-                dllVisualizer.render(false);
-            else if (activeDS == 1)
-                hashVisualizer.render(false);
-            else if (activeDS == 2)
-                rbtVisualizer.render(false);
+            switch (activeDS){
+                case 0:
+                    dllVisualizer.render(false);
+                    break;
+                case 1:
+                    hashVisualizer.render(false);
+                    break;
+                case 2:
+                    rbtVisualizer.render(false);
+                    break;
+                case 3:
+                    break;
+            }
         }
         
+
         else if (currentState == AppState::VISUALIZER){
             sf::RectangleShape fullBg(fullScreenRect.size);
             fullBg.setFillColor(ThemeManager::current.bg);
             window.draw(fullBg);
             
-            if (activeDS == 0)
-                dllVisualizer.render(true);
-            else if (activeDS == 1)
-                hashVisualizer.render(true);
-            else if (activeDS == 2)
-                rbtVisualizer.render(true);
+            switch (activeDS){
+                case 0:
+                    dllVisualizer.render(true);
+                    break;
+                case 1:
+                    hashVisualizer.render(true);
+                    break;
+                case 2:
+                    rbtVisualizer.render(true);
+                    break;
+                case 3:
+                    break;
+            }
         }
         
         window.display();

@@ -56,8 +56,9 @@ public:
     void clear();
     void generateRandom(int count);
     void loadFromFile(const string& filename);
-
+    
     void clearTableUI();
+
 
     vector<HashNode*> getTable() const;
     int getSize() const;

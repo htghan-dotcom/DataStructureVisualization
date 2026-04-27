@@ -1,7 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "AppLayout.h"
-#include "RedBlackTRee/RedBlackTree.h"
+#include "RedBlackTree/RedBlackTree.h"
 #include <optional>
 #include <map>
 #include <string>
@@ -71,6 +71,10 @@ private:
     RoundedButton mNewExpandedBg;
     RoundedButton mRandomBtn;
     RoundedButton mUploadBtn;
+    
+    bool mIsControlsVisible = true;
+    RoundedButton mHideControlsBtn;
+    RoundedButton mShowControlsBtn;
 
     void drawAnimatedTree(const StepState& stepA, const StepState& stepB, float animP);
     std::map<int, sf::Vector2f> computeLayout(const std::vector<NodeSnapshot>& nodes);

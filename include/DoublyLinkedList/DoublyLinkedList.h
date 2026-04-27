@@ -4,17 +4,17 @@
 #include "DLLStepState.h"
 
 
-struct Node {
+struct DoublyLinkedListNode {
     int data;
-    Node* prev;
-    Node* next;
-    Node(int val) : data(val), prev(nullptr), next(nullptr) {}
+    DoublyLinkedListNode* prev;
+    DoublyLinkedListNode* next;
+    DoublyLinkedListNode(int val) : data(val), prev(nullptr), next(nullptr) {}
 };
 
 class DoublyLinkedList {
 private:
-    Node* head;
-    Node* tail;
+    DoublyLinkedListNode* head;
+    DoublyLinkedListNode* tail;
     int size;
     
     std::vector<DLLStepState> mStepHistory;
@@ -53,5 +53,6 @@ public:
     void backup();
     void restore();
     void goToFinalStep();
+    int getVisualizationSpeed() const;
     void setVisualizationSpeed(int ms);
 };

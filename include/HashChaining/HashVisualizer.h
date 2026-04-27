@@ -79,14 +79,13 @@ private:
     ImageButton   mSearchDiceBtn;
     sf::Text      mSearchInputText;
     sf::RectangleShape mSearchCursorLine;
-
     
     // ── Update expand widgets ──
     RoundedButton mUpdateHoverStroke;
     RoundedButton mUpdateExpandedStroke;
     RoundedButton mUpdateExpandedBg;
     RoundedButton mConfirmUpdateBtn;
-    sf::Text      mUpdateInputText; 
+    sf::Text      mUpdateInputText;
     sf::RectangleShape mUpdateCursorLine;
 
     bool mIsUpdateExpanded = false;
@@ -129,7 +128,7 @@ private:
 
     void renderBuckets(sf::RenderWindow& window);
     void renderNodes  (sf::RenderWindow& window);
-
+    
     // --- Color palette for hash table ---
     struct HashColorTheme {
         sf::Color bucketFill;
@@ -147,10 +146,18 @@ private:
     };
 
     HashColorTheme getHashTheme();
+
 public:
     HashVisualizer(sf::RenderWindow& window);
     void update(const std::optional<sf::Event>& event);
     void render(bool showUI = true);
     bool checkReturnHome();
-    void setTransitionProgress(float) {}
+    
+    float mTransitionProgress = 0.f;
+    float mGapY  = 72.f;
+    float mNodeH = 46.f;
+    
+    void computeHashLayout();
+    
+    void setTransitionProgress(float p) { mTransitionProgress = p; }
 };
