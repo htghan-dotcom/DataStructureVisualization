@@ -31,6 +31,11 @@ private:
     RoundedButton mSearchBtn;
     RoundedButton mUndoBtn;
 
+    // Hide/Show Sidebar button
+    RoundedButton mHideMenuBtn;
+    RoundedButton mShowMenuBtn;
+    bool mIsSidebarVisible = true;
+
     bool mGoHome      = false;
     bool mShowUndoBtn = false;
 
