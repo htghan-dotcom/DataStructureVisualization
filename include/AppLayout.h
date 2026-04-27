@@ -28,6 +28,7 @@ private:
     SpeedSlider mSpeedSlider;
 
     sf::ConvexShape mPseudoBox;
+    sf::ConvexShape createRoundedRect(sf::Vector2f size, float radius);
 
     RoundedButton mHideDescBtn;
     RoundedButton mShowDescBtn;
@@ -68,8 +69,6 @@ public:
     void setStepBackCallback(std::function<void()> cb){mStepBackCb = cb;}
     void setStepForwardCallback(std::function<void()> cb){mStepForwardCb = cb;}
 
-    std::vector<std::string> mCodeLines;
     std::vector<int> mActiveCodeLines;
-    void setPseudoCode(const std::vector<std::string>& codeLines) { mCodeLines = codeLines; }
     void setActiveCodeLines(const std::vector<int>& lines) { mActiveCodeLines = lines; }
 };

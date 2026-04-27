@@ -1,4 +1,4 @@
-#include "DLLVisualizer.h"
+#include "DoublyLinkedList/DLLVisualizer.h"
 #include "ThemeManager.h"
 #include "tinyfiledialogs.h"
 #include "Common.h"
