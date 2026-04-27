@@ -1,3 +1,0 @@
-C:/Users/Admin/Desktop/project/DataStructureVisualization/build/CMakeFiles/DataStructureVisualization.dir
-C:/Users/Admin/Desktop/project/DataStructureVisualization/build/CMakeFiles/edit_cache.dir
-C:/Users/Admin/Desktop/project/DataStructureVisualization/build/CMakeFiles/rebuild_cache.dir
