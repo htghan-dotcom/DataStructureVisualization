@@ -3,8 +3,9 @@
 #include "WelcomeScreen.h"
 #include "SettingsScreen.h"
 #include "Menu.h"
-#include "RBTVisualizer.h"
-#include "DLLVisualizer.h"
+#include "DoublyLinkedList/DLLVisualizer.h"
+#include "HashChaining/HashVisualizer.h"
+#include "RedBlackTree/RBTVisualizer.h"
 #include "Common.h"
 
 enum class AppState { WELCOME, MENU, SETTINGS, EXPANDING, VISUALIZER, SHRINKING };
@@ -53,9 +54,10 @@ int main(){
     WelcomeScreen welcomeScreen(LOGIC_W, LOGIC_H);
     MainMenu mainMenu(LOGIC_W, LOGIC_H);
     SettingsScreen settingsScreen(LOGIC_W, LOGIC_H);
-    RBTVisualizer rbtVisualizer(window);
     DLLVisualizer dllVisualizer(window);
-    
+    HashVisualizer hashVisualizer(window);
+    RBTVisualizer rbtVisualizer(window);
+
     sf::Music bgMusic;
     if (!bgMusic.openFromFile("assets/audio/bg_music.ogg")){
         cerr << "Cannot load bg_music.ogg" << endl;
@@ -72,13 +74,23 @@ int main(){
     sf::FloatRect startRect;
     sf::FloatRect fullScreenRect(sf::Vector2f(0.f, 0.f), sf::Vector2f(LOGIC_W, LOGIC_H));
     sf::Color activeBgColor;
-    
+
     while (window.isOpen()){
         sf::Vector2f worldPos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
         sf::Vector2i mousePos(static_cast<int>(worldPos.x), static_cast<int>(worldPos.y));
+
+        // Per-frame update for DLL (needed for animation/autoplay)
+        if (currentState == AppState::VISUALIZER && activeDS == 0){
+            dllVisualizer.update(std::nullopt);
+            if (dllVisualizer.checkReturnHome()){
+                currentState = AppState::SHRINKING;
+                animProgress = 1.0f;
+                startRect = mainMenu.getCardBounds(activeDS);
+            }
+        }
         
-        while (const optional event = window.pollEvent()){
-            if (event->is<sf::Event::Closed>()){
+        while (const auto event = window.pollEvent()){
+            if (event->getIf<sf::Event::Closed>()){
                 window.close();
             }
 
@@ -87,7 +99,7 @@ int main(){
                 window.setView(mainView);
             }
             
-            if (currentState == AppState::MENU or currentState == AppState::SETTINGS){
+            if (currentState == AppState::MENU || currentState == AppState::SETTINGS){
                 if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()){
                     if (keyEvent->code == sf::Keyboard::Key::Escape){
                         currentState = AppState::WELCOME;
@@ -104,7 +116,7 @@ int main(){
             else if (currentState == AppState::SETTINGS){
                 settingsScreen.update(mousePos, event);
                             
-                if (event and event->is<sf::Event::MouseButtonPressed>()){
+                if (event && event->is<sf::Event::MouseButtonPressed>()){
                     auto mouseEvent = event->getIf<sf::Event::MouseButtonPressed>();
                     if (mouseEvent->button == sf::Mouse::Button::Left){
                         sf::Vector2f mPos(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
@@ -113,31 +125,12 @@ int main(){
                         if (colorBtnBounds.contains(mPos)){
                             settingsScreen.toggleThemePopup();
                         }
-                                    
                     }
-                }
-            }
-            
-            else if (currentState == AppState::VISUALIZER and activeDS == 2){
-                if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()){
-                    if (keyEvent->code == sf::Keyboard::Key::Escape){
-                        currentState = AppState::SHRINKING;
-                        animProgress = 1.0f;
-                        startRect = mainMenu.getCardBounds(activeDS);
-                        continue;
-                    }
-                }
-                            
-                rbtVisualizer.update(event);
-                            
-                if (rbtVisualizer.checkReturnHome()){
-                    currentState = AppState::SHRINKING;
-                    animProgress = 1.0f;
-                    startRect = mainMenu.getCardBounds(activeDS);
                 }
             }
 
-            if (currentState == AppState::VISUALIZER and activeDS == 0){
+            // ── DLL visualizer (DS 0) ──
+            if (currentState == AppState::VISUALIZER && activeDS == 0){
                 if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()){
                     if (keyEvent->code == sf::Keyboard::Key::Escape){
                         currentState = AppState::SHRINKING;
@@ -148,18 +141,40 @@ int main(){
                 }
                 dllVisualizer.update(event);
             }
-        }
-
-        if (currentState == AppState::VISUALIZER and activeDS == 0) {
-        
-            // Cập nhật liên tục ở mỗi khung hình để chạy Animation / Auto-play
-            dllVisualizer.update(std::nullopt); 
-
-            // Kiểm tra xem user có bấm nút Home không
-            if (dllVisualizer.checkReturnHome()){
-                currentState = AppState::SHRINKING;
-                animProgress = 1.0f;
-                startRect = mainMenu.getCardBounds(activeDS);
+            
+            // ── Hash visualizer (DS 1) ──
+            if (currentState == AppState::VISUALIZER && activeDS == 1){
+                if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()){
+                    if (keyEvent->code == sf::Keyboard::Key::Escape){
+                        currentState = AppState::SHRINKING;
+                        animProgress = 1.0f;
+                        startRect = mainMenu.getCardBounds(activeDS);
+                        continue;
+                    }
+                }
+                hashVisualizer.update(event);
+                if (hashVisualizer.checkReturnHome()){
+                    currentState = AppState::SHRINKING;
+                    animProgress = 1.0f;
+                    startRect = mainMenu.getCardBounds(activeDS);
+                }
+            }
+            // ── RBT visualizer (DS 2) ──
+            if (currentState == AppState::VISUALIZER && activeDS == 2){
+                if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()){
+                    if (keyEvent->code == sf::Keyboard::Key::Escape){
+                        currentState = AppState::SHRINKING;
+                        animProgress = 1.0f;
+                        startRect = mainMenu.getCardBounds(activeDS);
+                        continue;
+                    }
+                }
+                rbtVisualizer.update(event);
+                if (rbtVisualizer.checkReturnHome()){
+                    currentState = AppState::SHRINKING;
+                    animProgress = 1.0f;
+                    startRect = mainMenu.getCardBounds(activeDS);
+                }
             }
         }
 
@@ -168,7 +183,6 @@ int main(){
         
         if (currentState == AppState::WELCOME){
             sf::RectangleShape welcomeBg(fullScreenRect.size);
-            
             welcomeBg.setFillColor(ThemeManager::current.screenBg);
             window.draw(welcomeBg);
             
@@ -178,7 +192,6 @@ int main(){
             if (welcomeScreen.isStartPressed()){
                 currentState = AppState::MENU;
             }
-
             else if (welcomeScreen.isSettingPressed()){
                 currentState = AppState::SETTINGS;
                 welcomeScreen.resetSetting();
@@ -212,38 +225,32 @@ int main(){
                 welcomeScreen.resetStart();
                 mainMenu.mGoBack = false;
             }
-                    
-            if (mainMenu.getActiveDS() == 2){
-                rbtVisualizer.render(false);
-            }
             
-            if (mainMenu.getActiveDS() == 0){
+            // Preview render on menu card hover
+            if (mainMenu.getActiveDS() == 0)
                 dllVisualizer.render(false);
-            }
+            else if (mainMenu.getActiveDS() == 1)
+                hashVisualizer.render(false);
+            else if (mainMenu.getActiveDS() == 2)
+                rbtVisualizer.render(false);
             
-            if (selected.has_value() and selected.value() == 2){
-                activeDS = 2;
-                startRect = mainMenu.getCardBounds(activeDS);
-                activeBgColor = mainMenu.getCardColor(activeDS);
-                currentState = AppState::EXPANDING;
-                animProgress = 0.f;
-            }
-
-            if (selected.has_value() and selected.value() == 0){
-                activeDS = 0;
-                startRect = mainMenu.getCardBounds(activeDS);
-                activeBgColor = mainMenu.getCardColor(activeDS);
-                currentState = AppState::EXPANDING;
-                animProgress = 0.f;
+            if (selected.has_value()){
+                int ds = selected.value();
+                if (ds == 0 || ds == 1 || ds == 2){
+                    activeDS = ds;
+                    startRect    = mainMenu.getCardBounds(activeDS);
+                    activeBgColor= mainMenu.getCardColor(activeDS);
+                    currentState = AppState::EXPANDING;
+                    animProgress = 0.f;
+                }
             }
         }
         
-        else if (currentState == AppState::EXPANDING or currentState == AppState::SHRINKING){
-            if (currentState == AppState::EXPANDING){
+        else if (currentState == AppState::EXPANDING || currentState == AppState::SHRINKING){
+            if (currentState == AppState::EXPANDING)
                 animProgress += 0.04f;
-            } else {
+            else
                 animProgress -= 0.04f;
-            }
 
             if (animProgress >= 1.0f){
                 animProgress = 1.0f;
@@ -253,26 +260,22 @@ int main(){
                 animProgress = 0.0f;
                 currentState = AppState::MENU;
                 
-                if (activeDS == 2 and rbtVisualizer.isEmpty()){
+                if (activeDS == 2 && rbtVisualizer.isEmpty())
                     rbtVisualizer.generateRandomTree();
-                }
-
-                if (activeDS == 0 and dllVisualizer.isEmpty()){
+                if (activeDS == 0 && dllVisualizer.isEmpty())
                     dllVisualizer.generateRandomList();
-                }
             }
                     
-            if (activeDS == 2){
-                rbtVisualizer.setTransitionProgress(animProgress);
-            }
-
-            if (activeDS == 0){
+            rbtVisualizer.setTransitionProgress(animProgress);
+            if (activeDS == 0)
                 dllVisualizer.setTransitionProgress(animProgress);
-            }
+            // hashVisualizer has no transition animation, setTransitionProgress is a no-op
             
             sf::FloatRect currentRect(
-                sf::Vector2f(smoothLerp(startRect.position.x, fullScreenRect.position.x, animProgress), smoothLerp(startRect.position.y, fullScreenRect.position.y, animProgress)),
-                sf::Vector2f(smoothLerp(startRect.size.x, fullScreenRect.size.x, animProgress), smoothLerp(startRect.size.y, fullScreenRect.size.y, animProgress))
+                sf::Vector2f(smoothLerp(startRect.position.x, fullScreenRect.position.x, animProgress),
+                             smoothLerp(startRect.position.y, fullScreenRect.position.y, animProgress)),
+                sf::Vector2f(smoothLerp(startRect.size.x,     fullScreenRect.size.x,     animProgress),
+                             smoothLerp(startRect.size.y,     fullScreenRect.size.y,     animProgress))
             );
 
             sf::RectangleShape menuBg(fullScreenRect.size);
@@ -284,13 +287,12 @@ int main(){
             animBg.setFillColor(ThemeManager::current.bg);
             window.draw(animBg);
             
-            if (activeDS == 2){
-                rbtVisualizer.render(false);
-            }
-
-            if (activeDS == 0){
+            if (activeDS == 0)
                 dllVisualizer.render(false);
-            }
+            else if (activeDS == 1)
+                hashVisualizer.render(false);
+            else if (activeDS == 2)
+                rbtVisualizer.render(false);
         }
         
         else if (currentState == AppState::VISUALIZER){
@@ -298,13 +300,12 @@ int main(){
             fullBg.setFillColor(ThemeManager::current.bg);
             window.draw(fullBg);
             
-            if (activeDS == 2){
-                rbtVisualizer.render(true);
-            }
-
-            if (activeDS == 0){
+            if (activeDS == 0)
                 dllVisualizer.render(true);
-            }
+            else if (activeDS == 1)
+                hashVisualizer.render(true);
+            else if (activeDS == 2)
+                rbtVisualizer.render(true);
         }
         
         window.display();
