@@ -14,6 +14,7 @@ private:
     sf::RenderWindow* mWindow;
     sf::Font mFontRegular;
     sf::Font mFontBold;
+    sf::Font mFontMedium;
 
     HashChaining mHash;
     AppLayout    mLayout;
@@ -129,6 +130,23 @@ private:
     void renderBuckets(sf::RenderWindow& window);
     void renderNodes  (sf::RenderWindow& window);
 
+    // --- Color palette for hash table ---
+    struct HashColorTheme {
+        sf::Color bucketFill;
+        sf::Color bucketBorder;
+        sf::Color nodeFill;
+        sf::Color nodeBorder;
+        sf::Color arrow;
+
+        sf::Color bucketHighlightFill;
+        sf::Color bucketHighlightBorder;
+        sf::Color nodeHighlightFill;
+        sf::Color nodeHighlightBorder;
+        
+        sf::Color highlightText;
+    };
+
+    HashColorTheme getHashTheme();
 public:
     HashVisualizer(sf::RenderWindow& window);
     void update(const std::optional<sf::Event>& event);

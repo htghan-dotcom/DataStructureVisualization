@@ -12,6 +12,7 @@ private:
 
     sf::Font mFontBold;
     sf::Font mFontRegular;
+    sf::Font mFontMedium;
     
     sf::Text mTitleSettings;
     sf::Text mLabelAboutUs;

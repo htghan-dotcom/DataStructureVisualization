@@ -5,10 +5,10 @@
 #include <string>
 using namespace std;
 
-struct Node{
+struct HashNode{
     int val;
-    Node* next;
-    Node(int x){
+    HashNode* next;
+    HashNode(int x){
         val = x;
         next = nullptr;
     }
@@ -33,7 +33,7 @@ struct HashStepInfo{
 class HashChaining {
 private:
     int size;
-    vector<Node*> table;
+    vector<HashNode*> table;
     vector<HashStepInfo> steps;
 
     int hashFunction(int key);
@@ -57,7 +57,9 @@ public:
     void generateRandom(int count);
     void loadFromFile(const string& filename);
 
-    vector<Node*> getTable() const;
+    void clearTableUI();
+
+    vector<HashNode*> getTable() const;
     int getSize() const;
     vector<HashStepInfo> getSteps() const;
 };

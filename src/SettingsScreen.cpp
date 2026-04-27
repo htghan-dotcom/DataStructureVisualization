@@ -60,7 +60,7 @@ SettingsScreen::SettingsScreen(float w, float h)
       mThemePopupTitle(mFontBold),
       mToggleText(mFontBold)
 {
-    if (!mFontBold.openFromFile("assets/fonts/Inter-Bold.ttf") or !mFontRegular.openFromFile("assets/fonts/Inter-Regular.ttf")){
+    if (!mFontBold.openFromFile("assets/fonts/Inter-Bold.ttf") or !mFontRegular.openFromFile("assets/fonts/Inter-Regular.ttf") or !mFontMedium.openFromFile("assets/fonts/Inter-Medium.otf")){
         cerr << "Cannot load fonts for SettingsScreen!" << endl;
     }
 

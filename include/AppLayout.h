@@ -12,6 +12,7 @@ private:
     sf::Text mDescriptionText;
     sf::Font mFontBold;
     sf::Font mFontRegular;
+    sf::Font mFontMedium;
     sf::Texture mHomeTex;
     
     sf::Texture mSkipBackTex, mPauseTex, mSkipForwardTex, mStartTex;
