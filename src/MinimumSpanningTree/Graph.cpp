@@ -1,4 +1,6 @@
-#include "GraphLoader.h"
+#include "Graph.h"
+
+#include <tuple>
 
 namespace {
 float orient(float ax, float ay, float bx, float by, float cx, float cy) {
@@ -25,6 +27,38 @@ float distance2(float ax, float ay, float bx, float by) {
     const float dy = ay - by;
     return dx * dx + dy * dy;
 }
+}  // namespace
+
+void Graph::clear() {
+    nodes_.clear();
+    edges_.clear();
+}
+
+void Graph::addNode(int id, float x, float y) {
+    nodes_.push_back(Node{id, x, y});
+}
+
+void Graph::addEdge(int from, int to, int weight) {
+    edges_.push_back(Edge{from, to, weight});
+}
+
+bool Graph::setNodePosition(int id, float x, float y) {
+    for (auto& node : nodes_) {
+        if (node.id == id) {
+            node.x = x;
+            node.y = y;
+            return true;
+        }
+    }
+    return false;
+}
+
+const std::vector<Node>& Graph::getNodes() const {
+    return nodes_;
+}
+
+const std::vector<Edge>& Graph::getEdges() const {
+    return edges_;
 }
 
 Graph GraphLoader::createEmptyGraph() {
@@ -40,11 +74,12 @@ Graph GraphLoader::createRandomGraph(int nodeCount, int maxWeight) {
     std::mt19937 rng(static_cast<unsigned int>(std::random_device{}()));
     std::uniform_int_distribution<int> weightDist(1, std::max(1, maxWeight));
 
-    int cols = std::max(2, static_cast<int>(std::ceil(std::sqrt(static_cast<float>(nodeCount)))));
+    const int cols = std::max(2, static_cast<int>(std::ceil(std::sqrt(static_cast<float>(nodeCount)))));
     std::vector<std::pair<float, float>> pos(static_cast<size_t>(nodeCount));
     for (int i = 0; i < nodeCount; ++i) {
-        float x = 0.30f + 0.55f * static_cast<float>(i % cols) / static_cast<float>(cols - 1);
-        float y = 0.20f + 0.60f * static_cast<float>(i / cols) / static_cast<float>(std::max(1, (nodeCount - 1) / cols));
+        const float x = 0.30f + 0.55f * static_cast<float>(i % cols) / static_cast<float>(cols - 1);
+        const float y = 0.20f + 0.60f * static_cast<float>(i / cols) /
+                                   static_cast<float>(std::max(1, (nodeCount - 1) / cols));
         pos[static_cast<size_t>(i)] = {x, y};
         graph.addNode(i, x, y);
     }
@@ -52,7 +87,6 @@ Graph GraphLoader::createRandomGraph(int nodeCount, int maxWeight) {
     std::vector<std::vector<bool>> connected(static_cast<size_t>(nodeCount),
                                              std::vector<bool>(static_cast<size_t>(nodeCount), false));
 
-    // Build a random spanning tree first so the graph is always connected.
     for (int i = 1; i < nodeCount; ++i) {
         std::uniform_int_distribution<int> parentDist(0, i - 1);
         const int parent = parentDist(rng);
@@ -61,7 +95,6 @@ Graph GraphLoader::createRandomGraph(int nodeCount, int maxWeight) {
         connected[static_cast<size_t>(i)][static_cast<size_t>(parent)] = true;
     }
 
-    // Keep random graphs readable: target around 1.3*n total edges.
     const int minEdges = nodeCount - 1;
     const int targetEdges = std::max(minEdges, static_cast<int>(std::round(1.3f * static_cast<float>(nodeCount))));
 
@@ -84,8 +117,6 @@ Graph GraphLoader::createRandomGraph(int nodeCount, int maxWeight) {
     std::vector<std::pair<int, int>> acceptedEdges;
     acceptedEdges.reserve(static_cast<size_t>(targetEdges));
     for (int i = 1; i < nodeCount; ++i) {
-        // spanning edges from parentDist build
-        // infer accepted edges from connectivity matrix to check crossing for extras
         for (int j = 0; j < i; ++j) {
             if (connected[static_cast<size_t>(i)][static_cast<size_t>(j)]) {
                 acceptedEdges.push_back({j, i});
@@ -146,9 +177,6 @@ std::optional<Graph> GraphLoader::loadFromFile(const std::string& filePath) {
 std::optional<Graph> GraphLoader::loadFromManualLines(const std::vector<std::string>& lines) {
     Graph graph;
 
-    // Format:
-    // N <count>
-    // E <u> <v> <w>
     int nodeCount = 0;
     bool nodeHeaderSeen = false;
 
@@ -162,10 +190,11 @@ std::optional<Graph> GraphLoader::loadFromManualLines(const std::vector<std::str
                 return std::nullopt;
             }
             nodeHeaderSeen = true;
-            int cols = std::max(2, static_cast<int>(std::ceil(std::sqrt(static_cast<float>(std::max(1, nodeCount))))));
+            const int cols = std::max(2, static_cast<int>(std::ceil(std::sqrt(static_cast<float>(std::max(1, nodeCount))))));
             for (int i = 0; i < nodeCount; ++i) {
-                float x = 0.30f + 0.55f * static_cast<float>(i % cols) / static_cast<float>(cols - 1);
-                float y = 0.20f + 0.60f * static_cast<float>(i / cols) / static_cast<float>(std::max(1, (nodeCount - 1) / cols));
+                const float x = 0.30f + 0.55f * static_cast<float>(i % cols) / static_cast<float>(cols - 1);
+                const float y = 0.20f + 0.60f * static_cast<float>(i / cols) /
+                                           static_cast<float>(std::max(1, (nodeCount - 1) / cols));
                 graph.addNode(i, x, y);
             }
         } else if (tag == "E") {

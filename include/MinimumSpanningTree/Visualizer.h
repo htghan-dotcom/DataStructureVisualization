@@ -2,24 +2,51 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "../Algo/AlgorithmFactory.h"
-#include "../Algo/Graph/Graph.h"
-#include "../core/Animation.h"
-#include "../core/AppState.h"
-#include "components/Button.h"
-#include "components/Slider.h"
-#include "renders/Renderer.h"
+#include "AlgorithmFactory.h"
+#include "Graph.h"
+#include "UI/components/Button.h"
+#include "UI/components/Slider.h"
+
+enum class AppState {
+    Idle,
+    Loading,
+    Animating,
+    Paused,
+    Finished,
+    Error
+};
+
+enum class PlaybackMode {
+    StepByStep,
+    RunAtOnce
+};
+
+enum class RenderViewKind {
+    MST,
+    DoublyLinkedList,
+    HashTable,
+    RedBlackTree
+};
+
+struct RenderViewModel {
+    RenderViewKind kind = RenderViewKind::MST;
+    const Graph* graph = nullptr;
+    std::vector<Edge> highlightedEdges;
+    std::vector<Edge> candidateEdges;
+    std::vector<int> highlightedNodes;
+    int selectedNodeId = -1;
+};
+
+class Renderer {
+public:
+    static void draw(sf::RenderWindow& window, const RenderViewModel& vm, const sf::Font& font);
+};
 
 class Visualizer {
 public:
     void run();
 
 private:
-    enum class Screen {
-        Menu,
-        Visualization
-    };
-
     enum class MstCanvasMode {
         Graph,
         Matrix
@@ -34,10 +61,6 @@ private:
     sf::Vector2f screenToGraphNormalized(const sf::Vector2f& mousePos) const;
     int hitTestNode(const sf::Vector2f& mousePos) const;
     bool handleAdjacencyMatrixClick(const sf::Vector2f& mousePos);
-    void onSelectStructure(RenderViewKind kind);
-    bool isMstSelected() const;
-
-    void onActionSample();
     void onActionNewGraph();
     void onActionRandom();
     void onActionAddNode();
@@ -53,17 +76,14 @@ private:
     void onActionEnd();
 
     Graph graph_;
-    RenderViewKind selectedStructure_ = RenderViewKind::MST;
     algo::AlgorithmType algorithmType_ = algo::AlgorithmType::Kruskal;
     Animation animation_;
-    Screen currentScreen_ = Screen::Menu;
 
     AppState state_ = AppState::Idle;
     PlaybackMode playbackMode_ = PlaybackMode::StepByStep;
     bool playing_ = false;
     float speed_ = 2.0f;
 
-    std::vector<Button> menuButtons_;
     std::vector<Button> controlButtons_;
     Button backButton_;
     Slider speedSlider_;
