@@ -29,7 +29,70 @@ static const sf::Color PAL[][2] = {
     {{240,200,200,220},{255,225,225,220}},
 };
 
+// ── Pseudocode tables ─────────────────────────────────────────
+static const std::vector<std::string> PSEUDO_INSERT = {
+    "Insert(key):",
+    "  1. idx = key % tableSize",
+    "  2. Go to bucket[idx]",
+    "  3. Create new node(key)",
+    "  4. node.next = bucket[idx]",
+    "  5. bucket[idx] = node",
+    "  6. Done.",
+};
 
+static const std::vector<std::string> PSEUDO_SEARCH = {
+    "Search(key):",
+    "  1. idx = key % tableSize",
+    "  2. Go to cur = bucket[idx]",
+    "  3. while cur != null:",
+    "  4.   if cur.val == key -> Found",
+    "  5.   cur = cur.next",
+    "  6. Not found.",
+};
+
+static const std::vector<std::string> PSEUDO_DELETE = {
+    "Delete(key):",
+    "  1. idx = hash(key)",
+    "  2. if bucket[idx] == null -> Not found",
+    "  3. if head.val == key:",
+    "  4.   bucket[idx] = head.next -> Done",
+    "  5. while cur.next != null:",
+    "  6.   if cur.next.val == key:",
+    "  7.     cur.next = cur.next.next -> Done",
+    "  8.   cur = cur.next",
+    "  9. Not found.",
+};
+
+static std::pair<int, std::vector<int>> lidToPseudo(int lid){
+    switch(lid){
+        // INSERT (0-3)
+        case 0: return {0, {1}}; 
+        case 1: return {0, {2}}; 
+        case 2: return {0, {3, 4, 5}}; // Create & link
+        case 3: return {0, {6}}; 
+        
+        // SEARCH (4-8, 17)
+        case 4: return {1, {1}}; 
+        case 5: return {1, {2}}; 
+        case 6: return {1, {3}}; 
+        case 7: return {1, {4}}; 
+        case 17: return {1, {5}}; 
+        case 8: return {1, {6}};
+        
+        // DELETE
+        case 9: case 10: return {2, {1}}; 
+        case 11: return {2, {2}};          
+        case 12: return {2, {3}};          
+        case 13: return {2, {3, 4}};       // Delete & Done
+        case 14: return {2, {5}};          
+        case 16: return {2, {6}};          
+        case 19: return {2, {6, 7}};       // Delete mid & done
+        case 18: return {2, {8}};          
+        case 15: return {2, {9}};          
+        
+        default: return {-1, {}}; // Highlight none
+    }
+}
 
 // ============================================================
 //  Constructor
@@ -48,7 +111,8 @@ HashVisualizer::HashVisualizer(sf::RenderWindow& window)
       mDeleteBtn(mFontRegular, "Delete", 32.f, 258.f, 160.f, 45.f, 22.5f, ThemeManager::current.secondary),
       mSearchBtn(mFontRegular, "Search", 32.f, 312.f, 160.f, 45.f, 22.5f, ThemeManager::current.secondary),
       mUndoBtn  (mFontRegular, "Undo", 32.f, 150.f, 160.f, 45.f, 22.5f, ThemeManager::current.secondary),
-      
+      mUpdateBtn(mFontRegular, "Update", 32.f, 366.f, 160.f, 45.f, 22.5f, ThemeManager::current.secondary),
+
       // Insert expand
       mInsertHoverStroke   (mFontRegular,"", 30.f, 202.f, 164.f, 49.f, 24.5f, ThemeManager::current.primary),
       mInsertExpandedStroke(mFontRegular,"", 30.f, 202.f, 345.f, 49.f, 24.5f, ThemeManager::current.primary),
@@ -69,6 +133,15 @@ HashVisualizer::HashVisualizer(sf::RenderWindow& window)
       mSearchExpandedBg    (mFontRegular,"", 32.f, 312.f, 341.f, 45.f, 22.5f, ThemeManager::current.secondary),
       mConfirmSearchBtn(mFontRegular, "Search", 216.f, 315.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
       mSearchInputText     (mFontRegular),
+
+      // Update expand
+      mUpdateHoverStroke   (mFontRegular,"", 30.f, 364.f, 164.f, 49.f, 24.5f, ThemeManager::current.primary),
+      mUpdateExpandedStroke(mFontRegular,"", 30.f, 364.f, 345.f, 49.f, 24.5f, ThemeManager::current.primary),
+      mUpdateExpandedBg    (mFontRegular,"", 32.f, 366.f, 341.f, 45.f, 22.5f, ThemeManager::current.secondary),
+      mConfirmUpdateBtn(mFontRegular, "Update", 216.f, 369.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
+    //   mUpdateOldBox(mFontRegular, "", 42.f, 369.f, 65.f, 39.f, 19.5f, ThemeManager::current.bg),
+    //   mUpdateNewBox(mFontRegular, "", 138.f, 369.f, 65.f, 39.f, 19.5f, ThemeManager::current.bg),
+      mUpdateInputText     (mFontRegular),
 
       // New expand
       mNewHoverStroke(mFontRegular, "", 211.f, 148.f, 164.f, 49.f, 24.5f, ThemeManager::current.primary),
@@ -125,8 +198,8 @@ HashVisualizer::HashVisualizer(sf::RenderWindow& window)
     mTitleChain.setFillColor(ThemeManager::current.primary);
     mTitleChain.setPosition(sf::Vector2f(32.f, 765.f));
 
-    for (auto* b : {&mClearBtn,&mNewBtn,&mInsertBtn,&mDeleteBtn,&mSearchBtn,&mUndoBtn,
-                    &mConfirmAddBtn,&mConfirmRemoveBtn,&mConfirmSearchBtn,
+    for (auto* b : {&mClearBtn,&mNewBtn,&mInsertBtn,&mDeleteBtn,&mSearchBtn,&mUndoBtn, &mUpdateBtn,
+                    &mConfirmAddBtn,&mConfirmRemoveBtn,&mConfirmSearchBtn, &mConfirmUpdateBtn,
                     &mRandomBtn,&mUploadBtn, &mHideMenuBtn, &mShowMenuBtn})
         b->refreshText();
 
@@ -352,19 +425,22 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
     mLayout.update(mousePos);
     if (mLayout.mGoHome){ mGoHome=true; mLayout.mGoHome=false; }
 
-    if (mShowUndoBtn) mUndoBtn .update(mousePos);
-    else              mClearBtn.update(mousePos);
+    if (mIsSidebarVisible) {
+        if (mShowUndoBtn) mUndoBtn .update(mousePos);
+        else              mClearBtn.update(mousePos);
     
-    mNewBtn.update(mousePos);
-    mInsertBtn.update(mousePos);
-    mDeleteBtn.update(mousePos);
-    mSearchBtn.update(mousePos);
-    mHideMenuBtn.update(mousePos);
-    mShowMenuBtn.update(mousePos);
+        mNewBtn.update(mousePos);
+        mInsertBtn.update(mousePos);
+        mDeleteBtn.update(mousePos);
+        mSearchBtn.update(mousePos);
+        mHideMenuBtn.update(mousePos);
+        mShowMenuBtn.update(mousePos);
+    } else { mShowMenuBtn.update(mousePos); }
 
     if (mIsInsertExpanded){ mConfirmAddBtn  .update(mousePos); mInsertDiceBtn.update(mousePos); }
     if (mIsDeleteExpanded){ mConfirmRemoveBtn.update(mousePos); mDeleteDiceBtn.update(mousePos); }
     if (mIsSearchExpanded){ mConfirmSearchBtn.update(mousePos); mSearchDiceBtn.update(mousePos); }
+    if (mIsUpdateExpanded){ mConfirmUpdateBtn.update(mousePos); }
 
     // Auto-play
     // if (!mLayout.isPaused()){
@@ -392,7 +468,7 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
                 }
                 // NEW BUTTON
                 if (!mIsNewExpanded && sf::FloatRect({213.f, 150.f}, {160.f, 45.f}).contains(worldPos)){
-                    mIsNewExpanded=true; mIsInsertExpanded=mIsDeleteExpanded=mIsSearchExpanded=false;
+                    mIsNewExpanded=true; mIsInsertExpanded=mIsDeleteExpanded=mIsSearchExpanded=mIsUpdateExpanded=false;
                     inside=true;
                 }
                 else if (mIsNewExpanded && sf::FloatRect({213.f, 150.f}, {160.f, 161.f}).contains(worldPos)){
@@ -411,7 +487,7 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
                 
                 // INSERT BUTTON
                 else if (!mIsInsertExpanded && sf::FloatRect({32.f, 204.f}, {160.f, 45.f}).contains(worldPos)){
-                    mIsInsertExpanded=true; mIsNewExpanded=mIsDeleteExpanded=mIsSearchExpanded=false;
+                    mIsInsertExpanded=true; mIsNewExpanded=mIsDeleteExpanded=mIsSearchExpanded=mIsUpdateExpanded=false;
                     mInputValue=""; inside=true;
                 }
                 else if (mIsInsertExpanded && sf::FloatRect({32.f, 204.f}, {341.f, 45.f}).contains(worldPos)){
@@ -425,7 +501,7 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
                 
                 // DELETE BUTTON
                 else if (!mIsDeleteExpanded && sf::FloatRect({32.f, 258.f}, {160.f, 45.f}).contains(worldPos)){
-                    mIsDeleteExpanded=true; mIsNewExpanded=mIsInsertExpanded=mIsSearchExpanded=false;
+                    mIsDeleteExpanded=true; mIsNewExpanded=mIsInsertExpanded=mIsSearchExpanded=mIsUpdateExpanded=false;
                     mInputValue=""; inside=true;
                 }
                 else if (mIsDeleteExpanded && sf::FloatRect({32.f, 258.f}, {341.f, 45.f}).contains(worldPos)){
@@ -439,7 +515,7 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
                 
                 // SEARCH BUTTON
                 else if (!mIsSearchExpanded && sf::FloatRect({32.f, 312.f}, {160.f, 45.f}).contains(worldPos)){
-                    mIsSearchExpanded=true; mIsNewExpanded=mIsInsertExpanded=mIsDeleteExpanded=false;
+                    mIsSearchExpanded=true; mIsNewExpanded=mIsInsertExpanded=mIsDeleteExpanded=mIsUpdateExpanded=false;
                     mInputValue=""; inside=true;
                 }
                 else if (mIsSearchExpanded && sf::FloatRect({32.f, 312.f}, {341.f, 45.f}).contains(worldPos)){
@@ -450,6 +526,23 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
                     else if (sf::FloatRect({167.f, 319.f}, {30.f, 30.f}).contains(worldPos))
                         mInputValue=std::to_string(rand()%999+1);
                 }
+                
+                // UPDATE BUTTON
+                else if (!mIsUpdateExpanded && sf::FloatRect({32.f, 366.f}, {160.f, 45.f}).contains(worldPos)){
+                    mIsUpdateExpanded=true; mIsNewExpanded=mIsInsertExpanded=mIsDeleteExpanded=mIsSearchExpanded=false;
+                    mInputOld=""; mInputNew=""; mEditingOld=true; inside=true;
+                }
+                // --- UPDATE ---
+                else if (mIsUpdateExpanded && sf::FloatRect({32.f, 366.f}, {341.f, 45.f}).contains(worldPos)){
+                    inside=true;
+                    if (sf::FloatRect({216.f, 369.f}, {154.f, 39.f}).contains(worldPos) && !mInputOld.empty() && !mInputNew.empty()){
+                        runAction(4, std::stoi(mInputNew), std::stoi(mInputOld));
+                        mIsUpdateExpanded=false; mInputOld=""; mInputNew="";
+                    }
+
+                    else if (sf::FloatRect({35.f, 369.f}, {70.f, 39.f}).contains(worldPos)) { mEditingOld = true; }
+                    else if (sf::FloatRect({135.f, 369.f}, {70.f, 39.f}).contains(worldPos)) { mEditingOld = false; }
+                }
             } else {
                 if (sf::FloatRect({32.f, 150.f}, {45.f, 45.f}).contains(worldPos)) {
                     mIsSidebarVisible = true;
@@ -457,7 +550,7 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
                 }
             }
             if (!inside)
-                mIsInsertExpanded=mIsDeleteExpanded=mIsSearchExpanded=mIsNewExpanded=false;
+                mIsInsertExpanded=mIsDeleteExpanded=mIsSearchExpanded=mIsUpdateExpanded=mIsNewExpanded=false;
         }
     }
     else if (const auto* ke=event->getIf<sf::Event::KeyPressed>()){
@@ -488,6 +581,11 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
                 mInputValue=std::to_string(rand()%999+1);
             else{ doRandom(); mIsNewExpanded=false; }
         }
+        // ADD UPDATE
+        else if (ke->code==sf::Keyboard::Key::U){
+            mIsUpdateExpanded=true; mIsNewExpanded=mIsInsertExpanded=mIsDeleteExpanded=mIsSearchExpanded=false; 
+            mInputOld=""; mInputNew=""; mEditingOld=true;
+        }
         else if (mIsInsertExpanded||mIsDeleteExpanded||mIsSearchExpanded){
             if (ke->code==sf::Keyboard::Key::Backspace&&!mInputValue.empty())
                 mInputValue.pop_back();
@@ -507,8 +605,33 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
                 if (digit!=-1&&mInputValue.size()<4) mInputValue+=std::to_string(digit);
             }
         }
+        else if (mIsUpdateExpanded) {
+            if (ke->code == sf::Keyboard::Key::Tab) {
+                mEditingOld = !mEditingOld;
+            }
+            else if (ke->code == sf::Keyboard::Key::Backspace) {
+                if (mEditingOld && !mInputOld.empty()) mInputOld.pop_back();
+                else if (!mEditingOld && !mInputNew.empty()) mInputNew.pop_back();
+            }
+            else if (ke->code == sf::Keyboard::Key::Enter && !mInputOld.empty() && !mInputNew.empty()) {
+                runAction(4, std::stoi(mInputNew), std::stoi(mInputOld));
+                mIsUpdateExpanded=false; mInputOld=""; mInputNew="";
+            }
+            else {
+                int digit = -1;
+                if (ke->code >= sf::Keyboard::Key::Num0 && ke->code <= sf::Keyboard::Key::Num9)
+                    digit = (int)ke->code - (int)sf::Keyboard::Key::Num0;
+                else if (ke->code >= sf::Keyboard::Key::Numpad0 && ke->code <= sf::Keyboard::Key::Numpad9)
+                    digit = (int)ke->code - (int)sf::Keyboard::Key::Numpad0;
+
+                if (digit != -1) {
+                    if (mEditingOld && mInputOld.size() < 3) mInputOld += std::to_string(digit);
+                    else if (!mEditingOld && mInputNew.size() < 3) mInputNew += std::to_string(digit);
+                }
+            }
+        }
     }
-}
+} 
 // ── render ───────────────────────────────────────────────────
 void HashVisualizer::render(bool showUI){
     auto steps=mHash.getSteps();
@@ -549,9 +672,20 @@ void HashVisualizer::render(bool showUI){
     else          mLayout.setStepText("Step "+std::to_string(mCurrentStep+1)+" / "+std::to_string(total));
 
     // Description from current step
-    if (mCurrentStep>=0&&mCurrentStep<total)
+    if (mCurrentStep>=0 && mCurrentStep<total) {
         mLayout.setDescription(steps[mCurrentStep].description);
+        
+        int currentLid = steps[mCurrentStep].lineID; 
+        
+        auto [tableIdx, activeLines] = lidToPseudo(currentLid);
+        
+        if (tableIdx == 0) mLayout.setPseudoCode(PSEUDO_INSERT);
+        else if (tableIdx == 1) mLayout.setPseudoCode(PSEUDO_SEARCH);
+        else if (tableIdx == 2) mLayout.setPseudoCode(PSEUDO_DELETE);
+        else mLayout.setPseudoCode({}); 
 
+        mLayout.setActiveCodeLines(activeLines); 
+    }
     mLayout.draw(*mWindow);
 
     // Title — use theme colors
@@ -674,6 +808,59 @@ void HashVisualizer::render(bool showUI){
         } else {
             if (sf::FloatRect({32.f, 312.f}, {160.f, 45.f}).contains(worldPos)) mSearchHoverStroke.draw(*mWindow);
             mSearchBtn.draw(*mWindow);
+        }
+
+        // --- UPDATE ---
+        if (mIsUpdateExpanded) {
+            mUpdateExpandedStroke.draw(*mWindow);
+            mUpdateExpandedBg.draw(*mWindow);
+            mConfirmUpdateBtn.draw(*mWindow);
+
+            float baseY = 366.f;
+            sf::Color boxFill = ThemeManager::current.bg;
+            sf::Color activeBorder = ThemeManager::current.primary;
+            sf::Color inactiveBorder = sf::Color(200, 200, 200);    
+
+            drawRoundedRect(*mWindow, sf::FloatRect({35.f, baseY + 3.f}, {70.f, 39.f}), 19.5f, 
+                            boxFill, mEditingOld ? activeBorder : inactiveBorder, 2.f);
+            drawRoundedRect(*mWindow, sf::FloatRect({135.f, baseY + 3.f}, {70.f, 39.f}), 19.5f, 
+                            boxFill, !mEditingOld ? activeBorder : inactiveBorder, 2.f);
+            
+            sf::Text arrowText(mFontBold, "->", 20);
+            arrowText.setFillColor(ThemeManager::current.textColor);
+            arrowText.setPosition(sf::Vector2f(108.f, baseY + 9.f)); 
+            mWindow->draw(arrowText);
+
+            mUpdateInputText.setCharacterSize(18); 
+            mUpdateInputText.setFillColor(ThemeManager::current.textColor);
+
+            mUpdateInputText.setString(mInputOld);
+            sf::FloatRect oldBounds = mUpdateInputText.getLocalBounds();
+            mUpdateInputText.setPosition(sf::Vector2f(35.f + (70.f - oldBounds.size.x)/2.f - oldBounds.position.x, baseY + 11.f));
+            mWindow->draw(mUpdateInputText);
+
+            mUpdateInputText.setString(mInputNew);
+            sf::FloatRect newBounds = mUpdateInputText.getLocalBounds();
+            mUpdateInputText.setPosition(sf::Vector2f(135.f + (70.f - newBounds.size.x)/2.f - newBounds.position.x, baseY + 11.f));
+            mWindow->draw(mUpdateInputText);
+
+            // Xử lý con trỏ nhấp nháy (|)
+            if (mCursorClock.getElapsedTime().asSeconds() >= 0.5f) { mShowCursor = !mShowCursor; mCursorClock.restart(); }
+            if (mShowCursor) {
+                float cursorX;
+                if (mEditingOld) {
+                    cursorX = 35.f + (70.f + oldBounds.size.x)/2.f + 2.f; 
+                } else {
+                    cursorX = 135.f + (70.f + newBounds.size.x)/2.f + 2.f;
+                }
+                sf::RectangleShape cursorLine(sf::Vector2f(1.5f, 20.f));
+                cursorLine.setFillColor(ThemeManager::current.textColor);
+                cursorLine.setPosition(sf::Vector2f(cursorX, baseY + 13.f));
+                mWindow->draw(cursorLine);
+            }
+        } else {
+            if (sf::FloatRect({32.f, 366.f}, {160.f, 45.f}).contains(worldPos)) mUpdateHoverStroke.draw(*mWindow);
+            mUpdateBtn.draw(*mWindow);
         }
     }
 }

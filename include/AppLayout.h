@@ -69,7 +69,7 @@ public:
     void setStepForwardCallback(std::function<void()> cb){mStepForwardCb = cb;}
 
     std::vector<std::string> mCodeLines;
-    int mActiveCodeLine = -1;
+    std::vector<int> mActiveCodeLines;
     void setPseudoCode(const std::vector<std::string>& codeLines) { mCodeLines = codeLines; }
-    void setActiveCodeLine(int lineIndex) { mActiveCodeLine = lineIndex; }
+    void setActiveCodeLines(const std::vector<int>& lines) { mActiveCodeLines = lines; }
 };

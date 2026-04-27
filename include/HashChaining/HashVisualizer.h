@@ -30,6 +30,7 @@ private:
     RoundedButton mDeleteBtn;
     RoundedButton mSearchBtn;
     RoundedButton mUndoBtn;
+    RoundedButton mUpdateBtn;
 
     // Hide/Show Sidebar button
     RoundedButton mHideMenuBtn;
@@ -77,6 +78,20 @@ private:
     ImageButton   mSearchDiceBtn;
     sf::Text      mSearchInputText;
     sf::RectangleShape mSearchCursorLine;
+
+    
+    // ── Update expand widgets ──
+    RoundedButton mUpdateHoverStroke;
+    RoundedButton mUpdateExpandedStroke;
+    RoundedButton mUpdateExpandedBg;
+    RoundedButton mConfirmUpdateBtn;
+    sf::Text      mUpdateInputText; 
+    sf::RectangleShape mUpdateCursorLine;
+
+    bool mIsUpdateExpanded = false;
+    std::string mInputOld = "";
+    std::string mInputNew = "";
+    bool mEditingOld = true;
 
     // ── New expand widgets ──
     RoundedButton mNewHoverStroke;

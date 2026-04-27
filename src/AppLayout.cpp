@@ -6,6 +6,30 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+// Helper function to support automatic line breaks
+static std::string wrapText(const std::string& text, float maxWidth, const sf::Font& font, unsigned int charSize) {
+    std::istringstream words(text);
+    std::string word;
+    std::string wrappedText = "";
+    std::string currentLine = "";
+    sf::Text measureText(font, "", charSize);
+
+    while (words >> word) {
+        std::string testLine = currentLine.empty() ? word : currentLine + " " + word;
+        measureText.setString(testLine);
+        
+        // If adding new word exceeds the allowed width -> Wrap to the next line
+        if (measureText.getLocalBounds().size.x > maxWidth) {
+            wrappedText += currentLine + "\n";
+            currentLine = word;
+        } else {
+            currentLine = testLine;
+        }
+    }
+    wrappedText += currentLine;
+    return wrappedText;
+}
+
 sf::ConvexShape AppLayout::createRoundedRect(sf::Vector2f size, float radius){
     radius = std::min(radius, std::min(size.x / 2.0f, size.y / 2.0f));
     int pointsPerCorner = 15;
@@ -37,10 +61,10 @@ AppLayout::AppLayout()
       mSpeedSlider(mFontRegular, 956.f, 917.f),
       mStepBackBtn(mFontRegular, "Step back", 326.f, 896.f, 165.f, 49.f, 24.5f, sf::Color::White),
       mStepForwardBtn(mFontRegular, "Step forward", 504.f, 896.f, 201.f, 49.f, 24.5f, sf::Color::White),
-      mHideDescBtn(mFontBold, ">", 915.f, 150.f, 45.f, 80.f, 22.5f, sf::Color::White),
-      mShowDescBtn(mFontBold, "<", 1375.f, 150.f, 45.f, 80.f, 22.5f, sf::Color::White),
-      mHidePseudoBtn(mFontBold, ">", 915.f, 395.f, 45.f, 80.f, 22.5f, sf::Color::White),
-      mShowPseudoBtn(mFontBold, "<", 1375.f, 395.f, 45.f, 80.f, 22.5f, sf::Color::White)
+      mHideDescBtn(mFontBold, ">", 1028.f, 170.f, 45.f, 80.f, 22.5f, sf::Color::White),
+      mShowDescBtn(mFontBold, "<", 1375.f, 170.f, 45.f, 80.f, 22.5f, sf::Color::White),
+      mHidePseudoBtn(mFontBold, ">", 1028.f, 475.f, 45.f, 80.f, 22.5f, sf::Color::White),
+      mShowPseudoBtn(mFontBold, "<", 1375.f, 475.f, 45.f, 80.f, 22.5f, sf::Color::White)
 {
     if (!mFontBold.openFromFile("assets/fonts/Inter-Bold.ttf") or !mFontRegular.openFromFile("assets/fonts/Inter-Regular.ttf")){
         cerr << "Cannot load font!" << endl;
@@ -62,17 +86,17 @@ AppLayout::AppLayout()
     mHomeBtn.setup(mHomeTex, 32.f, 60.f, 55.f, 55.f);
     mHomeBtn.setCallback([this](){ mGoHome = true; });
     
-    mDescriptionBox = createRoundedRect(sf::Vector2f(450.f, 80.f), 20.f);
-    mDescriptionBox.setPosition(sf::Vector2f(970.f, 150.f));
+    mDescriptionBox = createRoundedRect(sf::Vector2f(330.f, 120.f), 20.f);
+    mDescriptionBox.setPosition(sf::Vector2f(1080.f, 150.f));
     mDescriptionBox.setFillColor(ThemeManager::current.secondary);
     
     mDescriptionText.setFont(mFontRegular);
     mDescriptionText.setFillColor(ThemeManager::current.primary);
-    mDescriptionText.setCharacterSize(22);
-    mDescriptionText.setPosition(sf::Vector2f(990.f, 175.f));
+    mDescriptionText.setCharacterSize(20);
+    mDescriptionText.setPosition(sf::Vector2f(1100.f, 165.f));
 
-    mPseudoBox = createRoundedRect(sf::Vector2f(450.f, 380.f), 20.f);
-    mPseudoBox.setPosition(sf::Vector2f(970.f, 245.f));
+    mPseudoBox = createRoundedRect(sf::Vector2f(330.f, 460.f), 20.f);
+    mPseudoBox.setPosition(sf::Vector2f(1080.f, 285.f));
     mPseudoBox.setFillColor(ThemeManager::current.secondary);
 
     mHideDescBtn.setCallback([this](){ mIsDescVisible = false; });
@@ -118,9 +142,12 @@ AppLayout::AppLayout()
     mSkipForwardBtn.setCallback([this](){ if(mSkipForwardCb) mSkipForwardCb(); });
     mStepBackBtn.setCallback([this](){ if(mStepBackCb) mStepBackCb(); });
     mStepForwardBtn.setCallback([this](){ if(mStepForwardCb) mStepForwardCb(); });
-    
+
     mStepBackBtn.setCharacterSize(24);
     mStepForwardBtn.setCharacterSize(24);
+    for (auto* b : {&mStepBackBtn, &mStepForwardBtn, &mHideDescBtn, &mShowDescBtn, &mHidePseudoBtn, &mShowPseudoBtn}) {
+        b->refreshText();
+    }
 }
 
 void AppLayout::update(sf::Vector2i mousePos){
@@ -167,16 +194,18 @@ void AppLayout::draw(sf::RenderWindow& window){
         
         float boxX = mPseudoBox.getPosition().x;
         float boxY = mPseudoBox.getPosition().y;
-        float boxW = 450.f;
+        float boxW = 330.f;
         
         float startX = boxX + 20.f;
         float currentY = boxY + 20.f; 
         
-        for (int i = 0; i < mCodeLines.size(); ++i){
-            sf::Text lineText(i == mActiveCodeLine ? mFontBold : mFontRegular, mCodeLines[i], 22);
-            lineText.setPosition(sf::Vector2f(startX, currentY));
+        for (int i = 0; i < (int)mCodeLines.size(); ++i){
+            bool isActive = (std::find(mActiveCodeLines.begin(), mActiveCodeLines.end(), i) != mActiveCodeLines.end());
+            std::string wrappedLine = wrapText(mCodeLines[i], 290.f, (isActive ? mFontBold : mFontRegular), 20);
             
-            if (i == mActiveCodeLine){
+            sf::Text lineText(isActive ? mFontBold : mFontRegular, wrappedLine, 20);
+            lineText.setPosition(sf::Vector2f(startX, currentY)); 
+            if (isActive){
                 sf::FloatRect textBounds = lineText.getGlobalBounds();
                 
                 sf::RectangleShape hgBg(sf::Vector2f(boxW, textBounds.size.y + 14.f));
@@ -188,9 +217,8 @@ void AppLayout::draw(sf::RenderWindow& window){
             } else {
                 lineText.setFillColor(ThemeManager::current.textColor);
             }
-
             window.draw(lineText);
-            currentY += lineText.getLocalBounds().size.y + 15.f;
+            currentY += lineText.getGlobalBounds().size.y + 15.f;
         }
         
         mHidePseudoBtn.draw(window);
@@ -230,7 +258,8 @@ void AppLayout::draw(sf::RenderWindow& window){
 }
 
 void AppLayout::setDescription(const std::string& text){
-    mDescriptionText.setString(text);
+    std::string wrapped = wrapText(text, 290.f, mFontRegular, 20); 
+    mDescriptionText.setString(wrapped);
 }
 
 void AppLayout::setPaused(bool paused){

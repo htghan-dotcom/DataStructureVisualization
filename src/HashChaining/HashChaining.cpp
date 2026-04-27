@@ -107,10 +107,12 @@ bool HashChaining::deleteInternal(int key, bool keepSteps) {
     PUSH_STEP("Checking node " + to_string(table[idx]->val),
               14, idx, table[idx]->val, false);
     Node* cur = table[idx];
-    while (cur->next && cur->next->val != key) {
+    while (cur->next) {
         PUSH_STEP("Checking node " + to_string(cur->next->val),
                   14, idx, cur->next->val, false);
+        if  (cur->next->val == key) break;
         cur = cur->next;
+        PUSH_STEP("Moving to next node...", 18, idx, cur->val, false);
     }
 
     if (!cur->next) {
@@ -126,7 +128,7 @@ bool HashChaining::deleteInternal(int key, bool keepSteps) {
     delete tmp;
 
     PUSH_STEP("Deleted " + to_string(key) + " successfully.",
-              13, idx, -1, false);
+              19, idx, -1, false);
     return true;
 }
 
@@ -151,6 +153,7 @@ int HashChaining::searchImpl(int key) {
             return idx;
         }
         cur = cur->next;
+        PUSH_STEP("Moving to next node...", 17, idx, (cur ? cur->val : -1), false);
     }
     PUSH_STEP("Not found.", 8, idx, -1, false);
     return -1;
@@ -190,10 +193,20 @@ void HashChaining::clear() {
 void HashChaining::generateRandom(int count) {
     clear();
     steps.clear();
-    PUSH_STEP("Generating " + to_string(count) + " random elements...", 0, -1, -1, false);
     for (int i = 0; i < count; i++) {
         int val = rand() % 1000;
-        addInternal(val, true);
+        int idx = hashFunction(val);
+        Node* cur = table[idx];
+        bool isDup = false;
+        while (cur) {
+            if (cur->val == val) { isDup = true; break; }
+            cur = cur->next;
+        }
+        if (!isDup) {
+            Node* p = new Node(val);
+            p->next = table[idx];
+            table[idx] = p;
+        }
     }
     PUSH_STEP("Done generating randomly.", -1, -1, -1, false);
 }
@@ -206,11 +219,23 @@ void HashChaining::loadFromFile(const string& filename) {
         PUSH_STEP("Cannot open file: " + filename, -1, -1, -1, false);
         return;
     }
-    PUSH_STEP("Reading file: " + filename, -1, -1, -1, false);
     int val;
-    while (fin >> val) addInternal(val, true);
+    while (fin >> val) {
+        int idx = hashFunction(val);
+        Node* cur = table[idx];
+        bool isDup = false;
+        while (cur) {
+            if (cur->val == val) { isDup = true; break; }
+            cur = cur->next;
+        }
+        if (!isDup) {
+            Node* p = new Node(val);
+            p->next = table[idx];
+            table[idx] = p;
+        }
+    }
     fin.close();
-    PUSH_STEP("Done reading file.", -1, -1, -1, false);
+    PUSH_STEP("Loaded data from file.", -1, -1, -1, false);
 }
 
 vector<Node*>      HashChaining::getTable() const { return table; }
