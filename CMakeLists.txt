@@ -9,14 +9,17 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 #  SFML – try SFML 3.x first (MSYS2 ucrt64 ships 3.x)
 # ─────────────────────────────────────────────
 if(EXISTS "C:/SFML/SFML-3.0.2/lib/cmake/SFML")
-    set(SFML_DIR "C:/SFML/SFML-3.0.2/lib/cmake/SFML" CACHE PATH "SFML cmake dir")
-elseif(EXISTS "C:/msys64/ucrt64/lib/cmake/SFML")
-    set(SFML_DIR "C:/msys64/ucrt64/lib/cmake/SFML" CACHE PATH "SFML cmake dir")
+    set(SFML_DIR "C:/SFML/SFML-3.0.2/lib/cmake/SFML" CACHE PATH "SFML cmake dir" FORCE)
 elseif(EXISTS "C:/SFML/lib/cmake/SFML")
-    set(SFML_DIR "C:/SFML/lib/cmake/SFML" CACHE PATH "SFML cmake dir")
+    set(SFML_DIR "C:/SFML/lib/cmake/SFML" CACHE PATH "SFML cmake dir" FORCE)
+elseif(EXISTS "C:/msys64/ucrt64/lib/cmake/SFML")
+    set(SFML_DIR "C:/msys64/ucrt64/lib/cmake/SFML" CACHE PATH "SFML cmake dir" FORCE)
 endif()
 
 find_package(SFML 3 COMPONENTS Graphics Window System Audio REQUIRED)
+if(NOT SFML_VERSION VERSION_MATCHES "^3\\.")
+    message(FATAL_ERROR "Found SFML ${SFML_VERSION} at ${SFML_DIR}, but this project now requires SFML 3.x")
+endif()
 # ─────────────────────────────────────────────
 #  Source files
 # ─────────────────────────────────────────────
