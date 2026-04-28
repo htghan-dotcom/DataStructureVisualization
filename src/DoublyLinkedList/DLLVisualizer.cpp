@@ -655,7 +655,16 @@ void DLLVisualizer::generateRandomList() {
     for (int i = 0; i < 5; ++i) {
         mList.insertTail(dis(gen));
     }
-    resetPlayUI();
+    
+    int totalSteps = static_cast<int>(mList.getStepHistory().size());
+    if (totalSteps > 0) {
+        mList.setCurrentStep(totalSteps - 1); 
+    }
+    
+    mLayout.setPaused(true); 
+    
+    mShowUndoBtn = false;
+
     mLayout.setDescription("Random list generated.");
 }
 
