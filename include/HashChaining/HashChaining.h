@@ -35,6 +35,7 @@ private:
     int size;
     vector<HashNode*> table;
     vector<HashStepInfo> steps;
+    vector<vector<vector<int>>> history;
 
     int hashFunction(int key);
     bool checkDuplicate(int key, int idx);
@@ -64,4 +65,8 @@ public:
     vector<HashNode*> getTable() const;
     int getSize() const;
     vector<HashStepInfo> getSteps() const;
+
+    void saveState();
+    void undo();
+    bool canUndo() const { return !history.empty(); }
 };

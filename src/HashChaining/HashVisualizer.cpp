@@ -336,14 +336,24 @@ HashVisualizer::HashVisualizer(sf::RenderWindow& window)
 
     // ── Sidebar callbacks ─────────────────────────────────────
     mClearBtn.setCallback([this](){
-        mHash.clearTableUI(); // Gọi hàm mới tạo
+        mHash.saveState();   
+        mShowUndoBtn = true; 
+        mHash.clearTableUI(); 
         mCurrentStep = 0;
         mTargetStep  = -1;
         mLayout.setDescription("Hash table cleared.");
         mLayout.setPaused(true);
+    });
+    mUndoBtn.setCallback([this](){ 
+        if (mHash.canUndo()) {
+            mHash.undo();
+            mCurrentStep = 0;
+            mTargetStep = -1;
+            mLayout.setPaused(true);
+            mLayout.setDescription("Undo completed.");
+        }
         mShowUndoBtn = false;
     });
-    mUndoBtn.setCallback([this](){ mShowUndoBtn = false; });
 
     // ── Initial data ─────────────────────────────────────────
     doRandom();
@@ -351,7 +361,9 @@ HashVisualizer::HashVisualizer(sf::RenderWindow& window)
 
 // ── doRandom ─────────────────────────────────────────────────
 void HashVisualizer::doRandom(){
-    mHash.generateRandom(5 + rand() % 6);
+    mHash.saveState();
+    mShowUndoBtn = false;
+    mHash.generateRandom(5 + rand() % 7);
     mCurrentStep = std::max(0, (int)mHash.getSteps().size()-1);
     mTargetStep  = -1;
     mLayout.setPaused(true);
@@ -360,6 +372,9 @@ void HashVisualizer::doRandom(){
 
 // ── runAction ────────────────────────────────────────────────
 void HashVisualizer::runAction(int action, int value, int oldValue){
+    mHash.saveState();
+    mShowUndoBtn = false;
+
     if      (action==1){ mHash.add(value);              mLayout.setDescription("Added "+std::to_string(value)); }
     else if (action==2){ mHash.deleteNode(value);        mLayout.setDescription("Deleted "+std::to_string(value)); }
     else if (action==3){ mHash.search(value);            mLayout.setDescription("Searching "+std::to_string(value)); }
@@ -667,10 +682,18 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
         }
     }
     else if (const auto* ke=event->getIf<sf::Event::KeyPressed>()){
-        if (ke->code==sf::Keyboard::Key::Z && (ke->control || ke->system)){
-            mShowUndoBtn=false; mLayout.setPaused(true);
-            mIsInsertExpanded=mIsDeleteExpanded=mIsSearchExpanded=mIsNewExpanded=mIsUpdateExpanded=false;
-            mInputValue=""; mInputOld=""; mInputNew="";
+        if (ke->code == sf::Keyboard::Key::Z && (ke->control || ke->system)) {
+            if (mHash.canUndo()) {
+                mHash.undo();
+                mCurrentStep = 0;
+                mTargetStep = -1;
+                mLayout.setPaused(true);
+                mLayout.setDescription("Undo successfully.");
+                mShowUndoBtn = mHash.canUndo();
+            }
+            mShowUndoBtn = false;
+            mIsInsertExpanded = mIsDeleteExpanded = mIsSearchExpanded = mIsNewExpanded = mIsUpdateExpanded = false;
+            mInputValue = ""; mInputOld = ""; mInputNew = "";
         }
         else if (ke->code == sf::Keyboard::Key::I) {
             mIsInsertExpanded = true; mIsDeleteExpanded = mIsSearchExpanded = mIsUpdateExpanded = mIsNewExpanded = false; mInputValue = "";
@@ -690,6 +713,21 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
         else if (ke->code == sf::Keyboard::Key::Space) {
             mLayout.setPaused(!mLayout.isPaused());
             if (!mLayout.isPaused()) mAutoPlayClock.restart();
+        }
+        else if (ke->code == sf::Keyboard::Key::Left) {
+            if (mCurrentStep > 0) {
+                mTargetStep = mCurrentStep - 1;
+                mStepAnimProgress = 0.f;
+            }
+            mLayout.setPaused(true);
+        }
+        else if (ke->code == sf::Keyboard::Key::Right) {
+            int total = (int)mHash.getSteps().size();
+            if (mCurrentStep < total - 1) {
+                mTargetStep = mCurrentStep + 1;
+                mStepAnimProgress = 0.f;
+            }
+            mLayout.setPaused(true);
         }
         else if (ke->code == sf::Keyboard::Key::R) {
             if (mIsInsertExpanded || mIsDeleteExpanded || mIsSearchExpanded) {
