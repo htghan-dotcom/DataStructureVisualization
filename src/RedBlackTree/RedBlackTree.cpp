@@ -12,41 +12,49 @@ const vector<string> PSEUDO_SEARCH = {
 
 const vector<string> PSEUDO_INSERT = {
     "BST insert node X (RED)",
-    "while RED-RED conflict with parent P:\n\tchecking uncle U",
+    "while RED-RED conflict with parent P: checking uncle U",
     "ensure root is BLACK"
 };
 
 const vector<string> PSEUDO_FIXINSERTION = {
     "checking unlce U:",
-    "\tif U is RED:\n\trecolor P and U to BLACK, G to RED & check G",
-    "\telif U is BLACK & X is inner child:\n\trotate at P & check P",
-    "\telse U is BLACK & X is outer child:\n\trotate at G & swap color of G and P"
+    "\tif U is RED: recolor P and U to BLACK, G to RED & check G",
+    "\telif U is BLACK & X is inner child: rotate at P & check P",
+    "\telse U is BLACK & X is outer child: rotate at G & swap color of G and P"
 };
 
 const vector<string> PSEUDO_DELETE = {
     "BST delete node V, replacement U",
-    "if either V or U is RED:\n\trecolor U to BLACK",
-    "else while double BLACK conflict:\n\tcheck sibling S of U",
-    "if U is root:\n\trecolor root to BLACK"
+    "if either V or U is RED: recolor U to BLACK",
+    "else while double BLACK conflict: check sibling S of U",
+    "if U is root: recolor root to BLACK"
 };
 
 const vector<string> PSEUDO_FIXDELETION1 = {
     "checking sibling S of U:",
-    "\tif S is RED:\n\t\trotate at parent P, swap color of P and S",
-    "\telse S is BLACK:\n\t\tcheck nephews"
+    "\tif S is RED: trotate at parent P, swap color of P and S",
+    "\telse S is BLACK: check nephews"
 };
 
 const vector<string> PSEUDO_FIXDELETION2 = {
     "checking nephews:",
-    "\tif S is BLACK and both nephews are BLACK:\n\t\trecolor S to RED & check P",
-    "\telif S is BLACK and outer nephew O is RED:\n\t\trotate at P & recolor O to BLACK",
-    "\telse S is BLACK and only inner nephew I is RED:\n\t\trotate at S & swap color of S and I"
+    "\tif S is BLACK and both nephews are BLACK: recolor S to RED & check P",
+    "\telif S is BLACK and outer nephew O is RED: rotate at P & recolor O to BLACK",
+    "\telse S is BLACK and only inner nephew I is RED: rotate at S & swap color of S and I"
 };
 
 const vector<string> PSEUDO_FIXDELETION3 = {
     "checking parent P:",
-    "\tif P is RED:\n\t\trecolor P to BLACK",
-    "\telse P is BLACK:\n\t\tP is U & check sibling S of U"
+    "\tif P is RED: recolor P to BLACK",
+    "\telse P is BLACK: P is U & check sibling S of U"
+};
+
+const vector<string> PSEUDO_UPDATE = {
+    "Update old to new:",
+    "\tif old == new: invalid updating",
+    "\telif !found(old): invalid updating",
+    "\telif found(new): invalid updating",
+    "\telse: delete(old) & insert(new)"
 };
 
 
@@ -222,7 +230,6 @@ void RedBlackTree::fixInsertion(RedBlackNode *node){
                 delete uncle;
                 uncle = nullptr;
             }
-            
         } else {
             // RED uncle
             saveStep("Uncle " + to_string(uncle->getVal()) + " is RED.\nRecolor.", uncle->getVal(), 0, PSEUDO_FIXINSERTION);
@@ -338,7 +345,6 @@ void RedBlackTree::fixDeletion(RedBlackNode *node){
             rotateRight(parent);
             fixDeletion(node);
             
-
             return;
         }
         
@@ -349,7 +355,6 @@ void RedBlackTree::fixDeletion(RedBlackNode *node){
             // both nephews are BLACK
             saveStep("Both nephews are BLACK.\nRecolor sibling to RED & Checking parent.", sibling->getVal(), 1, PSEUDO_FIXDELETION2);
             sibling->setColor(Color::RED);
-            
             
             if (parent->isRed()){
                 // RED parent
@@ -425,10 +430,10 @@ void RedBlackTree::transplant(RedBlackNode *x, RedBlackNode *y){
     }
     else if (x == x->getParent()->getLeft()){
         x->getParent()->setLeft(y);
-    } else {
+    }
+    else {
         x->getParent()->setRight(y);
     }
-    
     if (y){
         y->setParent(x->getParent());
     }
@@ -478,15 +483,14 @@ void RedBlackTree::inorderCollect(RedBlackNode *root, vector<int>& data, vector<
     data.push_back(root->getVal());
     if (root->isRed()){
         colors.push_back("RED");
-    }
-    else {
+    } else {
         colors.push_back("BLACK");
     }
     
     inorderCollect(root->getRight(), data, colors);
 }
 
-void RedBlackTree::saveStep(string description, int highlightedNode, int activeLine, const vector<string>& codeLines){
+void RedBlackTree::saveStep(const std::string& description, int highlightedNode, int activeLine, const std::vector<std::string>& codeLines){
     StepState step;
     step.description = description;
     step.highlightedNode = highlightedNode;
@@ -503,6 +507,19 @@ void RedBlackTree::saveStep(string description, int highlightedNode, int activeL
     
     mStepHistory.push_back(step);
     mCurrentStep = static_cast<int>(mStepHistory.size() - 1);
+}
+
+RedBlackNode* RedBlackTree::cloneNode(RedBlackNode* node, RedBlackNode* parent){
+    if (!node){return nullptr;}
+    
+    RedBlackNode* newNode = new RedBlackNode(node->getVal());
+    newNode->setColor(node->getColor());
+    newNode->setParent(parent);
+    newNode->setDummy(node->isDummy());
+    
+    newNode->setLeft(cloneNode(node->getLeft(), newNode));
+    newNode->setRight(cloneNode(node->getRight(), newNode));
+    return newNode;
 }
 
 void RedBlackTree::initialize(){
@@ -558,12 +575,10 @@ bool RedBlackTree::insert(int val){
             saveStep("Compare " + to_string(val) + " < " + to_string(current->getVal()) + ". Go LEFT", current->getVal(), 3, PSEUDO_SEARCH);
             current = current->getLeft();
         }
-        
         else if (val > current->getVal()){
             saveStep("Compare " + to_string(val) + " > " + to_string(current->getVal()) + ". Go RIGHT", current->getVal(), 4, PSEUDO_SEARCH);
             current = current->getRight();
         }
-        
         else {
             delete newNode;
             saveStep("Insertion failed - Duplicate value " + to_string(val), current->getVal(), 5, PSEUDO_SEARCH);
@@ -573,10 +588,8 @@ bool RedBlackTree::insert(int val){
     
     newNode->setParent(parent);
     if (val < parent->getVal()){
-        
         parent->setLeft(newNode);
     } else {
-        
         parent->setRight(newNode);
     }
     
@@ -598,7 +611,6 @@ bool RedBlackTree::remove(int val){
             saveStep("Found node " + to_string(val) + ". Start deletion process.", targetNode->getVal(), 2, PSEUDO_SEARCH);
             break;
         }
-        
         if (val < targetNode->getVal()){
             saveStep("Compare " + to_string(val) + " < " + to_string(targetNode->getVal()) + ". Go LEFT", targetNode->getVal(), 3, PSEUDO_SEARCH);
             targetNode = targetNode->getLeft();
@@ -710,6 +722,72 @@ bool RedBlackTree::remove(int val){
     return true;
 }
 
+bool RedBlackTree::update(int oldVal, int newVal){
+    saveStep("Start updating node " + to_string(oldVal) + " to " + to_string(newVal), -1, 0, PSEUDO_UPDATE);
+    
+    if (oldVal == newVal){
+        saveStep("Update failed! Old and new values are identical (" + to_string(oldVal) + ").", -1, 1, PSEUDO_UPDATE);
+        return false;
+    }
+    
+    saveStep("Phase 1: Check if old value " + to_string(oldVal) + " exists.", -1, 2, PSEUDO_UPDATE);
+    if (!search(oldVal)){
+        saveStep("Update failed! Old value " + to_string(oldVal) + " not found.", -1, 2, PSEUDO_UPDATE);
+        return false;
+    }
+    
+    saveStep("Phase 2: Check if new value " + to_string(newVal) + " already exists.", -1, 3, PSEUDO_UPDATE);
+    if (search(newVal)){
+        saveStep("Update failed! New value " + to_string(newVal) + " already exists.", newVal, 3, PSEUDO_UPDATE);
+        return false;
+    }
+    
+    saveStep("Validation passed! Proceeding to remove " + to_string(oldVal) + ".", oldVal, 4, PSEUDO_UPDATE);
+    remove(oldVal);
+    
+    saveStep("Node " + to_string(oldVal) + " removed! Proceeding to insert " + to_string(newVal) + ".", -1, 4, PSEUDO_UPDATE);
+    insert(newVal);
+    
+    saveStep("Update complete! " + to_string(oldVal) + " successfully updated to " + to_string(newVal) + ".", newVal, 4, PSEUDO_UPDATE);
+    return true;
+}
+
+bool RedBlackTree::search(int val){
+    if (!mpRoot){
+        saveStep("Tree is empty. Cannot find " + to_string(val), -1, 5, PSEUDO_SEARCH);
+        return false;
+    }
+
+    RedBlackNode *current = mpRoot;
+    saveStep("Start searching. current = root", current->getVal(), 0, PSEUDO_SEARCH);
+
+    while (current){
+        if (val == current->getVal()){
+            saveStep("Found node " + to_string(val) + "!", current->getVal(), 2, PSEUDO_SEARCH);
+            return true;
+        }
+        
+        else if (val < current->getVal()){
+            saveStep("Compare " + to_string(val) + " < " + to_string(current->getVal()) + ". Go LEFT", current->getVal(), 3, PSEUDO_SEARCH);
+            current = current->getLeft();
+        }
+        
+        else {
+            saveStep("Compare " + to_string(val) + " > " + to_string(current->getVal()) + ". Go RIGHT", current->getVal(), 4, PSEUDO_SEARCH);
+            current = current->getRight();
+        }
+    }
+
+    saveStep("Value " + to_string(val) + " not found in the tree.", -1, 5, PSEUDO_SEARCH);
+    return false;
+}
+
+void RedBlackTree::setCurrentStep(int step){
+    if (step >= 0 and step < static_cast<int>(mStepHistory.size())){
+        mCurrentStep = step;
+    }
+}
+
 void RedBlackTree::nextStep(){
     if (mStepHistory.empty()){
         cout << "No steps available" << endl;
@@ -755,27 +833,13 @@ void RedBlackTree::setVisualizationSpeed(int speed){
     }
 }
 
-bool RedBlackTree::isEmpty(){
-    return mpRoot == nullptr;
-}
+bool RedBlackTree::isEmpty(){return mpRoot == nullptr;}
 
-vector<StepState> RedBlackTree::getStepHistory(){
-    return mStepHistory;
-}
+vector<StepState> RedBlackTree::getStepHistory(){return mStepHistory;}
 
-int RedBlackTree::getCurrentStep(){
-    return mCurrentStep;
-}
+int RedBlackTree::getCurrentStep(){return mCurrentStep;}
 
-int RedBlackTree::getVisualizationSpeed(){
-    return mVisualizationSpeed;
-}
-
-void RedBlackTree::setCurrentStep(int step){
-    if (step >= 0 and step < static_cast<int>(mStepHistory.size())){
-        mCurrentStep = step;
-    }
-}
+int RedBlackTree::getVisualizationSpeed(){return mVisualizationSpeed;}
 
 void RedBlackTree::resetHistory(string initialMessage){
     mStepHistory.clear();
@@ -783,16 +847,6 @@ void RedBlackTree::resetHistory(string initialMessage){
     saveStep(initialMessage);
 }
 
-RedBlackNode* RedBlackTree::cloneNode(RedBlackNode* node, RedBlackNode* parent){
-    if (!node) return nullptr;
-    RedBlackNode* newNode = new RedBlackNode(node->getVal());
-    newNode->setColor(node->getColor());
-    newNode->setParent(parent);
-    newNode->setDummy(node->isDummy());
-    newNode->setLeft(cloneNode(node->getLeft(), newNode));
-    newNode->setRight(cloneNode(node->getRight(), newNode));
-    return newNode;
-}
 
 void RedBlackTree::backup(){
     clearTree(mpBackupRoot);
@@ -800,38 +854,9 @@ void RedBlackTree::backup(){
 }
 
 void RedBlackTree::restore(){
-    if (!mpBackupRoot) return;
+    if (!mpBackupRoot){return;}
+    
     clearTree(mpRoot);
     mpRoot = cloneNode(mpBackupRoot, nullptr);
     resetHistory("Undo successfully.");
-}
-
-bool RedBlackTree::search(int val){
-    if (!mpRoot){
-        saveStep("Tree is empty. Cannot find " + to_string(val), -1, 5, PSEUDO_SEARCH);
-        return false;
-    }
-
-    RedBlackNode *current = mpRoot;
-    saveStep("Start searching. current = root", current->getVal(), 0, PSEUDO_SEARCH);
-
-    while (current){
-        if (val == current->getVal()){
-            saveStep("Found node " + to_string(val) + "!", current->getVal(), 2, PSEUDO_SEARCH);
-            return true;
-        }
-        
-        else if (val < current->getVal()){
-            saveStep("Compare " + to_string(val) + " < " + to_string(current->getVal()) + ". Go LEFT", current->getVal(), 3, PSEUDO_SEARCH);
-            current = current->getLeft();
-        }
-        
-        else {
-            saveStep("Compare " + to_string(val) + " > " + to_string(current->getVal()) + ". Go RIGHT", current->getVal(), 4, PSEUDO_SEARCH);
-            current = current->getRight();
-        }
-    }
-
-    saveStep("Value " + to_string(val) + " not found in the tree.", -1, 5, PSEUDO_SEARCH);
-    return false;
 }

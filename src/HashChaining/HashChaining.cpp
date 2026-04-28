@@ -257,3 +257,40 @@ void HashChaining::clearTableUI() {
 vector<HashNode*>      HashChaining::getTable() const { return table; }
 int                HashChaining::getSize()  const { return size; }
 vector<HashStepInfo> HashChaining::getSteps() const { return steps; }
+
+// ── Save state ──────────────
+void HashChaining::saveState() {
+    vector<vector<int>> state(size);
+    for (int i = 0; i < size; i++) {
+        HashNode* cur = table[i];
+        while (cur) {
+            state[i].push_back(cur->val);
+            cur = cur->next;
+        }
+    }
+    history.push_back(state);
+}
+
+// ── Undo Function ─────────────────────────────────────────
+void HashChaining::undo() {
+    if (history.empty()) return;
+    
+    vector<vector<int>> prevState = history.back();
+    history.pop_back();
+
+    for (int i = 0; i < size; i++) {
+        HashNode* cur = table[i];
+        while (cur) { HashNode* tmp = cur; cur = cur->next; delete tmp; }
+        table[i] = nullptr;
+    }
+
+    for (int i = 0; i < size; i++) {
+        for (int j = (int)prevState[i].size() - 1; j >= 0; j--) {
+            HashNode* p = new HashNode(prevState[i][j]);
+            p->next = table[i];
+            table[i] = p;
+        }
+    }
+    steps.clear();
+    PUSH_STEP("Undo successfully.", -1, -1, -1, false);
+}

@@ -22,7 +22,7 @@ private:
     
     sf::Clock mAutoPlayClock;
 
-    RoundedButton mClearBtn, mUndoBtn, mNewBtn, mInsertBtn, mDeleteBtn, mSearchBtn;
+    RoundedButton mClearBtn, mUndoBtn, mNewBtn, mInsertBtn, mDeleteBtn, mSearchBtn, mUpdateBtn;
     
     bool mGoHome = false;
     float mTransitionProgress = 1.0f;
@@ -65,6 +65,18 @@ private:
     ImageButton mSearchDiceBtn;
     sf::Text mSearchInputText;
     sf::RectangleShape mSearchCursorLine;
+    
+    RoundedButton mUpdateHoverStroke;
+    RoundedButton mUpdateExpandedStroke;
+    RoundedButton mUpdateExpandedBg;
+    RoundedButton mConfirmUpdateBtn;
+    sf::Text mUpdateInputText;
+    sf::RectangleShape mUpdateCursorLine;
+        
+    bool mIsUpdateExpanded = false;
+    std::string mInputOld = "";
+    std::string mInputNew = "";
+    bool mEditingOld = true;
     
     RoundedButton mNewHoverStroke;
     RoundedButton mNewExpandedStroke;

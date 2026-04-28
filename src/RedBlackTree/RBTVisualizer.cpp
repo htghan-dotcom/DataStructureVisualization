@@ -13,31 +13,38 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
       mInsertBtn(mFontRegular, "Insert", 32.f, 204.f, 160.f, 45.f, 22.5f, ThemeManager::current.secondary),
       mDeleteBtn(mFontRegular, "Delete", 32.f, 258.f, 160.f, 45.f, 22.5f, ThemeManager::current.secondary),
       mSearchBtn(mFontRegular, "Search", 32.f, 312.f, 160.f, 45.f, 22.5f, ThemeManager::current.secondary),
+      mUpdateBtn(mFontRegular, "Update", 32.f, 366.f, 160.f, 45.f, 22.5f, ThemeManager::current.secondary),
       mUndoBtn(mFontRegular, "Undo", 32.f, 150.f, 160.f, 45.f, 22.5f, ThemeManager::current.secondary),
       
       mInsertHoverStroke(mFontRegular, "", 30.f, 202.f, 164.f, 49.f, 24.5f, ThemeManager::current.primary),
       mInsertExpandedStroke(mFontRegular, "", 30.f, 202.f, 345.f, 49.f, 24.5f, ThemeManager::current.primary),
       mInsertExpandedBg(mFontRegular, "", 32.f, 204.f, 341.f, 45.f, 22.5f, ThemeManager::current.secondary),
-      mConfirmAddBtn(mFontRegular, "Add", 216.f, 207.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
+      mConfirmAddBtn(mFontRegular, "Add", 216.f, 207.f, 154.f, 39.f, 19.5f, ThemeManager::current.screenBg),
       mInsertInputText(mFontRegular),
 
       mDeleteHoverStroke(mFontRegular, "", 30.f, 256.f, 164.f, 49.f, 24.5f, ThemeManager::current.primary),
       mDeleteExpandedStroke(mFontRegular, "", 30.f, 256.f, 345.f, 49.f, 24.5f, ThemeManager::current.primary),
       mDeleteExpandedBg(mFontRegular, "", 32.f, 258.f, 341.f, 45.f, 22.5f, ThemeManager::current.secondary),
-      mConfirmRemoveBtn(mFontRegular, "Remove", 216.f, 261.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
+      mConfirmRemoveBtn(mFontRegular, "Remove", 216.f, 261.f, 154.f, 39.f, 19.5f, ThemeManager::current.screenBg),
       mDeleteInputText(mFontRegular),
 
       mSearchHoverStroke(mFontRegular, "", 30.f, 310.f, 164.f, 49.f, 24.5f, ThemeManager::current.primary),
       mSearchExpandedStroke(mFontRegular, "", 30.f, 310.f, 345.f, 49.f, 24.5f, ThemeManager::current.primary),
       mSearchExpandedBg(mFontRegular, "", 32.f, 312.f, 341.f, 45.f, 22.5f, ThemeManager::current.secondary),
-      mConfirmSearchBtn(mFontRegular, "Search", 216.f, 315.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
+      mConfirmSearchBtn(mFontRegular, "Search", 216.f, 315.f, 154.f, 39.f, 19.5f, ThemeManager::current.screenBg),
       mSearchInputText(mFontRegular),
+
+      mUpdateHoverStroke(mFontRegular, "", 30.f, 364.f, 164.f, 49.f, 24.5f, ThemeManager::current.primary),
+      mUpdateExpandedStroke(mFontRegular, "", 30.f, 364.f, 345.f, 49.f, 24.5f, ThemeManager::current.primary),
+      mUpdateExpandedBg(mFontRegular, "", 32.f, 366.f, 341.f, 45.f, 22.5f, ThemeManager::current.secondary),
+      mConfirmUpdateBtn(mFontRegular, "Update", 216.f, 369.f, 154.f, 39.f, 19.5f, ThemeManager::current.screenBg),
+      mUpdateInputText(mFontRegular),
 
       mNewHoverStroke(mFontRegular, "", 211.f, 148.f, 164.f, 49.f, 24.5f, ThemeManager::current.primary),
       mNewExpandedStroke(mFontRegular, "", 211.f, 148.f, 164.f, 157.f, 24.5f, ThemeManager::current.primary),
       mNewExpandedBg(mFontRegular, "", 213.f, 150.f, 160.f, 153.f, 22.5f, ThemeManager::current.secondary),
-      mRandomBtn(mFontRegular, "Random", 216.f, 207.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
-      mUploadBtn(mFontRegular, "From File", 216.f, 261.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
+      mRandomBtn(mFontRegular, "Random", 216.f, 207.f, 154.f, 39.f, 19.5f, ThemeManager::current.screenBg),
+      mUploadBtn(mFontRegular, "From File", 216.f, 261.f, 154.f, 39.f, 19.5f, ThemeManager::current.screenBg),
 
       mHideControlsBtn(mFontBold, "<", 382.f, 150.f, 45.f, 45.f, 22.5f, ThemeManager::current.secondary),
       mShowControlsBtn(mFontBold, ">", 32.f, 150.f, 45.f, 45.f, 22.5f, ThemeManager::current.secondary)
@@ -51,9 +58,11 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     mInsertBtn.refreshText();
     mDeleteBtn.refreshText();
     mSearchBtn.refreshText();
+    mUpdateBtn.refreshText();
     mConfirmAddBtn.refreshText();
     mConfirmRemoveBtn.refreshText();
     mConfirmSearchBtn.refreshText();
+    mConfirmUpdateBtn.refreshText();
     mUndoBtn.refreshText();
     mRandomBtn.refreshText();
     mUploadBtn.refreshText();
@@ -90,6 +99,9 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     
     mSearchCursorLine.setSize(sf::Vector2f(2.f, 25.f));
     mSearchCursorLine.setFillColor(ThemeManager::current.textColor);
+    
+    mUpdateCursorLine.setSize(sf::Vector2f(2.f, 25.f));
+    mUpdateCursorLine.setFillColor(ThemeManager::current.textColor);
 
     mClearBtn.setCallback([this](){
         mTree.backup();
@@ -233,6 +245,13 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
         } else {
             mSearchBtn.update(mousePos);
         }
+        
+        if (mIsUpdateExpanded){
+            mConfirmUpdateBtn.update(mousePos);
+        } else {
+            mUpdateBtn.update(mousePos);
+        }
+        
     } else {
         mShowControlsBtn.update(mousePos);
     }
@@ -283,14 +302,12 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                     }
                     
                     else if (!mIsInsertExpanded and sf::FloatRect(sf::Vector2f(32.f, 204.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
-                        mIsNewExpanded = false;
                         mIsInsertExpanded = true;
-                        mIsDeleteExpanded = false;
-                        mIsSearchExpanded = false;
+                        mIsNewExpanded = mIsDeleteExpanded = mIsSearchExpanded = mIsUpdateExpanded = false;
                         
-                        mShowUndoBtn = false;
                         mInputValue = "";
                         clickedInsideAnyForm = true;
+                        mShowUndoBtn = false;
                     }
                     
                     else if (mIsInsertExpanded and sf::FloatRect(sf::Vector2f(32.f, 204.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
@@ -310,14 +327,12 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                     }
                     
                     else if (!mIsDeleteExpanded and sf::FloatRect(sf::Vector2f(32.f, 258.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
-                        mIsNewExpanded = false;
                         mIsDeleteExpanded = true;
-                        mIsInsertExpanded = false;
-                        mIsSearchExpanded = false;
+                        mIsNewExpanded = mIsInsertExpanded = mIsSearchExpanded = mIsUpdateExpanded = false;
                         
-                        mShowUndoBtn = false;
                         mInputValue = "";
                         clickedInsideAnyForm = true;
+                        mShowUndoBtn = false;
                     }
                     
                     else if (mIsDeleteExpanded and sf::FloatRect(sf::Vector2f(32.f, 258.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
@@ -337,14 +352,12 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                     }
                     
                     else if (!mIsSearchExpanded and sf::FloatRect(sf::Vector2f(32.f, 312.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
-                        mIsNewExpanded = false;
                         mIsSearchExpanded = true;
-                        mIsInsertExpanded = false;
-                        mIsDeleteExpanded = false;
+                        mIsNewExpanded = mIsInsertExpanded = mIsDeleteExpanded = mIsUpdateExpanded = false;
                         
-                        mShowUndoBtn = false;
                         mInputValue = "";
                         clickedInsideAnyForm = true;
+                        mShowUndoBtn = false;
                     }
                     
                     else if (mIsSearchExpanded and sf::FloatRect(sf::Vector2f(32.f, 312.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
@@ -361,44 +374,78 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                             mInputValue = to_string(rand() % 99 + 1);
                         }
                     }
+                    
+                    else if (!mIsUpdateExpanded and sf::FloatRect(sf::Vector2f(32.f, 366.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+                        mIsUpdateExpanded = true;
+                        mIsNewExpanded = mIsInsertExpanded = mIsDeleteExpanded = mIsSearchExpanded = false;
+                        
+                        mEditingOld = true;
+                        mInputOld = "";
+                        mInputNew = "";
+                        clickedInsideAnyForm = true;
+                        mShowUndoBtn = false;
+                    }
+                    
+                    else if (mIsUpdateExpanded and sf::FloatRect(sf::Vector2f(32.f, 366.f), sf::Vector2f(341.f, 45.f)).contains(worldPos)){
+                        clickedInsideAnyForm = true;
+                        if (sf::FloatRect(sf::Vector2f(216.f, 369.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) and !mInputOld.empty() and !mInputNew.empty()){
+                            int oldVal = stoi(mInputOld); int newVal = stoi(mInputNew);
+                            mTree.backup();
+                            mTree.resetHistory("Start to Update " + to_string(oldVal) + " to " + to_string(newVal));
+                            mTree.update(oldVal, newVal);
+                            mTree.setCurrentStep(0);
+                            mIsUpdateExpanded = false;
+                            mInputOld = "";
+                            mInputNew = "";
+                            resetPlayUI();
+                        } else if (sf::FloatRect(sf::Vector2f(35.f, 369.f), sf::Vector2f(70.f, 39.f)).contains(worldPos)){
+                            mEditingOld = true;
+                        }
+                        else if (sf::FloatRect(sf::Vector2f(135.f, 369.f), sf::Vector2f(70.f, 39.f)).contains(worldPos)){
+                            mEditingOld = false;
+                        }
+                    }
                 }
                     
                 if (!clickedInsideAnyForm){
-                    mIsInsertExpanded = false;
-                    mIsDeleteExpanded = false;
-                    mIsSearchExpanded = false;
-                    mIsNewExpanded = false;
+                    mIsNewExpanded = mIsInsertExpanded = mIsDeleteExpanded = mIsSearchExpanded = mIsUpdateExpanded = false;
                 }
             }
         }
-         
         else if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()){
             if (keyEvent->code == sf::Keyboard::Key::Z and (keyEvent->system or keyEvent->control)){
                 mTree.restore();
                 mLayout.setDescription("Undo successfully.");
                 mShowUndoBtn = false;
                 mLayout.setPaused(true);
-                mIsNewExpanded = mIsInsertExpanded = mIsDeleteExpanded = mIsSearchExpanded = false;
-                mInputValue = "";
+                mIsNewExpanded = mIsInsertExpanded = mIsDeleteExpanded = mIsSearchExpanded = mIsUpdateExpanded = false;
+                mInputValue = ""; mInputOld = ""; mInputNew = "";
             }
+            
             else if (keyEvent->code == sf::Keyboard::Key::I){
                 mIsInsertExpanded = true;
-                mIsDeleteExpanded = mIsSearchExpanded = mIsNewExpanded = false;
+                mIsDeleteExpanded = mIsSearchExpanded = mIsUpdateExpanded = mIsNewExpanded = false;
                 mInputValue = "";
             }
             else if (keyEvent->code == sf::Keyboard::Key::D){
                 mIsDeleteExpanded = true;
-                mIsInsertExpanded = mIsSearchExpanded = mIsNewExpanded = false;
+                mIsInsertExpanded = mIsSearchExpanded = mIsUpdateExpanded = mIsNewExpanded = false;
                 mInputValue = "";
             }
             else if (keyEvent->code == sf::Keyboard::Key::S){
                 mIsSearchExpanded = true;
-                mIsInsertExpanded = mIsDeleteExpanded = mIsNewExpanded = false;
+                mIsInsertExpanded = mIsDeleteExpanded = mIsUpdateExpanded = mIsNewExpanded = false;
                 mInputValue = "";
+            }
+            else if (keyEvent->code == sf::Keyboard::Key::U){
+                mIsUpdateExpanded = true;
+                mIsInsertExpanded = mIsDeleteExpanded = mIsSearchExpanded = mIsNewExpanded = false;
+                mEditingOld = true;
+                mInputOld = ""; mInputNew = "";
             }
             else if (keyEvent->code == sf::Keyboard::Key::N){
                 mIsNewExpanded = true;
-                mIsInsertExpanded = mIsDeleteExpanded = mIsSearchExpanded = false;
+                mIsInsertExpanded = mIsDeleteExpanded = mIsSearchExpanded = mIsUpdateExpanded = false;
                 mInputValue = "";
             }
             else if (keyEvent->code == sf::Keyboard::Key::Space){
@@ -406,7 +453,9 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
             }
             else if (keyEvent->code == sf::Keyboard::Key::R){
                 if (mIsInsertExpanded or mIsDeleteExpanded or mIsSearchExpanded){
-                    mInputValue = std::to_string(rand() % 99 + 1);
+                    mInputValue = to_string(rand() % 99 + 1);
+                }
+                else if (mIsUpdateExpanded){
                 } else {
                     mTree.backup();
                     generateRandomTree();
@@ -414,54 +463,95 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                     mIsNewExpanded = false;
                 }
             }
-            else if (keyEvent->code == sf::Keyboard::Key::Backspace){
-                if (mIsInsertExpanded or mIsDeleteExpanded or mIsSearchExpanded){
-                    if (!mInputValue.empty()){
-                        mInputValue.pop_back();
+            else if (mIsInsertExpanded or mIsDeleteExpanded or mIsSearchExpanded){
+                if (keyEvent->code == sf::Keyboard::Key::Backspace and !mInputValue.empty()){
+                    mInputValue.pop_back();
+                }
+                else if (keyEvent->code == sf::Keyboard::Key::Enter and !mInputValue.empty()){
+                    if (mIsInsertExpanded){
+                        int val = stoi(mInputValue);
+                        mTree.backup();
+                        mTree.resetHistory("Create new node " + to_string(val) + " (RED)");
+                        mTree.insert(val);
+                        mTree.setCurrentStep(0);
+                        mIsInsertExpanded = false;
+                        mInputValue = "";
+                        resetPlayUI();
+                    }
+                    else if (mIsDeleteExpanded){
+                        int val = stoi(mInputValue);
+                        mTree.backup();
+                        mTree.resetHistory("Start to Remove " + to_string(val));
+                        mTree.remove(val);
+                        mTree.setCurrentStep(0);
+                        mIsDeleteExpanded = false;
+                        mInputValue = "";
+                        resetPlayUI();
+                    }
+                    else if (mIsSearchExpanded){
+                        int val = stoi(mInputValue);
+                        mTree.resetHistory("Start to Search for " + to_string(val));
+                        mTree.search(val);
+                        mTree.setCurrentStep(0);
+                        mIsSearchExpanded = false;
+                        mInputValue = "";
+                        resetPlayUI();
+                    }
+                }
+                else {
+                    int digit = -1;
+                    if (keyEvent->code >= sf::Keyboard::Key::Num0 and keyEvent->code <= sf::Keyboard::Key::Num9){
+                        digit = (int)keyEvent->code - (int)sf::Keyboard::Key::Num0;
+                    }
+                    else if (keyEvent->code >= sf::Keyboard::Key::Numpad0 and keyEvent->code <= sf::Keyboard::Key::Numpad9){
+                        digit = (int)keyEvent->code - (int)sf::Keyboard::Key::Numpad0;
+                    }
+                    
+                    if (digit != -1 and mInputValue.size() < 3){
+                        mInputValue += to_string(digit);
                     }
                 }
             }
-            else if (keyEvent->code == sf::Keyboard::Key::Enter){
-                if (mIsInsertExpanded and !mInputValue.empty()){
-                    int val = stoi(mInputValue);
+            
+            else if (mIsUpdateExpanded){
+                if (keyEvent->code == sf::Keyboard::Key::Tab){
+                    mEditingOld = !mEditingOld;
+                    
+                }
+                else if (keyEvent->code == sf::Keyboard::Key::Backspace){
+                    if (mEditingOld and !mInputOld.empty()){
+                        mInputOld.pop_back();
+                    }
+                    else if (!mEditingOld and !mInputNew.empty()){
+                        mInputNew.pop_back();
+                    }
+                }
+                else if (keyEvent->code == sf::Keyboard::Key::Enter and !mInputOld.empty() and !mInputNew.empty()){
+                    int oldVal = stoi(mInputOld);
+                    int newVal = stoi(mInputNew);
                     mTree.backup();
-                    mTree.resetHistory("Create new node " + to_string(val) + " (RED)");
-                    mTree.insert(val);
+                    mTree.resetHistory("Start to Update " + to_string(oldVal) + " to " + to_string(newVal));
+                    mTree.update(oldVal, newVal);
                     mTree.setCurrentStep(0);
-                    mIsInsertExpanded = false;
-                    mInputValue = "";
+                    mIsUpdateExpanded = false;
+                    mInputOld = ""; mInputNew = "";
                     resetPlayUI();
                 }
-                else if (mIsDeleteExpanded and !mInputValue.empty()){
-                    int val = stoi(mInputValue);
-                    mTree.backup();
-                    mTree.resetHistory("Start to Remove " + to_string(val));
-                    mTree.remove(val); mTree.setCurrentStep(0);
-                    mIsDeleteExpanded = false;
-                    mInputValue = "";
-                    resetPlayUI();
-                }
-                else if (mIsSearchExpanded and !mInputValue.empty()){
-                    int val = stoi(mInputValue);
-                    mTree.resetHistory("Start to Search for " + to_string(val));
-                    mTree.search(val);
-                    mTree.setCurrentStep(0);
-                    mIsSearchExpanded = false;
-                    mInputValue = "";
-                    resetPlayUI();
-                }
-            }
-            else {
-                int digit = -1;
-                if (keyEvent->code >= sf::Keyboard::Key::Num0 and keyEvent->code <= sf::Keyboard::Key::Num9){
-                    digit = (int)keyEvent->code - (int)sf::Keyboard::Key::Num0;
-                } else if (keyEvent->code >= sf::Keyboard::Key::Numpad0 and keyEvent->code <= sf::Keyboard::Key::Numpad9){
-                    digit = (int)keyEvent->code - (int)sf::Keyboard::Key::Numpad0;
-                }
-                if (digit != -1){
-                    if (mIsInsertExpanded or mIsDeleteExpanded or mIsSearchExpanded){
-                        if (mInputValue.size() < 3){
-                            mInputValue += to_string(digit);
+                else {
+                    int digit = -1;
+                    if (keyEvent->code >= sf::Keyboard::Key::Num0 and keyEvent->code <= sf::Keyboard::Key::Num9){
+                        digit = (int)keyEvent->code - (int)sf::Keyboard::Key::Num0;
+                    }
+                    else if (keyEvent->code >= sf::Keyboard::Key::Numpad0 and keyEvent->code <= sf::Keyboard::Key::Numpad9){
+                        digit = (int)keyEvent->code - (int)sf::Keyboard::Key::Numpad0;
+                    }
+                     
+                    if (digit != -1){
+                        if (mEditingOld and mInputOld.size() < 3){
+                            mInputOld += to_string(digit);
+                        }
+                        else if (!mEditingOld and mInputNew.size() < 3){
+                            mInputNew += to_string(digit);
                         }
                     }
                 }
@@ -644,6 +734,8 @@ void RBTVisualizer::render(bool showUI){
     mDeleteExpandedStroke.setThemeColor(ThemeManager::current.primary);
     mSearchHoverStroke.setThemeColor(ThemeManager::current.primary);
     mSearchExpandedStroke.setThemeColor(ThemeManager::current.primary);
+    mUpdateHoverStroke.setThemeColor(ThemeManager::current.primary);
+    mUpdateExpandedStroke.setThemeColor(ThemeManager::current.primary);
     
     if (!showUI and mTransitionProgress == 1.0f){
         setTransitionProgress(0.0f);
@@ -702,6 +794,7 @@ void RBTVisualizer::render(bool showUI){
         mInsertBtn.setThemeColor(ThemeManager::current.secondary);
         mDeleteBtn.setThemeColor(ThemeManager::current.secondary);
         mSearchBtn.setThemeColor(ThemeManager::current.secondary);
+        mUpdateBtn.setThemeColor(ThemeManager::current.secondary);
         mUndoBtn.setThemeColor(ThemeManager::current.secondary);
             
         mUploadBtn.setThemeColor(ThemeManager::current.screenBg);
@@ -709,18 +802,22 @@ void RBTVisualizer::render(bool showUI){
         mConfirmAddBtn.setThemeColor(ThemeManager::current.screenBg);
         mConfirmRemoveBtn.setThemeColor(ThemeManager::current.screenBg);
         mConfirmSearchBtn.setThemeColor(ThemeManager::current.screenBg);
+        mConfirmUpdateBtn.setThemeColor(ThemeManager::current.screenBg);
         
         mInsertExpandedBg.setThemeColor(ThemeManager::current.secondary);
         mDeleteExpandedBg.setThemeColor(ThemeManager::current.secondary);
         mSearchExpandedBg.setThemeColor(ThemeManager::current.secondary);
+        mUpdateExpandedBg.setThemeColor(ThemeManager::current.secondary);
         mNewExpandedBg.setThemeColor(ThemeManager::current.secondary);
 
         mInsertInputText.setFillColor(ThemeManager::current.textColor);
         mDeleteInputText.setFillColor(ThemeManager::current.textColor);
         mSearchInputText.setFillColor(ThemeManager::current.textColor);
+        mUpdateInputText.setFillColor(ThemeManager::current.textColor);
         mInsertCursorLine.setFillColor(ThemeManager::current.textColor);
         mDeleteCursorLine.setFillColor(ThemeManager::current.textColor);
         mSearchCursorLine.setFillColor(ThemeManager::current.textColor);
+        mUpdateCursorLine.setFillColor(ThemeManager::current.textColor);
         
         sf::Vector2f worldPos = mWindow->mapPixelToCoords(sf::Mouse::getPosition(*mWindow));
         
@@ -848,6 +945,74 @@ void RBTVisualizer::render(bool showUI){
                 }
                 mSearchBtn.draw(*mWindow);
             }
+                                
+            if (mIsUpdateExpanded){
+                mUpdateExpandedStroke.draw(*mWindow);
+                mUpdateExpandedBg.draw(*mWindow);
+                
+                if (sf::FloatRect({216.f, 369.f}, {154.f, 39.f}).contains(worldPos)){
+                    sf::ConvexShape cfStroke = createRoundedRect({158.f, 43.f}, 21.5f);
+                    cfStroke.setPosition({214.f, 367.f});
+                    cfStroke.setFillColor(ThemeManager::current.primary);
+                    mWindow->draw(cfStroke);
+                }
+                mConfirmUpdateBtn.draw(*mWindow);
+                
+                float baseY = 366.f;
+                sf::Color boxFill = ThemeManager::current.screenBg;
+                            
+                sf::ConvexShape oldBox = createRoundedRect(sf::Vector2f(70.f, 39.f), 19.5f);
+                oldBox.setPosition(sf::Vector2f(35.f, baseY + 3.f));
+                oldBox.setFillColor(boxFill);
+                oldBox.setOutlineThickness(2.f);
+                oldBox.setOutlineColor(mEditingOld ? ThemeManager::current.primary : ThemeManager::current.secondary);
+                mWindow->draw(oldBox);
+                                  
+                sf::ConvexShape newBox = createRoundedRect(sf::Vector2f(70.f, 39.f), 19.5f);
+                newBox.setPosition(sf::Vector2f(135.f, baseY + 3.f));
+                newBox.setFillColor(boxFill); newBox.setOutlineThickness(2.f);
+                newBox.setOutlineColor(!mEditingOld ? ThemeManager::current.primary : ThemeManager::current.secondary);
+                mWindow->draw(newBox);
+                                        
+                sf::Text arrowText(mFontBold, "->", 20);
+                arrowText.setFillColor(ThemeManager::current.textColor);
+                arrowText.setPosition(sf::Vector2f(108.f, baseY + 9.f));
+                mWindow->draw(arrowText);
+
+                mUpdateInputText.setCharacterSize(25);
+                mUpdateInputText.setFillColor(ThemeManager::current.textColor);
+
+                mUpdateInputText.setString(mInputOld);
+                sf::FloatRect oldBounds = mUpdateInputText.getLocalBounds();
+                mUpdateInputText.setPosition(sf::Vector2f(35.f + (70.f - oldBounds.size.x)/2.f - oldBounds.position.x,
+                                                          baseY + 3.f + (39.f - oldBounds.size.y)/2.f - oldBounds.position.y
+                                                          ));
+                mWindow->draw(mUpdateInputText);
+                
+                mUpdateInputText.setString(mInputNew);
+                sf::FloatRect newBounds = mUpdateInputText.getLocalBounds();
+                mUpdateInputText.setPosition(sf::Vector2f(135.f + (70.f - newBounds.size.x)/2.f - newBounds.position.x,
+                                                          baseY + 3.f + (39.f - newBounds.size.y)/2.f - newBounds.position.y
+                                                          ));
+                mWindow->draw(mUpdateInputText);
+
+                if (mCursorClock.getElapsedTime().asSeconds() >= 0.5f){
+                    mShowCursor = !mShowCursor;
+                    mCursorClock.restart();
+                }
+                
+                if (mShowCursor){
+                    float cursorX = mEditingOld ? 30.f + (70.f + oldBounds.size.x)/2.f + 2.f : 130.f + (70.f + newBounds.size.x)/2.f + 2.f;
+                    mUpdateCursorLine.setPosition(sf::Vector2f(cursorX, 376.f));
+                    mWindow->draw(mUpdateCursorLine);
+                }
+            } else {
+                if (sf::FloatRect(sf::Vector2f(32.f, 366.f), sf::Vector2f(160.f, 45.f)).contains(worldPos)){
+                    mUpdateHoverStroke.draw(*mWindow);
+                }
+                mUpdateBtn.draw(*mWindow);
+            }
+            
         } else {
             mShowControlsBtn.setThemeColor(ThemeManager::current.secondary);
             mShowControlsBtn.draw(*mWindow);
@@ -946,21 +1111,21 @@ std::map<int, sf::Vector2f> RBTVisualizer::computeLayout(const std::vector<NodeS
     float xOffset = menuX + (visX - menuX) * easeP;
     float yStart = menuY + (visY - menuY) * easeP;
     
-    function<void(int, int)> dfs = [&](int val, int depth){
+    auto dfs = [&](auto&& self, int val, int depth) -> void {
         const NodeSnapshot* n = byVal[val];
         if (n->leftVal != -1 and byVal.count(n->leftVal)){
-            dfs(n->leftVal, depth + 1);
+            self(self, n->leftVal, depth + 1);
         }
         
         pos[val] = {static_cast<float>(inorderIdx) * xSpacing + xOffset, yStart + static_cast<float>(depth) * ySpacing};
         inorderIdx++;
         
-        if (n->rightVal != -1 and byVal.count(n->rightVal)){
-            dfs(n->rightVal, depth + 1);
+        if (n->rightVal != -1 && byVal.count(n->rightVal)){
+            self(self, n->rightVal, depth + 1);
         }
     };
 
-    if (root != -1){dfs(root, 0);}
+    if (root != -1){dfs(dfs, root, 0);}
     return pos;
 }
 

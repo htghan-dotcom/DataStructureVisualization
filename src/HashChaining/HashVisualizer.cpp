@@ -5,19 +5,6 @@
 #include <cstdlib>
 #include <cstdint>
 
-// ── Layout constants (sidebar) ──────────────────────────────
-static constexpr float SB_X  = 70.f;
-static constexpr float SB_W  = 160.f;
-static constexpr float SB_H  = 45.f;
-static constexpr float SB_R  = 21.f;
-static constexpr float Y_CLEAR  = 176.f;
-static constexpr float Y_NEW    = 176.f;
-static constexpr float Y_INSERT = 230.f;
-static constexpr float Y_DELETE = 284.f;
-static constexpr float Y_SEARCH = 338.f;
-static constexpr float NEW_X    = 251.f;
-static constexpr float FOOTER_Y = 882.f;
-
 HashVisualizer::HashColorTheme HashVisualizer::getHashTheme() {
     HashColorTheme t;
     
@@ -255,8 +242,6 @@ HashVisualizer::HashVisualizer(sf::RenderWindow& window)
       mUpdateExpandedStroke(mFontRegular,"", 30.f, 364.f, 345.f, 49.f, 24.5f, ThemeManager::current.primary),
       mUpdateExpandedBg    (mFontRegular,"", 32.f, 366.f, 341.f, 45.f, 22.5f, ThemeManager::current.secondary),
       mConfirmUpdateBtn(mFontRegular, "Update", 216.f, 369.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
-    //   mUpdateOldBox(mFontRegular, "", 42.f, 369.f, 65.f, 39.f, 19.5f, ThemeManager::current.bg),
-    //   mUpdateNewBox(mFontRegular, "", 138.f, 369.f, 65.f, 39.f, 19.5f, ThemeManager::current.bg),
       mUpdateInputText     (mFontRegular),
 
       // New expand
@@ -351,14 +336,24 @@ HashVisualizer::HashVisualizer(sf::RenderWindow& window)
 
     // ── Sidebar callbacks ─────────────────────────────────────
     mClearBtn.setCallback([this](){
-        mHash.clearTableUI(); // Gọi hàm mới tạo
+        mHash.saveState();   
+        mShowUndoBtn = true; 
+        mHash.clearTableUI(); 
         mCurrentStep = 0;
         mTargetStep  = -1;
         mLayout.setDescription("Hash table cleared.");
         mLayout.setPaused(true);
+    });
+    mUndoBtn.setCallback([this](){ 
+        if (mHash.canUndo()) {
+            mHash.undo();
+            mCurrentStep = 0;
+            mTargetStep = -1;
+            mLayout.setPaused(true);
+            mLayout.setDescription("Undo completed.");
+        }
         mShowUndoBtn = false;
     });
-    mUndoBtn.setCallback([this](){ mShowUndoBtn = false; });
 
     // ── Initial data ─────────────────────────────────────────
     doRandom();
@@ -366,7 +361,9 @@ HashVisualizer::HashVisualizer(sf::RenderWindow& window)
 
 // ── doRandom ─────────────────────────────────────────────────
 void HashVisualizer::doRandom(){
-    mHash.generateRandom(5 + rand() % 6);
+    mHash.saveState();
+    mShowUndoBtn = false;
+    mHash.generateRandom(5 + rand() % 7);
     mCurrentStep = std::max(0, (int)mHash.getSteps().size()-1);
     mTargetStep  = -1;
     mLayout.setPaused(true);
@@ -375,6 +372,9 @@ void HashVisualizer::doRandom(){
 
 // ── runAction ────────────────────────────────────────────────
 void HashVisualizer::runAction(int action, int value, int oldValue){
+    mHash.saveState();
+    mShowUndoBtn = false;
+
     if      (action==1){ mHash.add(value);              mLayout.setDescription("Added "+std::to_string(value)); }
     else if (action==2){ mHash.deleteNode(value);        mLayout.setDescription("Deleted "+std::to_string(value)); }
     else if (action==3){ mHash.search(value);            mLayout.setDescription("Searching "+std::to_string(value)); }
@@ -548,10 +548,8 @@ void HashVisualizer::renderNodes(sf::RenderWindow& window){
             valText.setPosition(sf::Vector2f(px + (nodeW - vb.size.x) * 0.5f - vb.position.x,
                                              py + (nodeH - vb.size.y) * 0.5f - vb.position.y));
             window.draw(valText);
-
-            // sf::Color arrowCol = isTarget ? ThemeManager::current.primary : sf::Color(140,170,210, alpha);
             arrowCol.a = alpha;
-            
+        
             if (realDepth == 0) drawArrowUp(window, sf::Vector2f(bx + nodeW*0.5f, by), sf::Vector2f(px + nodeW*0.5f, py + nodeH + 1.f), arrowCol);
             else drawArrowUp(window, sf::Vector2f(px + nodeW*0.5f, by - realDepth*gapY), sf::Vector2f(px + nodeW*0.5f, py + nodeH + 1.f), arrowCol);
         }
@@ -684,10 +682,18 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
         }
     }
     else if (const auto* ke=event->getIf<sf::Event::KeyPressed>()){
-        if (ke->code==sf::Keyboard::Key::Z && (ke->control || ke->system)){
-            mShowUndoBtn=false; mLayout.setPaused(true);
-            mIsInsertExpanded=mIsDeleteExpanded=mIsSearchExpanded=mIsNewExpanded=mIsUpdateExpanded=false;
-            mInputValue=""; mInputOld=""; mInputNew="";
+        if (ke->code == sf::Keyboard::Key::Z && (ke->control || ke->system)) {
+            if (mHash.canUndo()) {
+                mHash.undo();
+                mCurrentStep = 0;
+                mTargetStep = -1;
+                mLayout.setPaused(true);
+                mLayout.setDescription("Undo successfully.");
+                mShowUndoBtn = mHash.canUndo();
+            }
+            mShowUndoBtn = false;
+            mIsInsertExpanded = mIsDeleteExpanded = mIsSearchExpanded = mIsNewExpanded = mIsUpdateExpanded = false;
+            mInputValue = ""; mInputOld = ""; mInputNew = "";
         }
         else if (ke->code == sf::Keyboard::Key::I) {
             mIsInsertExpanded = true; mIsDeleteExpanded = mIsSearchExpanded = mIsUpdateExpanded = mIsNewExpanded = false; mInputValue = "";
@@ -707,6 +713,21 @@ void HashVisualizer::update(const std::optional<sf::Event>& event){
         else if (ke->code == sf::Keyboard::Key::Space) {
             mLayout.setPaused(!mLayout.isPaused());
             if (!mLayout.isPaused()) mAutoPlayClock.restart();
+        }
+        else if (ke->code == sf::Keyboard::Key::Left) {
+            if (mCurrentStep > 0) {
+                mTargetStep = mCurrentStep - 1;
+                mStepAnimProgress = 0.f;
+            }
+            mLayout.setPaused(true);
+        }
+        else if (ke->code == sf::Keyboard::Key::Right) {
+            int total = (int)mHash.getSteps().size();
+            if (mCurrentStep < total - 1) {
+                mTargetStep = mCurrentStep + 1;
+                mStepAnimProgress = 0.f;
+            }
+            mLayout.setPaused(true);
         }
         else if (ke->code == sf::Keyboard::Key::R) {
             if (mIsInsertExpanded || mIsDeleteExpanded || mIsSearchExpanded) {
@@ -1030,7 +1051,7 @@ void HashVisualizer::computeHashLayout() {
     float totalW = (float)n * baseBucketGapX - (baseBucketGapX - baseBucketW);
 
     // ── Vis layout ──────────────────────────────────────────────
-    float visBucketRowY   = FOOTER_Y - baseBucketH - 55.f;
+    float visBucketRowY   = 882.f - baseBucketH - 55.f;
     float visBucketStartX = (1440.f - totalW) * 0.5f;
 
     float safeTop       = 150.f;
