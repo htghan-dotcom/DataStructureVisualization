@@ -1,4 +1,4 @@
-#include "MinimumSpanningTree/Graph.h"
+#include "Graph.h"
 
 #include <tuple>
 

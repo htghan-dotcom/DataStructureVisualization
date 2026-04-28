@@ -1,4 +1,4 @@
-#include "AlgorithmFactory.h"
+#include "MinimumSpanningTree/MSTAlgorithmFactory.h"
 
 namespace {
 class DSU {
@@ -40,8 +40,8 @@ private:
     std::vector<int> rank_;
 };
 
-Step makeBaseStep(int index, StepEvent event, const std::string& description) {
-    Step step;
+MSTStep makeBaseStep(int index, StepEvent event, const std::string& description) {
+    MSTStep step;
     step.index = index;
     step.structure = StructureKind::MST;
     step.event = event;
@@ -49,14 +49,14 @@ Step makeBaseStep(int index, StepEvent event, const std::string& description) {
     return step;
 }
 
-std::vector<Step> buildKruskalSteps(const Graph& graph) {
-    std::vector<Step> steps;
+std::vector<MSTStep> buildKruskalSteps(const Graph& graph) {
+    std::vector<MSTStep> steps;
 
     const auto& edges = graph.getEdges();
     std::vector<Edge> sorted = edges;
     std::sort(sorted.begin(), sorted.end());
 
-    Step start = makeBaseStep(0, StepEvent::Visit, "Kruskal start: sort edges by weight");
+    MSTStep start = makeBaseStep(0, StepEvent::Visit, "Kruskal start: sort edges by weight");
     start.pseudocodeLines = {1};
     steps.push_back(start);
 
@@ -69,7 +69,7 @@ std::vector<Step> buildKruskalSteps(const Graph& graph) {
     DSU dsu(maxId + 1);
 
     for (const auto& edge : sorted) {
-        Step candidate = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Candidate,
+        MSTStep candidate = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Candidate,
                                       "Consider edge " + std::to_string(edge.from) + "-" + std::to_string(edge.to) +
                                           " (w=" + std::to_string(edge.weight) + ")");
         candidate.candidateEdges.push_back(edge);
@@ -81,7 +81,7 @@ std::vector<Step> buildKruskalSteps(const Graph& graph) {
         const int rootV = dsu.find(edge.to);
         const bool merged = dsu.unite(edge.from, edge.to);
 
-        Step decision = makeBaseStep(static_cast<int>(steps.size()), merged ? StepEvent::Accept : StepEvent::Reject,
+        MSTStep decision = makeBaseStep(static_cast<int>(steps.size()), merged ? StepEvent::Accept : StepEvent::Reject,
                                      merged ? "Accept edge (no cycle)" : "Reject edge (cycle detected)");
         decision.candidateEdges.push_back(edge);
         if (merged) {
@@ -96,7 +96,7 @@ std::vector<Step> buildKruskalSteps(const Graph& graph) {
         steps.push_back(decision);
     }
 
-    Step end = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Complete,
+    MSTStep end = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Complete,
                             "Kruskal complete: MST edges selected");
     end.highlightedEdges = accepted;
     end.pseudocodeLines = {7};
@@ -105,8 +105,8 @@ std::vector<Step> buildKruskalSteps(const Graph& graph) {
     return steps;
 }
 
-std::vector<Step> buildPrimSteps(const Graph& graph, int startNode) {
-    std::vector<Step> steps;
+std::vector<MSTStep> buildPrimSteps(const Graph& graph, int startNode) {
+    std::vector<MSTStep> steps;
     const auto& nodes = graph.getNodes();
     const auto& edges = graph.getEdges();
 
@@ -149,7 +149,7 @@ std::vector<Step> buildPrimSteps(const Graph& graph, int startNode) {
     auto cmp = [](const Item& a, const Item& b) { return a.first > b.first; };
     std::priority_queue<Item, std::vector<Item>, decltype(cmp)> pq(cmp);
 
-    Step start = makeBaseStep(0, StepEvent::Visit, "Prim start from node " + std::to_string(startNode));
+    MSTStep start = makeBaseStep(0, StepEvent::Visit, "Prim start from node " + std::to_string(startNode));
     start.highlightedNodes.push_back(startNode);
     start.pseudocodeLines = {1};
     steps.push_back(start);
@@ -164,7 +164,7 @@ std::vector<Step> buildPrimSteps(const Graph& graph, int startNode) {
         Edge e = pq.top().second;
         pq.pop();
 
-        Step candidate = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Candidate,
+        MSTStep candidate = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Candidate,
                                       "Pick lightest frontier edge " + std::to_string(e.from) + "-" +
                                           std::to_string(e.to) + " (w=" + std::to_string(e.weight) + ")");
         candidate.highlightedEdges = accepted;
@@ -173,7 +173,7 @@ std::vector<Step> buildPrimSteps(const Graph& graph, int startNode) {
         steps.push_back(candidate);
 
         if (inTree[static_cast<size_t>(e.to)]) {
-            Step reject = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Reject,
+            MSTStep reject = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Reject,
                                        "Reject edge: destination already in tree");
             reject.highlightedEdges = accepted;
             reject.candidateEdges.push_back(Edge{e.from, e.to, e.weight});
@@ -185,7 +185,7 @@ std::vector<Step> buildPrimSteps(const Graph& graph, int startNode) {
         inTree[static_cast<size_t>(e.to)] = true;
         accepted.push_back(Edge{e.from, e.to, e.weight});
 
-        Step accept = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Accept,
+        MSTStep accept = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Accept,
                                    "Accept edge and expand frontier");
         accept.highlightedEdges = accepted;
         accept.highlightedNodes.push_back(e.to);
@@ -200,7 +200,7 @@ std::vector<Step> buildPrimSteps(const Graph& graph, int startNode) {
         }
     }
 
-    Step end = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Complete,
+    MSTStep end = makeBaseStep(static_cast<int>(steps.size()), StepEvent::Complete,
                             "Prim complete: MST edges selected");
     end.highlightedEdges = accepted;
     end.pseudocodeLines = {7};
@@ -210,33 +210,33 @@ std::vector<Step> buildPrimSteps(const Graph& graph, int startNode) {
 }
 }  // namespace
 
-void Animation::clear() {
+void MSTAnimation::clear() {
     steps_.clear();
     cursor_ = 0;
 }
 
-void Animation::setSteps(const std::vector<Step>& steps) {
+void MSTAnimation::setSteps(const std::vector<MSTStep>& steps) {
     steps_ = steps;
     cursor_ = 0;
 }
 
-void Animation::addStep(const Step& step) {
+void MSTAnimation::addStep(const MSTStep& step) {
     steps_.push_back(step);
 }
 
-bool Animation::empty() const {
+bool MSTAnimation::empty() const {
     return steps_.empty();
 }
 
-int Animation::totalSteps() const {
+int MSTAnimation::totalSteps() const {
     return static_cast<int>(steps_.size());
 }
 
-int Animation::currentIndex() const {
+int MSTAnimation::currentIndex() const {
     return cursor_;
 }
 
-const Step* Animation::currentStep() const {
+const MSTStep* MSTAnimation::currentStep() const {
     if (steps_.empty()) {
         return nullptr;
     }
@@ -246,14 +246,14 @@ const Step* Animation::currentStep() const {
     return &steps_[cursor_];
 }
 
-const Step* Animation::stepAt(int index) const {
+const MSTStep* MSTAnimation::stepAt(int index) const {
     if (index < 0 || index >= totalSteps()) {
         return nullptr;
     }
     return &steps_[index];
 }
 
-bool Animation::moveNext() {
+bool MSTAnimation::moveNext() {
     if (steps_.empty() || cursor_ + 1 >= totalSteps()) {
         return false;
     }
@@ -261,7 +261,7 @@ bool Animation::moveNext() {
     return true;
 }
 
-bool Animation::movePrev() {
+bool MSTAnimation::movePrev() {
     if (steps_.empty() || cursor_ - 1 < 0) {
         return false;
     }
@@ -269,11 +269,11 @@ bool Animation::movePrev() {
     return true;
 }
 
-void Animation::moveToStart() {
+void MSTAnimation::moveToStart() {
     cursor_ = 0;
 }
 
-void Animation::moveToEnd() {
+void MSTAnimation::moveToEnd() {
     if (steps_.empty()) {
         cursor_ = 0;
         return;
@@ -281,7 +281,7 @@ void Animation::moveToEnd() {
     cursor_ = totalSteps() - 1;
 }
 
-void Animation::setCursor(int index) {
+void MSTAnimation::setCursor(int index) {
     if (steps_.empty()) {
         cursor_ = 0;
         return;
@@ -290,7 +290,7 @@ void Animation::setCursor(int index) {
 }
 
 namespace algo {
-std::vector<Step> AlgorithmFactory::buildSteps(AlgorithmType type, const Graph& graph, int startNode) {
+std::vector<MSTStep> AlgorithmFactory::buildSteps(AlgorithmType type, const Graph& graph, int startNode) {
     switch (type) {
         case AlgorithmType::Kruskal:
             return buildKruskalSteps(graph);

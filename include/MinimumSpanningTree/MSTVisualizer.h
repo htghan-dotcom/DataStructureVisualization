@@ -1,15 +1,15 @@
 #pragma once
-
 #include <SFML/Graphics.hpp>
+#include "MinimumSpanningTree/MSTAlgorithmFactory.h"
+#include "MinimumSpanningTree/Graph.h"
+#include "GUI.h"
+#include "AppLayout.h"
+#include "Common.h"
+#include "ThemeManager.h"
 
-#include "AlgorithmFactory.h"
-#include "Graph.h"
-#include "UI/components/Button.h"
-#include "UI/components/Slider.h"
 
-enum class AppState {
+enum class MSTAppState {
     Idle,
-    Loading,
     Animating,
     Paused,
     Finished,
@@ -22,10 +22,7 @@ enum class PlaybackMode {
 };
 
 enum class RenderViewKind {
-    MST,
-    DoublyLinkedList,
-    HashTable,
-    RedBlackTree
+    MST
 };
 
 struct RenderViewModel {
@@ -42,9 +39,15 @@ public:
     static void draw(sf::RenderWindow& window, const RenderViewModel& vm, const sf::Font& font);
 };
 
-class Visualizer {
+class MSTVisualizer {
 public:
-    void run();
+    void init();
+    void update(sf::Vector2i mousePos = sf::Vector2i(0,0));
+    void draw(sf::RenderWindow& window, bool showUI = true);
+    void processEvent(const sf::Event& event, sf::RenderWindow& window);
+
+    bool checkReturnHome() const { return layout_.mGoHome; }
+    void resetReturnHome()       { layout_.mGoHome = false; }
 
 private:
     enum class MstCanvasMode {
@@ -63,6 +66,7 @@ private:
     bool handleAdjacencyMatrixClick(const sf::Vector2f& mousePos);
     void onActionNewGraph();
     void onActionRandom();
+    void onActionLoadFromFile();
     void onActionAddNode();
     void onActionAddEdgeMode();
     void onActionRemoveNode();
@@ -77,16 +81,30 @@ private:
 
     Graph graph_;
     algo::AlgorithmType algorithmType_ = algo::AlgorithmType::Kruskal;
-    Animation animation_;
+    MSTAnimation animation_;
 
-    AppState state_ = AppState::Idle;
+    MSTAppState state_ = MSTAppState::Idle;
     PlaybackMode playbackMode_ = PlaybackMode::StepByStep;
     bool playing_ = false;
     float speed_ = 2.0f;
 
-    std::vector<Button> controlButtons_;
-    Button backButton_;
-    Slider speedSlider_;
+    AppLayout layout_;
+
+    std::optional<RoundedButton> btnNew_;
+    std::optional<RoundedButton> btnUndo_;
+    std::optional<RoundedButton> btnNewRandom_;
+    std::optional<RoundedButton> btnNewLoadFile_;
+    std::optional<RoundedButton> btnNodeMode_;
+    std::optional<RoundedButton> btnResetView_;
+    std::optional<RoundedButton> btnAddNode_;
+    std::optional<RoundedButton> btnAddEdge_;
+    std::optional<RoundedButton> btnDelete_;
+    std::optional<RoundedButton> btnKruskal_;
+    std::optional<RoundedButton> btnPrim_;
+    std::optional<RoundedButton> btnAlgoToggle_;
+    std::optional<RoundedButton> btnMatrix_;
+    std::optional<RoundedButton> btnBuild_;
+
     sf::Font font_;
     sf::Font monoFont_;
     sf::Clock playClock_;
@@ -104,7 +122,12 @@ private:
     std::string edgeWeightInput_;
     bool draggingNode_ = false;
     int draggingNodeId_ = -1;
+    float graphZoom_ = 1.0f;
+    sf::Vector2f graphPan_ = sf::Vector2f(0.f, 0.f);
+    bool panningGraph_ = false;
+    sf::Vector2f lastPanMouse_ = sf::Vector2f(0.f, 0.f);
+    bool autoNodeMode_ = true;
+    bool showNewMenu_ = false;
     MstCanvasMode canvasMode_ = MstCanvasMode::Graph;
     bool timelineDirty_ = false;
 };
-

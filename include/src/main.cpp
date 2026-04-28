@@ -1,17 +1,25 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+#include <iostream>
+#include <optional>
 #include "WelcomeScreen.h"
 #include "SettingsScreen.h"
 #include "Menu.h"
+<<<<<<< HEAD:src/main.cpp
 #include "DoublyLinkedList/DLLVisualizer.h"
 #include "HashChaining/HashVisualizer.h"
 #include "RedBlackTree/RBTVisualizer.h"
-#include "MinimumSpanningTree/MSTVisualizer.h"
 #include "Common.h"
+=======
+#include "RedBlackTree/RBTVisualizer.h"
+#include "config/Common.h"
+#include "UI/Visualizer.h" // Nhúng Visualizer của bạn
+>>>>>>> MinimumSpanningTree-MNhat:include/src/main.cpp
 
-enum class AppState { WELCOME, MENU, SETTINGS, EXPANDING, VISUALIZER, SHRINKING };
+enum class MainAppState { WELCOME, MENU, SETTINGS, EXPANDING, VISUALIZER, SHRINKING };
 
 sf::View getLetterboxView(sf::View view, unsigned int windowWidth, unsigned int windowHeight){
+    if (windowHeight == 0) windowHeight = 1;
     float windowRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
     float viewRatio = view.getSize().x / view.getSize().y;
     float sizeX = 1.0f, sizeY = 1.0f;
@@ -29,7 +37,7 @@ sf::View getLetterboxView(sf::View view, unsigned int windowWidth, unsigned int 
     return view;
 }
 
-float smoothLerp(float a, float b, float t){
+float smoothLerpApp(float a, float b, float t){
     float easeT = t * t * (3.0f - 2.0f * t);
     return a + (b - a) * easeT;
 }
@@ -58,19 +66,17 @@ int main(){
     DLLVisualizer dllVisualizer(window);
     HashVisualizer hashVisualizer(window);
     RBTVisualizer rbtVisualizer(window);
-    MSTVisualizer mstVisualizer;
-    mstVisualizer.init();
 
     sf::Music bgMusic;
     if (!bgMusic.openFromFile("assets/audio/bg_music.ogg")){
-        cerr << "Cannot load bg_music.ogg" << endl;
+        std::cerr << "Cannot load bg_music.ogg" << std::endl;
     } else {
         bgMusic.setLooping(true);
         bgMusic.setVolume(40.f);
         bgMusic.play();
     }
     
-    AppState currentState = AppState::WELCOME;
+    MainAppState currentState = MainAppState::WELCOME;
 
     int activeDS = -1;
     float animProgress = 0.f;
@@ -91,19 +97,14 @@ int main(){
                 startRect = mainMenu.getCardBounds(activeDS);
             }
         }
-
-        if (currentState == AppState::VISUALIZER && activeDS == 3){
-            mstVisualizer.update(mousePos);
-            if (mstVisualizer.checkReturnHome()){
-                mstVisualizer.resetReturnHome();
-                currentState = AppState::SHRINKING;
-                animProgress = 1.0f;
-                startRect = mainMenu.getCardBounds(activeDS);
-            }
-        }
         
+<<<<<<< HEAD:src/main.cpp
         while (const auto event = window.pollEvent()){
             if (event->getIf<sf::Event::Closed>()){
+=======
+        while (const std::optional<sf::Event> event = window.pollEvent()){
+            if (event->is<sf::Event::Closed>()){
+>>>>>>> MinimumSpanningTree-MNhat:include/src/main.cpp
                 window.close();
             }
 
@@ -112,28 +113,37 @@ int main(){
                 window.setView(mainView);
             }
             
+<<<<<<< HEAD:src/main.cpp
             if (currentState == AppState::MENU || currentState == AppState::SETTINGS){
+=======
+            if (currentState == MainAppState::MENU || currentState == MainAppState::SETTINGS){
+>>>>>>> MinimumSpanningTree-MNhat:include/src/main.cpp
                 if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()){
                     if (keyEvent->code == sf::Keyboard::Key::Escape){
-                        currentState = AppState::WELCOME;
+                        if (currentState == MainAppState::SETTINGS) settingsScreen.mGoBack = false;
+                        currentState = MainAppState::WELCOME;
                         welcomeScreen.resetStart();
-                        if (currentState == AppState::SETTINGS) settingsScreen.mGoBack = false;
                     }
                 }
             }
             
-            if (currentState == AppState::WELCOME){
+            if (currentState == MainAppState::WELCOME){
                 welcomeScreen.update(mousePos, event);
             }
-            
-            else if (currentState == AppState::SETTINGS){
+            else if (currentState == MainAppState::SETTINGS){
                 settingsScreen.update(mousePos, event);
+<<<<<<< HEAD:src/main.cpp
                             
+=======
+>>>>>>> MinimumSpanningTree-MNhat:include/src/main.cpp
                 if (event && event->is<sf::Event::MouseButtonPressed>()){
                     auto mouseEvent = event->getIf<sf::Event::MouseButtonPressed>();
                     if (mouseEvent->button == sf::Mouse::Button::Left){
                         sf::Vector2f mPos(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+<<<<<<< HEAD:src/main.cpp
                                     
+=======
+>>>>>>> MinimumSpanningTree-MNhat:include/src/main.cpp
                         sf::FloatRect colorBtnBounds(sf::Vector2f(494.f, 715.f), sf::Vector2f(145.f, 145.f));
                         if (colorBtnBounds.contains(mPos)){
                             settingsScreen.toggleThemePopup();
@@ -141,6 +151,7 @@ int main(){
                     }
                 }
             }
+<<<<<<< HEAD:src/main.cpp
 
             // ── DLL visualizer (DS 0) ──
             if (currentState == AppState::VISUALIZER && activeDS == 0){
@@ -174,9 +185,12 @@ int main(){
             }
             // ── RBT visualizer (DS 2) ──
             if (currentState == AppState::VISUALIZER && activeDS == 2){
+=======
+            else if (currentState == MainAppState::VISUALIZER && activeDS == 2){
+>>>>>>> MinimumSpanningTree-MNhat:include/src/main.cpp
                 if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()){
                     if (keyEvent->code == sf::Keyboard::Key::Escape){
-                        currentState = AppState::SHRINKING;
+                        currentState = MainAppState::SHRINKING;
                         animProgress = 1.0f;
                         startRect = mainMenu.getCardBounds(activeDS);
                         continue;
@@ -184,61 +198,46 @@ int main(){
                 }
                 rbtVisualizer.update(event);
                 if (rbtVisualizer.checkReturnHome()){
-                    currentState = AppState::SHRINKING;
+                    currentState = MainAppState::SHRINKING;
                     animProgress = 1.0f;
                     startRect = mainMenu.getCardBounds(activeDS);
                 }
-            }
-
-            // ── MST visualizer (DS 3) ──
-            if (currentState == AppState::VISUALIZER && activeDS == 3){
-                if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()){
-                    if (keyEvent->code == sf::Keyboard::Key::Escape){
-                        currentState = AppState::SHRINKING;
-                        animProgress = 1.0f;
-                        startRect = mainMenu.getCardBounds(activeDS);
-                        continue;
-                    }
-                }
-                mstVisualizer.processEvent(*event, window);
             }
         }
 
         window.clear(sf::Color(40, 40, 40));
         window.setView(mainView);
         
-        if (currentState == AppState::WELCOME){
+        if (currentState == MainAppState::WELCOME){
             sf::RectangleShape welcomeBg(fullScreenRect.size);
             welcomeBg.setFillColor(ThemeManager::current.screenBg);
             window.draw(welcomeBg);
             
-            welcomeScreen.update(mousePos, nullopt);
+            welcomeScreen.update(mousePos, std::nullopt);
             welcomeScreen.draw(window);
             
             if (welcomeScreen.isStartPressed()){
-                currentState = AppState::MENU;
+                currentState = MainAppState::MENU;
             }
             else if (welcomeScreen.isSettingPressed()){
-                currentState = AppState::SETTINGS;
+                currentState = MainAppState::SETTINGS;
                 welcomeScreen.resetSetting();
             }
         }
-
-        else if (currentState == AppState::SETTINGS){
+        else if (currentState == MainAppState::SETTINGS){
             sf::RectangleShape settingsBg(fullScreenRect.size);
             settingsBg.setFillColor(ThemeManager::current.screenBg);
             window.draw(settingsBg);
             
-            settingsScreen.update(mousePos, nullopt);
+            settingsScreen.update(mousePos, std::nullopt);
             settingsScreen.draw(window);
             
             if (settingsScreen.mGoBack){
-                currentState = AppState::WELCOME;
+                currentState = MainAppState::WELCOME;
                 settingsScreen.mGoBack = false;
             }
         }
-
-        else if (currentState == AppState::MENU){
+        else if (currentState == MainAppState::MENU){
             sf::RectangleShape menuBg(fullScreenRect.size);
             menuBg.setFillColor(ThemeManager::current.screenBg);
             window.draw(menuBg);
@@ -247,11 +246,12 @@ int main(){
             mainMenu.draw(window);
             
             if (mainMenu.mGoBack){
-                currentState = AppState::WELCOME;
+                currentState = MainAppState::WELCOME;
                 welcomeScreen.resetStart();
                 mainMenu.mGoBack = false;
             }
             
+<<<<<<< HEAD:src/main.cpp
             // Preview render on menu card hover
             if (mainMenu.getActiveDS() == 0)
                 dllVisualizer.render(false);
@@ -262,18 +262,25 @@ int main(){
             
             if (selected.has_value()){
                 int ds = selected.value();
-                if (ds == 0 || ds == 1 || ds == 2 || ds == 3){
+                if (ds == 0 || ds == 1 || ds == 2){
                     activeDS = ds;
                     startRect    = mainMenu.getCardBounds(activeDS);
                     activeBgColor= mainMenu.getCardColor(activeDS);
                     currentState = AppState::EXPANDING;
                     animProgress = 0.f;
                 }
+=======
+            if (selected.has_value()){
+                activeDS = selected.value(); // Lưu lại vị trí (2 là RBT, 3 là Graph/MST)
+                startRect = mainMenu.getCardBounds(activeDS);
+                activeBgColor = mainMenu.getCardColor(activeDS);
+                currentState = MainAppState::EXPANDING;
+                animProgress = 0.f;
+>>>>>>> MinimumSpanningTree-MNhat:include/src/main.cpp
             }
         }
-        
-        else if (currentState == AppState::EXPANDING or currentState == AppState::SHRINKING){
-            if (currentState == AppState::EXPANDING){
+        else if (currentState == MainAppState::EXPANDING || currentState == MainAppState::SHRINKING){
+            if (currentState == MainAppState::EXPANDING){
                 animProgress += 0.04f;
             } else {
                 animProgress -= 0.04f;
@@ -281,10 +288,11 @@ int main(){
             
             if (animProgress >= 1.0f){
                 animProgress = 1.0f;
-                currentState = AppState::VISUALIZER;
+                currentState = MainAppState::VISUALIZER;
             }
             else if (animProgress <= 0.0f){
                 animProgress = 0.0f;
+<<<<<<< HEAD:src/main.cpp
                 currentState = AppState::MENU;
                 
                 if (activeDS == 0 and dllVisualizer.isEmpty()){
@@ -315,6 +323,21 @@ int main(){
                                                               animProgress))
                                       );
             
+=======
+                currentState = MainAppState::MENU;
+                if (activeDS == 2 && rbtVisualizer.isEmpty()){
+                    rbtVisualizer.generateRandomTree();
+                }
+            }
+                    
+            if (activeDS == 2) rbtVisualizer.setTransitionProgress(animProgress);
+            
+            sf::FloatRect currentRect(
+                sf::Vector2f(smoothLerpApp(startRect.position.x, fullScreenRect.position.x, animProgress), smoothLerpApp(startRect.position.y, fullScreenRect.position.y, animProgress)),
+                sf::Vector2f(smoothLerpApp(startRect.size.x, fullScreenRect.size.x, animProgress), smoothLerpApp(startRect.size.y, fullScreenRect.size.y, animProgress))
+            );
+
+>>>>>>> MinimumSpanningTree-MNhat:include/src/main.cpp
             sf::RectangleShape menuBg(fullScreenRect.size);
             menuBg.setFillColor(ThemeManager::current.screenBg);
             window.draw(menuBg);
@@ -324,6 +347,7 @@ int main(){
             animBg.setFillColor(ThemeManager::current.bg);
             window.draw(animBg);
             
+<<<<<<< HEAD:src/main.cpp
             switch (activeDS){
                 case 0:
                     dllVisualizer.render(false);
@@ -335,7 +359,6 @@ int main(){
                     rbtVisualizer.render(false);
                     break;
                 case 3:
-                    mstVisualizer.draw(window, false);
                     break;
             }
         }
@@ -357,8 +380,31 @@ int main(){
                     rbtVisualizer.render(true);
                     break;
                 case 3:
-                    mstVisualizer.draw(window, true);
                     break;
+=======
+            if (activeDS == 2) rbtVisualizer.render(false);
+        }
+        else if (currentState == MainAppState::VISUALIZER){
+            if (activeDS == 2) {
+                sf::RectangleShape fullBg(fullScreenRect.size);
+                fullBg.setFillColor(ThemeManager::current.bg);
+                window.draw(fullBg);
+                rbtVisualizer.render(true);
+            } 
+            else if (activeDS == 3) {
+                // Tích hợp: Bàn giao quyền điều khiển window cho Visualizer của bạn
+                Visualizer mstVisualizer;
+                mstVisualizer.run(window);
+                
+                // Phục hồi lại mainView sau khi Visualizer có thể đã thay đổi kích thước view
+                window.setView(mainView);
+
+                // Khi bạn bấm nút "Back" trong MST Visualizer, vòng lặp run() sẽ kết thúc (return)
+                // và luồng code sẽ chạy tiếp tục ở đây, ta thực hiện thu nhỏ màn hình về Menu.
+                currentState = MainAppState::SHRINKING;
+                animProgress = 1.0f;
+                startRect = mainMenu.getCardBounds(activeDS);
+>>>>>>> MinimumSpanningTree-MNhat:include/src/main.cpp
             }
         }
         

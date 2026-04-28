@@ -1,6 +1,8 @@
 #include "Menu.h"
 #include "ThemeManager.h"
-#include "Common.h"
+#include "config/Common.h"
+
+using namespace std;
 
 MainMenu::MainMenu(float w, float h)
     : mWindowWidth(w),
@@ -10,7 +12,7 @@ MainMenu::MainMenu(float w, float h)
     if (!mFont.openFromFile("assets/fonts/Inter-Bold.ttf")){cerr << "Could not load font" << endl;}
     
     vector<string> nums = {"01", "02", "03", "04"};
-    vector<string> names = {"Doubly\nLinked List", "Hash\nTable", "Red - Black\nTree", "Minimum\nSpanning\nTree"};
+    vector<string> names = {"Doubly\nLinked List", "Hash\nTable", "Red - Black\nTree", "Graph"};
     
     vector<sf::Color> colors = {
         sf::Color(246, 247, 240),
@@ -25,7 +27,8 @@ MainMenu::MainMenu(float w, float h)
     }
     
     if (!mExitTex.loadFromFile("assets/images/exitButton.png")){cerr << "Cannot load exitButton.png" << endl;}
-    mExitTex.setSmooth(true); mExitTex.generateMipmap();
+    mExitTex.setSmooth(true); 
+    (void)mExitTex.generateMipmap();
     
     mExitBtn.setup(mExitTex, 43.f, 62.f, 48.f, 48.f);
     mExitBtn.setCallback([this](){
@@ -109,74 +112,6 @@ void MainMenu::draw(sf::RenderTarget& target){
         target.draw(card.numText);
         target.draw(card.nameText);
 
-        // Draw MST thumbnail preview directly inside the 4th menu card.
-        if (i == 3 && card.elementsAlpha > 0.5f){
-            float frameX = drawX + 34.f;
-            float frameY = 250.f;
-            float frameW = card.currentWidth - 68.f;
-            float frameH = 290.f;
-
-            uint8_t previewAlpha = static_cast<uint8_t>(std::clamp(card.elementsAlpha, 0.f, 255.f));
-
-            sf::ConvexShape frame = createRoundedRect({frameW, frameH}, 24.f);
-            frame.setPosition(sf::Vector2f(frameX, frameY));
-            frame.setFillColor(sf::Color::Transparent);
-            target.draw(frame);
-
-            auto toLocal = [&](float nx, float ny){
-                return sf::Vector2f(frameX + 24.f + nx * (frameW - 48.f), frameY + 24.f + ny * (frameH - 48.f));
-            };
-
-            vector<sf::Vector2f> pts = {
-                toLocal(0.08f, 0.30f),
-                toLocal(0.38f, 0.10f),
-                toLocal(0.78f, 0.24f),
-                toLocal(0.86f, 0.70f),
-                toLocal(0.56f, 0.92f),
-                toLocal(0.16f, 0.74f)
-            };
-
-            auto drawEdge = [&](int a, int b, bool hi = false){
-                sf::Vector2f p1 = pts[a];
-                sf::Vector2f p2 = pts[b];
-                sf::Vector2f d(p2.x - p1.x, p2.y - p1.y);
-                float len = sqrt(d.x * d.x + d.y * d.y);
-                if (len <= 0.001f) return;
-
-                sf::RectangleShape line(sf::Vector2f(len, hi ? 4.f : 3.f));
-                line.setOrigin(sf::Vector2f(0.f, hi ? 2.f : 1.5f));
-                line.setPosition(p1);
-                line.setRotation(sf::degrees(atan2(d.y, d.x) * 180.f / static_cast<float>(M_PI)));
-                sf::Color lineCol = hi ? ThemeManager::current.primary : sf::Color(120, 130, 145);
-                lineCol.a = previewAlpha;
-                line.setFillColor(lineCol);
-                target.draw(line);
-            };
-
-            drawEdge(0, 1);
-            drawEdge(1, 2);
-            drawEdge(2, 3, true);
-            drawEdge(3, 4);
-            drawEdge(4, 5);
-            drawEdge(5, 0);
-            drawEdge(0, 2);
-            drawEdge(1, 4);
-
-            for (const auto& p : pts){
-                sf::CircleShape node(10.f);
-                node.setOrigin(sf::Vector2f(10.f, 10.f));
-                node.setPosition(p);
-                sf::Color nodeCol(165, 165, 165);
-                nodeCol.a = previewAlpha;
-                node.setFillColor(nodeCol);
-                node.setOutlineThickness(2.f);
-                sf::Color outlineCol = ThemeManager::current.textColor;
-                outlineCol.a = previewAlpha;
-                node.setOutlineColor(outlineCol);
-                target.draw(node);
-            }
-        }
-
         if (card.elementsAlpha > 5.f){
             float btnW = 230.f;
             float btnH = 67.f;
@@ -209,4 +144,3 @@ void MainMenu::draw(sf::RenderTarget& target){
     mExitBtn.mSprite->setColor(ThemeManager::current.primary);
     mExitBtn.draw(target);
 }
-

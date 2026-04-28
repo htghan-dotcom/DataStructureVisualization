@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Graph.h"
+#include "Common.h"
 
 enum class StructureKind {
     MST,
@@ -25,7 +26,7 @@ enum class StepEvent {
     Complete
 };
 
-struct Step {
+struct MSTStep {
     int index = 0;
     StructureKind structure = StructureKind::MST;
     StepEvent event = StepEvent::None;
@@ -37,18 +38,18 @@ struct Step {
     std::unordered_map<std::string, std::string> metadata;
 };
 
-class Animation {
+class MSTAnimation {
 public:
     void clear();
-    void setSteps(const std::vector<Step>& steps);
-    void addStep(const Step& step);
+    void setSteps(const std::vector<MSTStep>& steps);
+    void addStep(const MSTStep& step);
 
     bool empty() const;
     int totalSteps() const;
     int currentIndex() const;
 
-    const Step* currentStep() const;
-    const Step* stepAt(int index) const;
+    const MSTStep* currentStep() const;
+    const MSTStep* stepAt(int index) const;
 
     bool moveNext();
     bool movePrev();
@@ -57,7 +58,7 @@ public:
     void setCursor(int index);
 
 private:
-    std::vector<Step> steps_;
+    std::vector<MSTStep> steps_;
     int cursor_ = 0;
 };
 
@@ -69,7 +70,7 @@ enum class AlgorithmType {
 
 class AlgorithmFactory {
 public:
-    static std::vector<Step> buildSteps(AlgorithmType type, const Graph& graph, int startNode = 0);
+    static std::vector<MSTStep> buildSteps(AlgorithmType type, const Graph& graph, int startNode = 0);
 
     // Backward-compatible output for legacy rendering paths.
     static std::vector<Edge> run(AlgorithmType type, const Graph& graph);

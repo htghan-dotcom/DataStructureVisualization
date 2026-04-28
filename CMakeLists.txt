@@ -17,7 +17,7 @@ elseif(EXISTS "C:/msys64/ucrt64/lib/cmake/SFML")
 endif()
 
 find_package(SFML 3 COMPONENTS Graphics Window System Audio REQUIRED)
-if(NOT SFML_VERSION VERSION_MATCHES "^3\\.")
+if(NOT SFML_VERSION MATCHES "^3\\.")
     message(FATAL_ERROR "Found SFML ${SFML_VERSION} at ${SFML_DIR}, but this project now requires SFML 3.x")
 endif()
 # ─────────────────────────────────────────────

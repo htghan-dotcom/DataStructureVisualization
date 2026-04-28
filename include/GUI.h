@@ -16,6 +16,7 @@ private:
     sf::Color mHoverColor;
     std::function<void()> mCallback;
     bool mIsHovered = false;
+    bool mWasPressed = false;
 
 public:
     RoundedButton(const sf::Font& font, const std::string& str, float x, float y, float w, float h, float radius, sf::Color color)
@@ -63,15 +64,17 @@ public:
 
     void update(const sf::Vector2i& mousePos){
         sf::FloatRect bounds(sf::Vector2f(mVertRect.getPosition().x, mHorizRect.getPosition().y), sf::Vector2f(mVertRect.getSize().x, mHorizRect.getSize().y));
+        bool isPressed = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
         if (bounds.contains({static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)})){
             if (!mIsHovered){setColor(mHoverColor);}
             mIsHovered = true;
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) and mCallback) {mCallback();}
+            if (isPressed and !mWasPressed and mCallback) {mCallback();}
         } else {
             if (mIsHovered){setColor(mNormalColor);}
             
             mIsHovered = false;
         }
+        mWasPressed = isPressed;
     }
 
     void draw(sf::RenderTarget& target){
@@ -92,6 +95,11 @@ public:
     
     void setCharacterSize(unsigned int size){
         mText.setCharacterSize(size);
+        refreshText();
+    }
+
+    void setText(const std::string& str){
+        mText.setString(str);
         refreshText();
     }
 };
@@ -195,6 +203,7 @@ class ImageButton {
 private:
     std::function<void()> mCallback;
     bool mIsHovered = false;
+    bool mWasPressed = false;
     sf::Color mNormalColor = sf::Color::White;
     sf::Color mHoverColor = sf::Color(200, 200, 200);
 
@@ -215,16 +224,18 @@ public:
         if (!mSprite){return;}
         
         sf::FloatRect bounds = mSprite->getGlobalBounds();
+        bool isPressed = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
         if (bounds.contains(sf::Vector2f(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)))){
             if (!mIsHovered) mSprite->setColor(mHoverColor);
             mIsHovered = true;
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) and mCallback){
+            if (isPressed and !mWasPressed and mCallback){
                 mCallback();
             }
         } else {
             if (mIsHovered) mSprite->setColor(mNormalColor);
             mIsHovered = false;
         }
+        mWasPressed = isPressed;
     }
 
     void draw(sf::RenderTarget& target) const {
