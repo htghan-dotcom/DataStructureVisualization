@@ -30,6 +30,17 @@ int HashChaining::hashFunction(int key) {
     return key % size;
 }
 
+bool HashChaining::checkDuplicate(int key, int idx) {
+    HashNode* cur = table[idx];
+    while (cur) {
+        if (cur->val == key) {
+            return true; 
+        }
+        cur = cur->next;
+    }
+    return false;
+}
+
 // ── Add ────────────────────────────────────────────────────────
 void HashChaining::addInternal(int key, bool keepSteps) {
     if (!keepSteps) steps.clear();
@@ -42,17 +53,9 @@ void HashChaining::addInternal(int key, bool keepSteps) {
               1, idx, -1, false);
 
     // Checking if key already exists
-    HashNode* cur = table[idx];
-    while (cur) {
-        PUSH_STEP("Checking node " + to_string(cur->val) + " for duplicate",
-                  1, idx, cur->val, false);
-                  
-        if (cur->val == key) {
-            PUSH_STEP(to_string(key) + " already exists! Cancel insertion.",
-                      1, idx, key, true);
-            return;
-        }
-        cur = cur->next;
+    if (checkDuplicate(key, idx)) {
+        PUSH_STEP("Value " + to_string(key) + " already exists. Cancel insertion.", 1, idx, key, true);
+        return;
     }
 
     // snapshot BEFORE inserting, showing bucket still empty
@@ -120,7 +123,7 @@ bool HashChaining::deleteInternal(int key, bool keepSteps) {
         return false;
     }
 
-    PUSH_STEP("Found " + to_string(key) + " in the middle. Unlinking...",
+    PUSH_STEP("Found " + to_string(key) + " in the chain. Unlinking...",
               16, idx, key, true);
 
     HashNode* tmp = cur->next;
@@ -173,12 +176,19 @@ bool HashChaining::deleteNode(int key)   { return deleteInternal(key, false); }
 
 void HashChaining::update(int oldKey, int newKey) {
     steps.clear();
-    PUSH_STEP("Updating: delete " + to_string(oldKey) + " first...", 0, -1, -1, false);
+    int newIdx = hashFunction(newKey);
+    PUSH_STEP("Update: Checking if new value " + to_string(newKey) + " already exists...", -1, -1, -1, false);
+
+    if (checkDuplicate(newKey, newIdx)) {
+        PUSH_STEP("Value " + to_string(newKey) + " exists. Cancel updating.", -1, -1, -1, false);
+        return;
+    }
+    PUSH_STEP("New value is valid. Now deleting " + to_string(oldKey) + "...", -1, -1, -1, false);
     if (deleteInternal(oldKey, true)) {
-        PUSH_STEP("Done deleting. Now adding " + to_string(newKey) + "...", 0, -1, -1, false);
+        PUSH_STEP("Done deleting. Now adding " + to_string(newKey) + "...", -1, -1, -1, false);
         addInternal(newKey, true);
     } else {
-        PUSH_STEP("Not found " + to_string(oldKey) + ". Cancel updating.", 8, -1, -1, false);
+        PUSH_STEP("Not found " + to_string(oldKey) + ". Cancel updating.", -1, -1, -1, false);
     }
 }
 
