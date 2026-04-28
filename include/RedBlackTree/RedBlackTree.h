@@ -45,8 +45,7 @@ private:
     void collectSnapshot(RedBlackNode *node, std::vector<NodeSnapshot>& nodes);
     void inorderCollect(RedBlackNode *root, std::vector<int>& data, std::vector<std::string>& colors);
     
-    void saveStep(std::string description, int highlightedNode = -1, int activeLine = -1, const std::vector<std::string>& codeLines = {});
-    
+    void saveStep(const std::string& description, int highlightedNode = -1, int activeLine = -1, const std::vector<std::string>& codeLines = {});
     RedBlackNode *mpBackupRoot;
     RedBlackNode *cloneNode(RedBlackNode *node, RedBlackNode *parent);
 
