@@ -49,6 +49,14 @@ const vector<string> PSEUDO_FIXDELETION3 = {
     "\telse P is BLACK:\n\t\tP is U & check sibling S of U"
 };
 
+const vector<string> PSEUDO_UPDATE = {
+    "Update old to new:",
+    "\tif old == new: invalid updating",
+    "\telif !found(old): invalid updating",
+    "\telif found(new): invalid updating",
+    "\telse: delete(old) & insert(new)"
+};
+
 
 RedBlackTree::RedBlackTree(){
     mpRoot = nullptr;
@@ -710,6 +718,35 @@ bool RedBlackTree::remove(int val){
     return true;
 }
 
+bool RedBlackTree::update(int oldVal, int newVal){
+    saveStep("Start updating node " + to_string(oldVal) + " to " + to_string(newVal), -1, 0, PSEUDO_UPDATE);
+    
+    if (oldVal == newVal){
+        saveStep("Update failed! Old and new values are identical (" + to_string(oldVal) + ").", -1, 1, PSEUDO_UPDATE);
+        return false;
+    }
+    
+    saveStep("Phase 1: Check if old value " + to_string(oldVal) + " exists.", -1, 2, PSEUDO_UPDATE);
+    if (!search(oldVal)){
+        saveStep("Update failed! Old value " + to_string(oldVal) + " not found.", -1, 2, PSEUDO_UPDATE);
+        return false;
+    }
+    
+    saveStep("Phase 2: Check if new value " + to_string(newVal) + " already exists.", -1, 3, PSEUDO_UPDATE);
+    if (search(newVal)){
+        saveStep("Update failed! New value " + to_string(newVal) + " already exists.", newVal, 3, PSEUDO_UPDATE);
+        return false;
+    }
+    
+    saveStep("Validation passed! Proceeding to remove " + to_string(oldVal) + ".", oldVal, 4, PSEUDO_UPDATE);
+    remove(oldVal);
+    
+    saveStep("Node " + to_string(oldVal) + " removed! Proceeding to insert " + to_string(newVal) + ".", -1, 4, PSEUDO_UPDATE);
+    insert(newVal);
+    
+    saveStep("Update complete! " + to_string(oldVal) + " successfully updated to " + to_string(newVal) + ".", newVal, 4, PSEUDO_UPDATE);
+    return true;
+}
 void RedBlackTree::nextStep(){
     if (mStepHistory.empty()){
         cout << "No steps available" << endl;
