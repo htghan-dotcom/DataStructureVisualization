@@ -30,6 +30,7 @@ public:
     void addNode(int id, float x, float y);
     void addEdge(int from, int to, int weight);
     bool setNodePosition(int id, float x, float y);
+    void randomizeEdges(int maxWeight);
 
     const std::vector<Node>& getNodes() const;
     const std::vector<Edge>& getEdges() const;
@@ -52,4 +53,5 @@ public:
     static Graph createRandomGraph(int nodeCount, int maxWeight);
     static std::optional<Graph> loadFromFile(const std::string& filePath);
     static std::optional<Graph> loadFromManualLines(const std::vector<std::string>& lines);
+    static Graph createNodesOnlyGraph(int nodeCount);
 };

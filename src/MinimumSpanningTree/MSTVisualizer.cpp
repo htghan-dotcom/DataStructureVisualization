@@ -40,10 +40,10 @@ constexpr float kBottomPanelY = 628.0f;
 constexpr float kBottomPanelW = 1256.0f;
 constexpr float kBottomPanelH = 80.0f;
 
-constexpr float kGraphMinX = 274.0f;
-constexpr float kGraphMaxX = 934.0f;
-constexpr float kGraphMinY = 110.0f;
-constexpr float kGraphMaxY = 560.0f;
+constexpr float kGraphMinX = 360.0f;
+constexpr float kGraphMaxX = 1080.0f;
+constexpr float kGraphMinY = 180.0f;
+constexpr float kGraphMaxY = 740.0f;
 
 sf::Vector2f gGraphPan(0.f, 0.f);
 float gGraphZoom = 1.0f;
@@ -60,19 +60,23 @@ sf::Vector2f graphToScreen(float nx, float ny) {
                         center.y + (base.y - center.y) * gGraphZoom + gGraphPan.y);
 }
 
+float matrixCellForSize(int n) {
+    const float centerAreaW = kGraphMaxX - kGraphMinX - 20.f;
+    const float centerAreaH = kGraphMaxY - kGraphMinY - 60.f;
+    const float maxCellW = centerAreaW / static_cast<float>(n + 1);
+    const float maxCellH = centerAreaH / static_cast<float>(n + 1);
+    return std::min({kMatrixBaseCell, maxCellW, maxCellH});
+}
+
 sf::Vector2f matrixOriginForSize(int n) {
-    const float cell = std::clamp(kMatrixBaseCell - std::max(0, n - 10) * 0.55f, 14.0f, kMatrixBaseCell);
+    const float cell = matrixCellForSize(n);
     const float tableW = cell * static_cast<float>(n + 1);
     const float tableH = cell * static_cast<float>(n + 1);
     const float centerAreaW = kGraphMaxX - kGraphMinX;
     const float centerAreaH = kGraphMaxY - kGraphMinY;
     const float x = kGraphMinX + (centerAreaW - tableW) * 0.5f;
-    const float y = kGraphMinY + (centerAreaH - tableH) * 0.5f;
+    const float y = kGraphMinY + (centerAreaH - tableH) * 0.5f + 15.f;
     return sf::Vector2f(x, y);
-}
-
-float matrixCellForSize(int n) {
-    return std::clamp(kMatrixBaseCell - std::max(0, n - 10) * 0.45f, 16.0f, kMatrixBaseCell);
 }
 
 void drawRoundedFill(sf::RenderWindow& window, const sf::FloatRect& rect, float radius, const sf::Color& color) {
@@ -675,195 +679,138 @@ void MSTVisualizer::onActionNewGraph() {
     showNewMenu_ = !showNewMenu_;
 }
 
-void MSTVisualizer::onActionLoadFromFile() {
-    const char* filterPatterns[] = {"*.txt"};
-    const char* filePath = tinyfd_openFileDialog("Choose MST graph data file", "", 1, filterPatterns, "Text Files (*.txt)", 0);
-    if (filePath == nullptr) {
-        return;
-    }
+void MSTVisualizer::pushUndoState() {
+    UndoSnapshot snap;
+    snap.graph = graph_;
+    snap.adjacencyMatrix = adjacencyMatrix_;
+    snap.nodeAlive = nodeAlive_;
+    snap.selectedNodeId = selectedNodeId_;
+    snap.autoNodeMode = autoNodeMode_;
+    snap.manualNodeCount = manualNodeCount_;
 
-    auto loaded = GraphLoader::loadFromFile(filePath);
-    if (!loaded.has_value()) {
-        tinyfd_messageBox("Load Failed", "Cannot parse graph file. Expected format:\nN <count>\nE <u> <v> <w>", "ok", "error", 1);
-        return;
-    }
+    undoStack_.push_back(std::move(snap));
+    if (undoStack_.size() > 64) undoStack_.erase(undoStack_.begin());
+}
 
-    graph_ = loaded.value();
-    syncAdjacencyMatrixFromGraph();
-    selectedNodeId_ = -1;
-    placingNode_ = false;
-    deletingNodeMode_ = false;
-    addingEdgeMode_ = false;
-    draggingNode_ = false;
-    draggingNodeId_ = -1;
-    pendingEdgeFrom_ = -1;
-    pendingEdgeTo_ = -1;
-    enteringEdgeWeight_ = false;
-    edgeWeightInput_.clear();
-    graphZoom_ = 1.0f;
-    graphPan_ = sf::Vector2f(0.f, 0.f);
-    canvasMode_ = MstCanvasMode::Graph;
+void MSTVisualizer::onActionUndo() {
+    if (undoStack_.empty()) return;
+    const UndoSnapshot snap = undoStack_.back();
+    undoStack_.pop_back();
+
+    graph_ = snap.graph;
+    adjacencyMatrix_ = snap.adjacencyMatrix;
+    nodeAlive_ = snap.nodeAlive;
+    selectedNodeId_ = snap.selectedNodeId;
+    autoNodeMode_ = snap.autoNodeMode;
+    manualNodeCount_ = snap.manualNodeCount;
+
+    rebuildGraphFromAdjacencyMatrix();
     animation_.clear();
     playing_ = false;
     state_ = MSTAppState::Paused;
     timelineDirty_ = true;
-}
-
-void MSTVisualizer::rebuildTimeline() {
-    buildPseudocode();
-    int startNode = 0;
-    bool hasSelected = false;
-    for (const auto& node : graph_.getNodes()) {
-        if (node.id == selectedNodeId_) {
-            hasSelected = true;
-            break;
-        }
-    }
-    if (hasSelected) {
-        startNode = selectedNodeId_;
-    } else if (!graph_.getNodes().empty()) {
-        startNode = graph_.getNodes().front().id;
-    }
-
-    const auto steps = algo::AlgorithmFactory::buildSteps(algorithmType_, graph_, startNode);
-    animation_.setSteps(steps);
-    playing_ = false;
-    state_ = steps.empty() ? MSTAppState::Error : MSTAppState::Paused;
-    timelineDirty_ = false;
 }
 
 void MSTVisualizer::onActionRandom() {
-    int nodeCount = 8;
-    if (autoNodeMode_) {
-        nodeCount = 5 + (std::rand() % 10);
-    } else {
-        int alive = static_cast<int>(graph_.getNodes().size());
-        nodeCount = std::clamp(alive > 0 ? alive : 8, 2, 20);
-    }
-
-    graph_ = GraphLoader::createRandomGraph(nodeCount, 30);
+    pushUndoState();
+    graph_.randomizeEdges(30);
     selectedNodeId_ = -1;
-    syncAdjacencyMatrixFromGraph();
-    canvasMode_ = MstCanvasMode::Graph;
     placingNode_ = false;
     deletingNodeMode_ = false;
     addingEdgeMode_ = false;
-    draggingNode_ = false;
-    draggingNodeId_ = -1;
     pendingEdgeFrom_ = -1;
     pendingEdgeTo_ = -1;
     enteringEdgeWeight_ = false;
     edgeWeightInput_.clear();
-    animation_.clear();
-    playing_ = false;
-    state_ = MSTAppState::Paused;
-    timelineDirty_ = true;
+    syncAdjacencyMatrixFromGraph();
+    rebuildTimeline();
+    showNewMenu_ = false;
+}
+
+void MSTVisualizer::onActionLoadFromFile() {
+    const char* filters[] = {"*.txt", "*.csv", "*.graph"};
+    char* filePath = tinyfd_openFileDialog("Load Graph", "", 3, filters, "Graph files", 0);
+    if (filePath == nullptr || *filePath == '\0') {
+        return;
+    }
+
+    const std::optional<Graph> loaded = GraphLoader::loadFromFile(filePath);
+    if (!loaded) {
+        return;
+    }
+
+    pushUndoState();
+    graph_ = *loaded;
+    selectedNodeId_ = -1;
+    placingNode_ = false;
+    deletingNodeMode_ = false;
+    addingEdgeMode_ = false;
+    pendingEdgeFrom_ = -1;
+    pendingEdgeTo_ = -1;
+    enteringEdgeWeight_ = false;
+    edgeWeightInput_.clear();
+    syncAdjacencyMatrixFromGraph();
+    rebuildTimeline();
 }
 
 void MSTVisualizer::onActionAddNode() {
-    const bool wasActive = placingNode_;
-    placingNode_ = !wasActive;
-    deletingNodeMode_ = false;
-    draggingNode_ = false;
-    draggingNodeId_ = -1;
-    addingEdgeMode_ = false;
-    pendingEdgeFrom_ = -1;
-    pendingEdgeTo_ = -1;
-    enteringEdgeWeight_ = false;
-    edgeWeightInput_.clear();
-    canvasMode_ = MstCanvasMode::Graph;
+    placingNode_ = !placingNode_;
+    if (placingNode_) {
+        deletingNodeMode_ = false;
+        addingEdgeMode_ = false;
+    }
 }
 
 void MSTVisualizer::onActionAddEdgeMode() {
-    const bool wasActive = addingEdgeMode_ || enteringEdgeWeight_ || pendingEdgeFrom_ >= 0;
-    addingEdgeMode_ = !wasActive;
-    deletingNodeMode_ = false;
-    draggingNode_ = false;
-    draggingNodeId_ = -1;
-    placingNode_ = false;
-    pendingEdgeFrom_ = -1;
-    pendingEdgeTo_ = -1;
-    enteringEdgeWeight_ = false;
-    edgeWeightInput_.clear();
-    canvasMode_ = MstCanvasMode::Graph;
+    addingEdgeMode_ = !addingEdgeMode_;
+    if (addingEdgeMode_) {
+        placingNode_ = false;
+        deletingNodeMode_ = false;
+        pendingEdgeFrom_ = -1;
+        pendingEdgeTo_ = -1;
+        enteringEdgeWeight_ = false;
+        edgeWeightInput_.clear();
+    }
 }
 
 void MSTVisualizer::onActionRemoveNode() {
-    const bool wasActive = deletingNodeMode_;
-    deletingNodeMode_ = !wasActive;
-    placingNode_ = false;
-    addingEdgeMode_ = false;
-    pendingEdgeFrom_ = -1;
-    pendingEdgeTo_ = -1;
-    enteringEdgeWeight_ = false;
-    edgeWeightInput_.clear();
-    draggingNode_ = false;
-    draggingNodeId_ = -1;
-    canvasMode_ = MstCanvasMode::Graph;
+    deletingNodeMode_ = !deletingNodeMode_;
+    if (deletingNodeMode_) {
+        placingNode_ = false;
+        addingEdgeMode_ = false;
+    }
 }
 
 void MSTVisualizer::onActionKruskal() {
     algorithmType_ = algo::AlgorithmType::Kruskal;
-    placingNode_ = false;
-    deletingNodeMode_ = false;
-    addingEdgeMode_ = false;
-    pendingEdgeFrom_ = -1;
-    pendingEdgeTo_ = -1;
-    enteringEdgeWeight_ = false;
-    edgeWeightInput_.clear();
     rebuildTimeline();
 }
 
 void MSTVisualizer::onActionPrim() {
     algorithmType_ = algo::AlgorithmType::Prim;
-    placingNode_ = false;
-    deletingNodeMode_ = false;
-    addingEdgeMode_ = false;
-    pendingEdgeFrom_ = -1;
-    pendingEdgeTo_ = -1;
-    enteringEdgeWeight_ = false;
-    edgeWeightInput_.clear();
     rebuildTimeline();
 }
 
 void MSTVisualizer::onActionToggleAlgorithm() {
-    if (algorithmType_ == algo::AlgorithmType::Kruskal) {
-        onActionPrim();
-    } else {
-        onActionKruskal();
-    }
+    controlPanelExpanded_ = !controlPanelExpanded_;
 }
 
 void MSTVisualizer::onActionBuild() {
-    placingNode_ = false;
-    deletingNodeMode_ = false;
-    addingEdgeMode_ = false;
-    pendingEdgeFrom_ = -1;
-    pendingEdgeTo_ = -1;
-    enteringEdgeWeight_ = false;
-    edgeWeightInput_.clear();
     rebuildTimeline();
-}
-
-void MSTVisualizer::onActionPrev() {
-    if (timelineDirty_) {
-        onActionBuild();
-        layout_.setPaused(true);
-        return;
-    }
-    animation_.movePrev();
-    state_ = MSTAppState::Paused;
     playing_ = false;
     layout_.setPaused(true);
 }
 
+void MSTVisualizer::onActionPrev() {
+    playing_ = false;
+    layout_.setPaused(true);
+    animation_.movePrev();
+}
+
 void MSTVisualizer::onActionNext() {
-    if (!animation_.moveNext()) {
-        state_ = MSTAppState::Finished;
-        playing_ = false;
-        return;
-    }
-    state_ = MSTAppState::Paused;
+    playing_ = false;
+    layout_.setPaused(true);
+    animation_.moveNext();
 }
 
 void MSTVisualizer::onActionPlayPause() {
@@ -871,105 +818,129 @@ void MSTVisualizer::onActionPlayPause() {
         return;
     }
 
-    // If user presses Play at the end, restart from beginning for immediate replay.
-    if (!playing_ && animation_.currentIndex() >= animation_.totalSteps() - 1) {
-        animation_.moveToStart();
-    }
-
     playing_ = !playing_;
-    playbackMode_ = PlaybackMode::RunAtOnce;
-    state_ = playing_ ? MSTAppState::Animating : MSTAppState::Paused;
     layout_.setPaused(!playing_);
-
-    // Remove initial wait: advance one step immediately when entering Play.
     if (playing_) {
-        if (!animation_.moveNext()) {
-            playing_ = false;
-            state_ = MSTAppState::Finished;
-            layout_.setPaused(true);
-        }
+        playClock_.restart();
     }
-
-    playClock_.restart();
 }
 
 void MSTVisualizer::onActionEnd() {
-    animation_.moveToEnd();
     playing_ = false;
-    state_ = MSTAppState::Finished;
+    layout_.setPaused(true);
+    animation_.moveToEnd();
 }
 
+void MSTVisualizer::rebuildTimeline() {
+    buildPseudocode();
+
+    const int startNode = graph_.getNodes().empty() ? 0 : graph_.getNodes().front().id;
+    animation_.setSteps(algo::AlgorithmFactory::buildSteps(algorithmType_, graph_, startNode));
+    animation_.moveToStart();
+    timelineDirty_ = false;
+    state_ = animation_.empty() ? MSTAppState::Idle : MSTAppState::Paused;
+    layout_.setPaused(true);
+}
+
+void MSTVisualizer::updateLayout() {
+    layoutFooterY_ = kBottomPanelY - 18.f;
+
+    if (!controlPanelExpanded_) {
+        return;
+    }
+
+    const float titleHeight = 18.f;
+    const float titleBottomGap = 10.f;
+    const float groupGap = 20.f;
+    const float buildBottomGap = 8.f;
+
+    float currentY = layoutSystemY_;
+    const float halfBtnWidth = (layoutPanelWidth_ - layoutBtnGap_) / 2.f;
+
+    layoutSystemTitleY_ = currentY;
+    currentY += titleHeight + titleBottomGap;
+
+    if (btnNew_) btnNew_->setPosition(layoutPanelX_, currentY, halfBtnWidth, layoutBtnHeight_, layoutBtnRadius_);
+    if (btnUndo_) btnUndo_->setPosition(layoutPanelX_ + halfBtnWidth + layoutBtnGap_, currentY, halfBtnWidth, layoutBtnHeight_, layoutBtnRadius_);
+    currentY += layoutBtnHeight_ + layoutRowGap_;
+
+    if (showNewMenu_) {
+        if (btnNewRandom_) btnNewRandom_->setPosition(layoutPanelX_ + 4.f, currentY, layoutPanelWidth_ - 8.f, layoutBtnHeight_, layoutBtnRadius_);
+        currentY += layoutBtnHeight_ + layoutRowGap_;
+        if (btnNewLoadFile_) btnNewLoadFile_->setPosition(layoutPanelX_ + 4.f, currentY, layoutPanelWidth_ - 8.f, layoutBtnHeight_, layoutBtnRadius_);
+        currentY += layoutBtnHeight_ + layoutRowGap_;
+    }
+
+    if (btnNodeMode_) btnNodeMode_->setPosition(layoutPanelX_, currentY, halfBtnWidth, layoutBtnHeight_, layoutBtnRadius_);
+    if (btnMatrix_) btnMatrix_->setPosition(layoutPanelX_ + halfBtnWidth + layoutBtnGap_, currentY, halfBtnWidth, layoutBtnHeight_, layoutBtnRadius_);
+    currentY += layoutBtnHeight_ + layoutRowGap_;
+
+    if (btnResetView_) btnResetView_->setPosition(layoutPanelX_, currentY, layoutPanelWidth_, layoutBtnHeight_, layoutBtnRadius_);
+    currentY += layoutBtnHeight_ + groupGap;
+
+    layoutActionsTitleY_ = currentY;
+    currentY += titleHeight + titleBottomGap;
+
+    if (btnAddNode_) btnAddNode_->setPosition(layoutPanelX_, currentY, halfBtnWidth, layoutBtnHeight_, layoutBtnRadius_);
+    if (btnDelete_) btnDelete_->setPosition(layoutPanelX_ + halfBtnWidth + layoutBtnGap_, currentY, halfBtnWidth, layoutBtnHeight_, layoutBtnRadius_);
+    currentY += layoutBtnHeight_ + layoutRowGap_;
+
+    if (btnAddEdge_) btnAddEdge_->setPosition(layoutPanelX_, currentY, layoutPanelWidth_, layoutBtnHeight_, layoutBtnRadius_);
+    currentY += layoutBtnHeight_ + layoutRowGap_;
+
+    if (btnBuild_) btnBuild_->setPosition(layoutPanelX_, currentY, layoutPanelWidth_, 38.f, layoutBtnRadius_);
+    currentY += 38.f + buildBottomGap + groupGap;
+
+    layoutAlgorithmsTitleY_ = currentY;
+    currentY += titleHeight + titleBottomGap;
+
+    if (algorithmPanelExpanded_) {
+        if (btnKruskal_) btnKruskal_->setPosition(layoutPanelX_, currentY, halfBtnWidth, layoutBtnHeight_, layoutBtnRadius_);
+        if (btnPrim_) btnPrim_->setPosition(layoutPanelX_ + halfBtnWidth + layoutBtnGap_, currentY, halfBtnWidth, layoutBtnHeight_, layoutBtnRadius_);
+    }
+}
+ 
 void MSTVisualizer::init() {
-    const std::vector<std::string> uiFontCandidates = {
-        "assets/fonts/JetBrainsMono-2.304/fonts/ttf/JetBrainsMono-Regular.ttf",
-        "../assets/fonts/JetBrainsMono-2.304/fonts/ttf/JetBrainsMono-Regular.ttf",
-        "../../assets/fonts/JetBrainsMono-2.304/fonts/ttf/JetBrainsMono-Regular.ttf",
-        "C:/Windows/Fonts/segoeui.ttf",
-        "C:/Windows/Fonts/arial.ttf"};
-
-    const std::vector<std::string> monoFontCandidates = {
-        "assets/fonts/JetBrainsMono-2.304/fonts/ttf/JetBrainsMono-Regular.ttf",
-        "../assets/fonts/JetBrainsMono-2.304/fonts/ttf/JetBrainsMono-Regular.ttf",
-        "../../assets/fonts/JetBrainsMono-2.304/fonts/ttf/JetBrainsMono-Regular.ttf",
-        "C:/Windows/Fonts/consola.ttf",
-        "C:/Windows/Fonts/cour.ttf"};
-
-    if (!loadFontFromCandidates(font_, uiFontCandidates)) {
-        return;
-    }
-
-    if (!loadFontFromCandidates(monoFont_, monoFontCandidates)) {
-        return;
-    }
-
     layout_.setPlayPauseCallback([this](){ onActionPlayPause(); });
-    layout_.setSkipBackCallback([this](){ animation_.moveToStart(); state_ = MSTAppState::Paused; playing_ = false; layout_.setPaused(true); });
-    layout_.setSkipForwardCallback([this](){ animation_.moveToEnd(); state_ = MSTAppState::Finished; playing_ = false; layout_.setPaused(true); });
-    layout_.setStepBackCallback([this](){ onActionPrev(); layout_.setPaused(true); });
-    layout_.setStepForwardCallback([this](){ onActionNext(); layout_.setPaused(true); });
+    layout_.setSkipBackCallback([this](){ onActionPrev(); });
+    layout_.setSkipForwardCallback([this](){ onActionNext(); });
+    layout_.setStepBackCallback([this](){ onActionPrev(); });
+    layout_.setStepForwardCallback([this](){ onActionNext(); });
 
-    float leftX = 32.f;
-    float row1Y = 132.f;
-    float leftW = 124.f;
-    float rightX = 164.f;
-    float rightW = 124.f;
-    float h = 34.f;
-    float r = 17.f;
-    float rowGap = 40.f;
+    loadFontFromCandidates(font_, {
+        "assets/fonts/Inter-Bold.ttf",
+        "../assets/fonts/Inter-Bold.ttf"
+    });
+    loadFontFromCandidates(monoFont_, {
+        "assets/fonts/JetBrainsMono-2.304/fonts/ttf/JetBrainsMono-Regular.ttf",
+        "../assets/fonts/JetBrainsMono-2.304/fonts/ttf/JetBrainsMono-Regular.ttf",
+        "assets/fonts/Inter-Regular.ttf",
+        "../assets/fonts/Inter-Regular.ttf"
+    });
 
-    btnNew_.emplace(font_, "New MST", leftX, row1Y, leftW, h, r, ThemeManager::current.secondary);
-    btnUndo_.emplace(font_, "Undo", rightX, row1Y, rightW, h, r, ThemeManager::current.secondary);
+    const float halfBtnWidth = (layoutPanelWidth_ - layoutBtnGap_) / 2.f;
 
-    float dropdownY = row1Y + 40.f;
-    btnNewRandom_.emplace(font_, "Random", leftX + 8.f, dropdownY, 102.f, h, r, ThemeManager::current.secondary);
-    btnNewLoadFile_.emplace(font_, "Load From File", leftX + 8.f, dropdownY + 40.f, 158.f, h, r, ThemeManager::current.secondary);
-
-    float row2Y = row1Y + rowGap + 52.f;
-    btnNodeMode_.emplace(font_, "Nodes: Auto", leftX, row2Y, 126.f, h, r, ThemeManager::current.secondary);
-    btnMatrix_.emplace(font_, "View: Matrix", leftX + 132.f, row2Y, 130.f, h, r, ThemeManager::current.secondary);
-
-    float row3Y = row2Y + rowGap;
-    btnResetView_.emplace(font_, "Reset View", leftX, row3Y, 262.f, h, r, ThemeManager::current.secondary);
-
-    float row4Y = row3Y + rowGap + 18.f;
-    btnAddNode_.emplace(font_, "Add Node", leftX, row4Y, 124.f, h, r, ThemeManager::current.secondary);
-    btnDelete_.emplace(font_, "Delete Node", rightX, row4Y, 124.f, h, r, ThemeManager::current.secondary);
-
-    float row5Y = row4Y + rowGap + 6.f;
-    btnAddEdge_.emplace(font_, "Edit Edges", leftX, row5Y, 262.f, h, r, ThemeManager::current.secondary);
-
-    float row6Y = row5Y + rowGap + 10.f;
-    btnBuild_.emplace(font_, "BUILD", leftX, row6Y, 262.f, 42.f, 19.f, ThemeManager::current.primary);
-
-    float row7Y = row6Y + 58.f;
-    btnKruskal_.emplace(font_, "Kruskal", leftX, row7Y, 124.f, h, r, ThemeManager::current.secondary);
-    btnPrim_.emplace(font_, "Prim", rightX, row7Y, 124.f, h, r, ThemeManager::current.secondary);
-    btnAlgoToggle_.emplace(font_, "<", leftX + 270.f, row7Y - 8.f, 20.f, h + 16.f, 10.f, ThemeManager::current.secondary);
+    btnNew_.emplace(font_, "New Graph", layoutPanelX_, layoutSystemY_, halfBtnWidth, layoutBtnHeight_, layoutBtnRadius_, ThemeManager::current.secondary);
+    btnUndo_.emplace(font_, "Undo", layoutPanelX_ + halfBtnWidth + layoutBtnGap_, layoutSystemY_, halfBtnWidth, layoutBtnHeight_, layoutBtnRadius_, ThemeManager::current.secondary);
+    btnNewRandom_.emplace(font_, "Random", layoutPanelX_, layoutSystemY_, layoutPanelWidth_, layoutBtnHeight_, layoutBtnRadius_, ThemeManager::current.secondary);
+    btnNewLoadFile_.emplace(font_, "Load From File", layoutPanelX_, layoutSystemY_, layoutPanelWidth_, layoutBtnHeight_, layoutBtnRadius_, ThemeManager::current.secondary);
+    btnNodeMode_.emplace(font_, "Nodes: 6", layoutPanelX_, layoutSystemY_, halfBtnWidth, layoutBtnHeight_, layoutBtnRadius_, ThemeManager::current.secondary);
+    btnMatrix_.emplace(font_, "View: Matrix", layoutPanelX_ + halfBtnWidth + layoutBtnGap_, layoutSystemY_, halfBtnWidth, layoutBtnHeight_, layoutBtnRadius_, ThemeManager::current.secondary);
+    btnResetView_.emplace(font_, "Reset View", layoutPanelX_, layoutSystemY_, layoutPanelWidth_, layoutBtnHeight_, layoutBtnRadius_, ThemeManager::current.secondary);
+    btnAddNode_.emplace(font_, "Add Node", layoutPanelX_, layoutSystemY_, halfBtnWidth, layoutBtnHeight_, layoutBtnRadius_, ThemeManager::current.secondary);
+    btnDelete_.emplace(font_, "Delete Node", layoutPanelX_ + halfBtnWidth + layoutBtnGap_, layoutSystemY_, halfBtnWidth, layoutBtnHeight_, layoutBtnRadius_, ThemeManager::current.secondary);
+    btnAddEdge_.emplace(font_, "Edit Edges", layoutPanelX_, layoutSystemY_, layoutPanelWidth_, layoutBtnHeight_, layoutBtnRadius_, ThemeManager::current.secondary);
+    btnBuild_.emplace(font_, "BUILD", layoutPanelX_, layoutSystemY_, layoutPanelWidth_, 38.f, layoutBtnRadius_, ThemeManager::current.primary);
+    btnKruskal_.emplace(font_, "Kruskal", layoutPanelX_, layoutSystemY_, halfBtnWidth, layoutBtnHeight_, layoutBtnRadius_, ThemeManager::current.secondary);
+    btnPrim_.emplace(font_, "Prim", layoutPanelX_ + halfBtnWidth + layoutBtnGap_, layoutSystemY_, halfBtnWidth, layoutBtnHeight_, layoutBtnRadius_, ThemeManager::current.secondary);
+    float toggleX_init = controlPanelExpanded_ ? (layoutPanelX_ + layoutPanelWidth_ + 16.f) : 12.f;
+    float toggleY_init = kLeftPanelY + (kLeftPanelH - 44.f) / 2.f;
+    btnAlgoToggle_.emplace(font_, controlPanelExpanded_ ? "<" : ">", toggleX_init, toggleY_init, 20.f, 44.f, 10.f, ThemeManager::current.secondary);
 
     btnNew_->setCallback([this](){ onActionNewGraph(); });
-    btnUndo_->setCallback([this](){ onActionPrev(); layout_.setPaused(true); });
-    if (btnNewRandom_) btnNewRandom_->setCallback([this](){ onActionRandom(); showNewMenu_ = false; });
-    if (btnNewLoadFile_) btnNewLoadFile_->setCallback([this](){ onActionLoadFromFile(); showNewMenu_ = false; });
+    btnUndo_->setCallback([this](){ onActionUndo(); });
+    if (btnNewRandom_) btnNewRandom_->setCallback([this](){ pushUndoState(); onActionRandom(); showNewMenu_ = false; });
+    if (btnNewLoadFile_) btnNewLoadFile_->setCallback([this](){ pushUndoState(); onActionLoadFromFile(); showNewMenu_ = false; });
     btnAddNode_->setCallback([this](){ onActionAddNode(); });
     btnAddEdge_->setCallback([this](){ onActionAddEdgeMode(); });
     btnDelete_->setCallback([this](){ onActionRemoveNode(); });
@@ -980,19 +951,31 @@ void MSTVisualizer::init() {
     btnResetView_->setCallback([this](){ graphZoom_ = 1.0f; graphPan_ = sf::Vector2f(0.f, 0.f); });
     btnBuild_->setCallback([this](){ onActionBuild(); });
 
+    if (btnNew_) btnNew_->setCharacterSize(16);
+    if (btnUndo_) btnUndo_->setCharacterSize(16);
+    if (btnNewRandom_) btnNewRandom_->setCharacterSize(16);
+    if (btnNewLoadFile_) btnNewLoadFile_->setCharacterSize(16);
     if (btnNodeMode_) btnNodeMode_->setCharacterSize(16);
     if (btnMatrix_) btnMatrix_->setCharacterSize(16);
-    if (btnResetView_) btnResetView_->setCharacterSize(18);
-    if (btnDelete_) btnDelete_->setCharacterSize(18);
-    if (btnAddEdge_) btnAddEdge_->setCharacterSize(18);
+    if (btnResetView_) btnResetView_->setCharacterSize(16);
+    if (btnAddNode_) btnAddNode_->setCharacterSize(16);
+    if (btnDelete_) btnDelete_->setCharacterSize(16);
+    if (btnAddEdge_) btnAddEdge_->setCharacterSize(16);
+    if (btnKruskal_) btnKruskal_->setCharacterSize(16);
+    if (btnPrim_) btnPrim_->setCharacterSize(16);
     if (btnBuild_) btnBuild_->setCharacterSize(22);
     if (btnAlgoToggle_) btnAlgoToggle_->setCharacterSize(20);
-    if (btnNewLoadFile_) btnNewLoadFile_->setCharacterSize(16);
 
-    if (btnNodeMode_) btnNodeMode_->setCallback([this](){ autoNodeMode_ = !autoNodeMode_; });
+    if (btnNodeMode_) {
+        btnNodeMode_->setCallback([this](){
+            enteringNodeCount_ = true;
+            nodeCountInput_.clear();
+        });
+    }
 
     setupDefaultGraph();
     rebuildTimeline();
+    updateLayout();  // Initialize button positions
 }
 
 void MSTVisualizer::processEvent(const sf::Event& event, sf::RenderWindow& window) {
@@ -1012,6 +995,8 @@ void MSTVisualizer::processEvent(const sf::Event& event, sf::RenderWindow& windo
 
             if (!consumed && !enteringEdgeWeight_ && canvasMode_ == MstCanvasMode::Graph) {
                 if (placingNode_ && isInsideGraphViewport(mousePos)) {
+                    // save undo snapshot before mutating graph
+                    pushUndoState();
                     const sf::Vector2f npos = screenToGraphNormalized(mousePos);
                     const int n = static_cast<int>(adjacencyMatrix_.size());
                     for (auto& row : adjacencyMatrix_) {
@@ -1023,7 +1008,7 @@ void MSTVisualizer::processEvent(const sf::Event& event, sf::RenderWindow& windo
                     rebuildGraphFromAdjacencyMatrix();
                     graph_.setNodePosition(n, npos.x, npos.y);
                     selectedNodeId_ = n;
-                    placingNode_ = false;
+                    // keep placingNode_ true so user can add multiple nodes until they press the button again
                     animation_.clear();
                     playing_ = false;
                     state_ = MSTAppState::Paused;
@@ -1039,6 +1024,8 @@ void MSTVisualizer::processEvent(const sf::Event& event, sf::RenderWindow& windo
                     if (hitNode > 0 && aliveCount > 1 && hitNode < static_cast<int>(adjacencyMatrix_.size()) &&
                         hitNode < static_cast<int>(nodeAlive_.size()) &&
                         nodeAlive_[static_cast<size_t>(hitNode)]) {
+                        // save undo before removal
+                        pushUndoState();
                         nodeAlive_[static_cast<size_t>(hitNode)] = false;
                         for (int i = 0; i < static_cast<int>(adjacencyMatrix_.size()); ++i) {
                             adjacencyMatrix_[static_cast<size_t>(hitNode)][static_cast<size_t>(i)] = 0;
@@ -1136,7 +1123,38 @@ void MSTVisualizer::processEvent(const sf::Event& event, sf::RenderWindow& windo
     }
 
     if (const auto* te = event.getIf<sf::Event::TextEntered>()) {
-        if (enteringEdgeWeight_) {
+        // Node count input handling
+        if (enteringNodeCount_) {
+            const auto uni = te->unicode;
+            if (uni >= '0' && uni <= '9') {
+                if (nodeCountInput_.size() < 2) nodeCountInput_.push_back(static_cast<char>(uni));
+            } else if (uni == 8) {
+                if (!nodeCountInput_.empty()) nodeCountInput_.pop_back();
+            } else if (uni == 13) {
+                if (!nodeCountInput_.empty()) {
+                    int v = std::stoi(nodeCountInput_);
+                    manualNodeCount_ = std::clamp(v, 2, 20);
+                    autoNodeMode_ = false;
+                    
+                    pushUndoState();
+                    graph_ = GraphLoader::createNodesOnlyGraph(manualNodeCount_);
+                    selectedNodeId_ = -1;
+                    placingNode_ = false;
+                    deletingNodeMode_ = false;
+                    addingEdgeMode_ = false;
+                    pendingEdgeFrom_ = -1;
+                    pendingEdgeTo_ = -1;
+                    enteringEdgeWeight_ = false;
+                    edgeWeightInput_.clear();
+                    syncAdjacencyMatrixFromGraph();
+                    rebuildTimeline();
+                }
+                enteringNodeCount_ = false;
+            } else if (uni == 27) {
+                enteringNodeCount_ = false;
+                nodeCountInput_.clear();
+            }
+        } else if (enteringEdgeWeight_) {
             const auto uni = te->unicode;
             if (uni >= '0' && uni <= '9') {
                 if (edgeWeightInput_.size() < 3) {
@@ -1158,6 +1176,8 @@ void MSTVisualizer::processEvent(const sf::Event& event, sf::RenderWindow& windo
                     const int n = static_cast<int>(adjacencyMatrix_.size());
                     if (pendingEdgeFrom_ >= 0 && pendingEdgeTo_ >= 0 && pendingEdgeFrom_ < n && pendingEdgeTo_ < n &&
                         pendingEdgeFrom_ != pendingEdgeTo_) {
+                        // save undo snapshot before changing weights
+                        pushUndoState();
                         adjacencyMatrix_[static_cast<size_t>(pendingEdgeFrom_)][static_cast<size_t>(pendingEdgeTo_)] = w;
                         adjacencyMatrix_[static_cast<size_t>(pendingEdgeTo_)][static_cast<size_t>(pendingEdgeFrom_)] = w;
                         rebuildGraphFromAdjacencyMatrix();
@@ -1182,12 +1202,18 @@ void MSTVisualizer::processEvent(const sf::Event& event, sf::RenderWindow& windo
     }
 
     if (const auto* kp = event.getIf<sf::Event::KeyPressed>()) {
-        if (enteringEdgeWeight_) {
+        if (enteringEdgeWeight_ || enteringNodeCount_) {
             if (kp->code == sf::Keyboard::Key::Escape) {
-                pendingEdgeFrom_ = -1;
-                pendingEdgeTo_ = -1;
-                enteringEdgeWeight_ = false;
-                edgeWeightInput_.clear();
+                if (enteringEdgeWeight_) {
+                    pendingEdgeFrom_ = -1;
+                    pendingEdgeTo_ = -1;
+                    enteringEdgeWeight_ = false;
+                    edgeWeightInput_.clear();
+                }
+                if (enteringNodeCount_) {
+                    enteringNodeCount_ = false;
+                    nodeCountInput_.clear();
+                }
             }
         } else {
             if (kp->code == sf::Keyboard::Key::Space)  onActionPlayPause();
@@ -1210,23 +1236,39 @@ void MSTVisualizer::update(sf::Vector2i mousePos) {
     gGraphZoom = graphZoom_;
     gGraphPan = graphPan_;
 
+    // Update button layout whenever dropdown visibility changes
+    if (controlPanelExpanded_) {
+        updateLayout();
+    }
+
     layout_.update(mousePos);
 
-    if (btnNew_) btnNew_->update(mousePos);
-    if (btnUndo_) btnUndo_->update(mousePos);
-    if (btnNodeMode_) btnNodeMode_->update(mousePos);
-    if (btnResetView_) btnResetView_->update(mousePos);
-    if (btnAddNode_) btnAddNode_->update(mousePos);
-    if (btnAddEdge_) btnAddEdge_->update(mousePos);
-    if (btnDelete_) btnDelete_->update(mousePos);
-    if (btnKruskal_) btnKruskal_->update(mousePos);
-    if (btnPrim_) btnPrim_->update(mousePos);
+    // Reposition toggle button depending on collapsed state (keeps a small visible handle when collapsed)
+    float toggleX = controlPanelExpanded_ ? (layoutPanelX_ + layoutPanelWidth_ + 16.f) : 12.f;
+    float toggleY = kLeftPanelY + (kLeftPanelH - 44.f) / 2.f;
+    btnAlgoToggle_.emplace(font_, controlPanelExpanded_ ? "<" : ">", toggleX, toggleY, 20.f, 44.f, 10.f, ThemeManager::current.secondary);
+    btnAlgoToggle_->setCallback([this](){ onActionToggleAlgorithm(); });
     if (btnAlgoToggle_) btnAlgoToggle_->update(mousePos);
-    if (btnMatrix_) btnMatrix_->update(mousePos);
-    if (btnBuild_) btnBuild_->update(mousePos);
-    if (showNewMenu_) {
-        if (btnNewRandom_) btnNewRandom_->update(mousePos);
-        if (btnNewLoadFile_) btnNewLoadFile_->update(mousePos);
+
+    // Only update other buttons if control panel is expanded
+    if (controlPanelExpanded_) {
+        if (btnNew_) btnNew_->update(mousePos);
+        if (btnUndo_) btnUndo_->update(mousePos);
+        if (btnNodeMode_) btnNodeMode_->update(mousePos);
+        if (btnResetView_) btnResetView_->update(mousePos);
+        if (btnAddNode_) btnAddNode_->update(mousePos);
+        if (btnAddEdge_) btnAddEdge_->update(mousePos);
+        if (btnDelete_) btnDelete_->update(mousePos);
+        if (algorithmPanelExpanded_) {
+            if (btnKruskal_) btnKruskal_->update(mousePos);
+            if (btnPrim_) btnPrim_->update(mousePos);
+        }
+        if (btnMatrix_) btnMatrix_->update(mousePos);
+        if (btnBuild_) btnBuild_->update(mousePos);
+        if (showNewMenu_) {
+            if (btnNewRandom_) btnNewRandom_->update(mousePos);
+            if (btnNewLoadFile_) btnNewLoadFile_->update(mousePos);
+        }
     }
 
     speed_ = layout_.getSpeed() * 2.0f;
@@ -1289,9 +1331,11 @@ void MSTVisualizer::draw(sf::RenderWindow& window, bool showUI) {
     syncBtn(btnAlgoToggle_);
     syncBtn(btnNewRandom_); syncBtn(btnNewLoadFile_);
 
-    if (btnNodeMode_) btnNodeMode_->setText(autoNodeMode_ ? "Nodes: Auto" : "Nodes: Keep");
+    if (btnNodeMode_) {
+        btnNodeMode_->setText("Nodes: " + std::to_string(manualNodeCount_));
+    }
     if (btnMatrix_) btnMatrix_->setText(canvasMode_ == MstCanvasMode::Matrix ? "View: Graph" : "View: Matrix");
-    if (btnAlgoToggle_) btnAlgoToggle_->setText(algorithmType_ == algo::AlgorithmType::Kruskal ? "<" : ">");
+    if (btnAlgoToggle_) btnAlgoToggle_->setText(controlPanelExpanded_ ? "<" : ">");
 
     if (btnBuild_) {
         if (timelineDirty_) {
@@ -1306,59 +1350,87 @@ void MSTVisualizer::draw(sf::RenderWindow& window, bool showUI) {
     if (addingEdgeMode_ && btnAddEdge_) btnAddEdge_->setThemeColor(ThemeManager::current.primary);
     if (deletingNodeMode_ && btnDelete_) btnDelete_->setThemeColor(ThemeManager::current.primary);
     if (canvasMode_ == MstCanvasMode::Matrix && btnMatrix_) btnMatrix_->setThemeColor(ThemeManager::current.primary);
-    if (algorithmType_ == algo::AlgorithmType::Kruskal && btnKruskal_) btnKruskal_->setThemeColor(ThemeManager::current.primary);
-    if (algorithmType_ == algo::AlgorithmType::Prim && btnPrim_) btnPrim_->setThemeColor(ThemeManager::current.primary);
-
-    if (btnNew_) btnNew_->draw(window);
-    if (btnUndo_) btnUndo_->draw(window);
-    if (showNewMenu_) {
-        if (btnNewRandom_) btnNewRandom_->draw(window);
-        if (btnNewLoadFile_) btnNewLoadFile_->draw(window);
+    if (algorithmPanelExpanded_) {
+        if (algorithmType_ == algo::AlgorithmType::Kruskal && btnKruskal_) btnKruskal_->setThemeColor(ThemeManager::current.primary);
+        if (algorithmType_ == algo::AlgorithmType::Prim && btnPrim_) btnPrim_->setThemeColor(ThemeManager::current.primary);
     }
-    if (btnNodeMode_) btnNodeMode_->draw(window);
-    if (btnResetView_) btnResetView_->draw(window);
-    if (btnAddNode_) btnAddNode_->draw(window);
-    if (btnAddEdge_) btnAddEdge_->draw(window);
-    if (btnDelete_) btnDelete_->draw(window);
-    if (btnKruskal_) btnKruskal_->draw(window);
-    if (btnPrim_) btnPrim_->draw(window);
+
+    // Draw toggle button (always visible)
     if (btnAlgoToggle_) btnAlgoToggle_->draw(window);
-    if (btnMatrix_) btnMatrix_->draw(window);
-    if (btnBuild_) btnBuild_->draw(window);
 
-    sf::Text leftTitle(font_, "System & Tools", 21);
-    leftTitle.setFillColor(ThemeManager::current.textColor);
-    leftTitle.setPosition({kLeftPanelX + 20.f, kLeftPanelY + 20.f});
-    window.draw(leftTitle);
+    // Draw other buttons only if panel is expanded
+    if (controlPanelExpanded_) {
+        if (btnNew_) btnNew_->draw(window);
+        if (btnUndo_) btnUndo_->draw(window);
+        if (showNewMenu_) {
+            if (btnNewRandom_) btnNewRandom_->draw(window);
+            if (btnNewLoadFile_) btnNewLoadFile_->draw(window);
+        }
+        if (btnNodeMode_) btnNodeMode_->draw(window);
+        if (btnResetView_) btnResetView_->draw(window);
+        if (btnAddNode_) btnAddNode_->draw(window);
+        if (btnAddEdge_) btnAddEdge_->draw(window);
+        if (btnDelete_) btnDelete_->draw(window);
+        if (algorithmPanelExpanded_) {
+            if (btnKruskal_) btnKruskal_->draw(window);
+            if (btnPrim_) btnPrim_->draw(window);
+        }
+        if (btnMatrix_) btnMatrix_->draw(window);
+        if (btnBuild_) btnBuild_->draw(window);
+    }
 
-    sf::Text algoTitle(font_, "Algorithms", 21);
-    algoTitle.setFillColor(ThemeManager::current.textColor);
-    algoTitle.setPosition({kLeftPanelX + 20.f, 446.f});
-    window.draw(algoTitle);
+    // Section titles (only show when panel is expanded) - positioned with computed group coordinates
+    if (controlPanelExpanded_) {
+        // System & Tools title (above first group)
+        sf::Text systemTitle(font_, "System & Tools", 18);
+        systemTitle.setFillColor(ThemeManager::current.textColor);
+        systemTitle.setPosition(sf::Vector2f(layoutPanelX_, layoutSystemTitleY_));
+        window.draw(systemTitle);
 
-    sf::Text heroNum(font_, "04", 36);
+        // MST Actions title
+        sf::Text actionsTitle(font_, "MST Actions", 18);
+        actionsTitle.setFillColor(ThemeManager::current.textColor);
+        actionsTitle.setPosition(sf::Vector2f(layoutPanelX_, layoutActionsTitleY_));
+        window.draw(actionsTitle);
+
+        // Algorithms title
+        sf::Text algoTitle(font_, "Algorithms", 18);
+        algoTitle.setFillColor(ThemeManager::current.textColor);
+        algoTitle.setPosition(sf::Vector2f(layoutPanelX_, layoutAlgorithmsTitleY_));
+        window.draw(algoTitle);
+    }
+
+    // Move hero number/title down near the bottom left corner
+    sf::Text heroNum(font_, "04", 40);
     heroNum.setFillColor(ThemeManager::current.textColor);
-    heroNum.setPosition({54.f, 514.f});
+    heroNum.setPosition(sf::Vector2f(layoutPanelX_, 680.f));
     window.draw(heroNum);
 
-    sf::Text heroLine1(font_, "Minimum Spanning", 42);
+    sf::Text heroLine1(font_, "Minimum Spanning", 46);
     heroLine1.setFillColor(ThemeManager::current.textColor);
-    heroLine1.setPosition({54.f, 550.f});
+    heroLine1.setPosition(sf::Vector2f(layoutPanelX_, 730.f));
     window.draw(heroLine1);
 
-    sf::Text heroLine2(font_, "Tree", 42);
+    sf::Text heroLine2(font_, "Tree", 46);
     heroLine2.setFillColor(ThemeManager::current.primary);
-    heroLine2.setPosition({54.f, 592.f});
+    heroLine2.setPosition(sf::Vector2f(layoutPanelX_, 785.f));
     window.draw(heroLine2);
 
     sf::Text modeText(font_, "", 16);
-    modeText.setPosition({250.f, 130.f});
     modeText.setFillColor(ThemeManager::current.textColor);
-    if (enteringEdgeWeight_) {
+    if (enteringNodeCount_) {
+        modeText.setString("Enter node count (2-20): " + nodeCountInput_ + "_");
+    } else if (enteringEdgeWeight_) {
         modeText.setString("Enter edge weight (0 = remove): " + edgeWeightInput_ + "_");
-        window.draw(modeText);
-    } else if (pendingEdgeFrom_ >= 0) {
+    } else if (pendingEdgeFrom_ >= 0 && canvasMode_ == MstCanvasMode::Graph) {
         modeText.setString("Select destination node...");
+    }
+
+    if (enteringNodeCount_ || enteringEdgeWeight_ || (pendingEdgeFrom_ >= 0 && canvasMode_ == MstCanvasMode::Graph)) {
+        sf::FloatRect textBounds = modeText.getLocalBounds();
+        float centerX = (kGraphMinX + kGraphMaxX) / 2.f;
+        float topY = kGraphMinY + 20.f;
+        modeText.setPosition({centerX - textBounds.size.x / 2.f, topY});
         window.draw(modeText);
     }
 
@@ -1369,7 +1441,7 @@ void MSTVisualizer::draw(sf::RenderWindow& window, bool showUI) {
     if (canvasMode_ == MstCanvasMode::Matrix) {
         sf::Text matrixHelp(font_, "Adjacency Matrix: click a cell to edit weight", 14);
         matrixHelp.setPosition({matrixOrigin.x, matrixOrigin.y - 34.f});
-        matrixHelp.setFillColor(sf::Color(210, 210, 210));
+        matrixHelp.setFillColor(ThemeManager::current.textColor);
         clampTextToWidth(matrixHelp, kGraphMaxX - matrixOrigin.x - 8.0f);
         window.draw(matrixHelp);
 
@@ -1417,7 +1489,8 @@ void MSTVisualizer::draw(sf::RenderWindow& window, bool showUI) {
                 }
                 window.draw(cell);
 
-                sf::Text t(font_, "", 13);
+                unsigned int fontSize = static_cast<unsigned int>(std::max(9.0f, matrixCell * 0.45f));
+                sf::Text t(font_, "", fontSize);
                 t.setFillColor(sf::Color(232, 232, 232));
                 if (r == -1 && c >= 0) {
                     if (c < static_cast<int>(nodeAlive_.size()) && !nodeAlive_[static_cast<size_t>(c)]) {
@@ -1442,7 +1515,9 @@ void MSTVisualizer::draw(sf::RenderWindow& window, bool showUI) {
                         t.setString(std::to_string(adjacencyMatrix_[static_cast<size_t>(r)][static_cast<size_t>(c)]));
                     }
                 }
-                t.setPosition({cell.getPosition().x + 8.f, cell.getPosition().y + 5.f});
+                sf::FloatRect textBounds = t.getLocalBounds();
+                t.setPosition({cell.getPosition().x + (matrixCell - 1.0f - textBounds.size.x) / 2.f - textBounds.position.x,
+                               cell.getPosition().y + (matrixCell - 1.0f - textBounds.size.y) / 2.f - textBounds.position.y});
                 window.draw(t);
             }
         }

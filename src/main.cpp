@@ -82,6 +82,17 @@ int main(){
         sf::Vector2f worldPos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
         sf::Vector2i mousePos(static_cast<int>(worldPos.x), static_cast<int>(worldPos.y));
 
+        // Handle music playback based on settings
+        if (settingsScreen.mIsMusicOn) {
+            if (bgMusic.getStatus() != sf::SoundSource::Status::Playing) {
+                bgMusic.play();
+            }
+        } else {
+            if (bgMusic.getStatus() == sf::SoundSource::Status::Playing) {
+                bgMusic.pause();
+            }
+        }
+
         // Per-frame update for DLL (needed for animation/autoplay)
         if (currentState == AppState::VISUALIZER && activeDS == 0){
             dllVisualizer.update(std::nullopt);
@@ -128,18 +139,6 @@ int main(){
             
             else if (currentState == AppState::SETTINGS){
                 settingsScreen.update(mousePos, event);
-                            
-                if (event && event->is<sf::Event::MouseButtonPressed>()){
-                    auto mouseEvent = event->getIf<sf::Event::MouseButtonPressed>();
-                    if (mouseEvent->button == sf::Mouse::Button::Left){
-                        sf::Vector2f mPos(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
-                                    
-                        sf::FloatRect colorBtnBounds(sf::Vector2f(494.f, 715.f), sf::Vector2f(145.f, 145.f));
-                        if (colorBtnBounds.contains(mPos)){
-                            settingsScreen.toggleThemePopup();
-                        }
-                    }
-                }
             }
 
             // ── DLL visualizer (DS 0) ──

@@ -60,17 +60,7 @@ SettingsScreen::SettingsScreen(float w, float h)
     mLabelThemes.setFillColor(ThemeManager::current.textColor);
 
     setupButton(mBtnColor, 494.f, 715.f);
-    setupButton(mBtnFont, 676.f, 715.f);
-    setupButton(mBtnMusic, 858.f, 715.f);
-    
-    mBtnFont.label.emplace(mFontRegular);
-    mBtnFont.label->setString("Inter");
-    mBtnFont.label->setCharacterSize(40);
-    mBtnFont.label->setFillColor(ThemeManager::current.textColor);
-    
-    sf::FloatRect textBounds = mBtnFont.label->getLocalBounds();
-    mBtnFont.label->setOrigin(sf::Vector2f(textBounds.position.x + textBounds.size.x / 2.0f, textBounds.position.y + textBounds.size.y / 2.0f));
-    mBtnFont.label->setPosition(sf::Vector2f(676.f + 72.5f, 715.f + 72.5f));
+    setupButton(mBtnMusic, 676.f, 715.f);
     
     if (!mMusicTex.loadFromFile("assets/images/musicButton.png")){
         cerr << "Cannot load musicButton.png" << endl;
@@ -84,7 +74,7 @@ SettingsScreen::SettingsScreen(float w, float h)
         mBtnMusic.icon->setScale(sf::Vector2f(scale, scale));
         
         mBtnMusic.icon->setOrigin(sf::Vector2f(iconBounds.size.x / 2.0f, iconBounds.size.y / 2.0f));
-        mBtnMusic.icon->setPosition(sf::Vector2f(858.f + 72.5f, 715.f + 72.5f));
+        mBtnMusic.icon->setPosition(sf::Vector2f(676.f + 72.5f, 715.f + 72.5f));
     }
 
     if (!mExitTex.loadFromFile("assets/images/exitButton.png")){cerr << "Cannot load exitButton.png" << endl;}
@@ -241,6 +231,22 @@ void SettingsScreen::update(sf::Vector2i mousePos, const std::optional<sf::Event
                 }
             }
         }
+    } else {
+        if (event) {
+            if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
+                if (mouseEvent->button == sf::Mouse::Button::Left) {
+                    sf::Vector2f mPosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                    if (mBtnColor.bounds.contains(mPosF)) {
+                        mShowThemePopup = true;
+                    }
+                    if (mBtnMusic.bounds.contains(mPosF)) {
+                        mIsMusicOn = !mIsMusicOn;
+                        // NOTE: A real implementation would call a music manager here
+                        // For example: MusicManager::getInstance().setPaused(!mIsMusicOn);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -251,17 +257,12 @@ void SettingsScreen::draw(sf::RenderWindow& window){
         b.inner.setFillColor(ThemeManager::current.bg);
     };
     syncBtnTheme(mBtnColor);
-    syncBtnTheme(mBtnFont);
     syncBtnTheme(mBtnMusic);
     
     mTitleSettings.setFillColor(ThemeManager::current.textColor);
     mLabelAboutUs.setFillColor(ThemeManager::current.textColor);
     mLabelMusic.setFillColor(ThemeManager::current.textColor);
     mLabelThemes.setFillColor(ThemeManager::current.textColor);
-    
-    if (mBtnFont.label.has_value()){
-        mBtnFont.label->setFillColor(ThemeManager::current.textColor);
-    }
     
     window.draw(mTitleSettings);
     window.draw(mLabelAboutUs);
@@ -271,13 +272,14 @@ void SettingsScreen::draw(sf::RenderWindow& window){
     window.draw(mBtnColor.outer); window.draw(mBtnColor.middle); window.draw(mBtnColor.inner);
     if (mBtnColor.label.has_value()){window.draw(mBtnColor.label.value());}
     
-    window.draw(mBtnFont.outer); window.draw(mBtnFont.middle); window.draw(mBtnFont.inner);
-    if (mBtnFont.label.has_value()){window.draw(mBtnFont.label.value());}
-    
     window.draw(mBtnMusic.outer); window.draw(mBtnMusic.middle); window.draw(mBtnMusic.inner);
     if (mBtnMusic.label.has_value()){window.draw(mBtnMusic.label.value());}
     if (mBtnMusic.icon.has_value()){
-        mBtnMusic.icon->setColor(ThemeManager::current.textColor);
+        sf::Color iconColor = ThemeManager::current.textColor;
+        if (!mIsMusicOn) {
+            iconColor.a = 100;
+        }
+        mBtnMusic.icon->setColor(iconColor);
         window.draw(mBtnMusic.icon.value());
     }
 

@@ -65,14 +65,22 @@ std::optional<int> MainMenu::update(const sf::RenderWindow& window){
     }
 
     for (size_t i = 0; i < mCards.size(); i++){
+        float interp = 0.15f;
+        float alphaDelta = 15.f;
+        if (i == 3) {
+            // Make the MST preview appear/disappear faster than other cards
+            interp = 0.35f;
+            alphaDelta = 40.f;
+        }
+
         if (static_cast<int>(i) == mActiveIdx){
             float targetY = mWindowHeight * 0.65f;
-            mCards[i].textYPos += (targetY - mCards[i].textYPos) * 0.15f;
-            mCards[i].elementsAlpha = min(255.f, mCards[i].elementsAlpha + 15.f);
+            mCards[i].textYPos += (targetY - mCards[i].textYPos) * interp;
+            mCards[i].elementsAlpha = min(255.f, mCards[i].elementsAlpha + alphaDelta);
         } else {
             float targetY = mWindowHeight * 0.45f;
-            mCards[i].textYPos += (targetY - mCards[i].textYPos) * 0.15f;
-            mCards[i].elementsAlpha = max(0.f, mCards[i].elementsAlpha - 15.f);
+            mCards[i].textYPos += (targetY - mCards[i].textYPos) * interp;
+            mCards[i].elementsAlpha = max(0.f, mCards[i].elementsAlpha - alphaDelta);
         }
     }
     

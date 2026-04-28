@@ -102,6 +102,25 @@ public:
         mText.setString(str);
         refreshText();
     }
+
+    void setPosition(float x, float y, float w, float h, float radius){
+        mTopLeft.setRadius(radius);
+        mTopRight.setRadius(radius);
+        mBottomLeft.setRadius(radius);
+        mBottomRight.setRadius(radius);
+
+        mTopLeft.setPosition(sf::Vector2f(x, y));
+        mTopRight.setPosition(sf::Vector2f(x + w - radius * 2, y));
+        mBottomLeft.setPosition(sf::Vector2f(x, y + h - radius * 2));
+        mBottomRight.setPosition(sf::Vector2f(x + w - radius * 2, y + h - radius * 2));
+
+        mHorizRect.setSize(sf::Vector2f(w - radius * 2, h));
+        mVertRect.setSize(sf::Vector2f(w, h - radius * 2));
+        mHorizRect.setPosition(sf::Vector2f(x + radius, y));
+        mVertRect.setPosition(sf::Vector2f(x, y + radius));
+
+        mText.setPosition(sf::Vector2f(x + w / 2.0f, y + h / 2.0f));
+    }
 };
 
 class SpeedSlider {

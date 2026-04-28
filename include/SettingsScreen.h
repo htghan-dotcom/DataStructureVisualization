@@ -31,7 +31,6 @@ private:
     };
 
     TriButton mBtnColor;
-    TriButton mBtnFont;
     TriButton mBtnMusic;
 
     sf::Texture mMusicTex;
@@ -78,6 +77,7 @@ private:
 public:
     ImageButton mExitBtn;
     bool mGoBack = false;
+    bool mIsMusicOn = true;
     
     void resetExit(){mGoBack = false;}
     
