@@ -20,7 +20,7 @@
 | Đặng Minh Nhật     | 25125046   | mnhat249      | Team Leader, MST logic & UI             |
 | Huỳnh Trần Gia Hân | 25125042   | htghan-dotcom | Hash logic & UI, AppLayout helper       |
 | Trần Hồng Vy       | 25125049   | thvy2507      | RBT logic & UI, AppLayout main designer |
-| Lê Nguyễn Hải Đăng | 25125081   | Taiyou2007    | DLL logic & UI                          |
+| Lê Nguyễn Hải Đăng | 25125081   | taiyou2007    | DLL logic & UI                          |
 
 ---
 
