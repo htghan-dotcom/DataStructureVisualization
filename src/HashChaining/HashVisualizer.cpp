@@ -5,19 +5,6 @@
 #include <cstdlib>
 #include <cstdint>
 
-// ── Layout constants (sidebar) ──────────────────────────────
-static constexpr float SB_X  = 70.f;
-static constexpr float SB_W  = 160.f;
-static constexpr float SB_H  = 45.f;
-static constexpr float SB_R  = 21.f;
-static constexpr float Y_CLEAR  = 176.f;
-static constexpr float Y_NEW    = 176.f;
-static constexpr float Y_INSERT = 230.f;
-static constexpr float Y_DELETE = 284.f;
-static constexpr float Y_SEARCH = 338.f;
-static constexpr float NEW_X    = 251.f;
-static constexpr float FOOTER_Y = 882.f;
-
 HashVisualizer::HashColorTheme HashVisualizer::getHashTheme() {
     HashColorTheme t;
     
@@ -255,8 +242,6 @@ HashVisualizer::HashVisualizer(sf::RenderWindow& window)
       mUpdateExpandedStroke(mFontRegular,"", 30.f, 364.f, 345.f, 49.f, 24.5f, ThemeManager::current.primary),
       mUpdateExpandedBg    (mFontRegular,"", 32.f, 366.f, 341.f, 45.f, 22.5f, ThemeManager::current.secondary),
       mConfirmUpdateBtn(mFontRegular, "Update", 216.f, 369.f, 154.f, 39.f, 19.5f, ThemeManager::current.bg),
-    //   mUpdateOldBox(mFontRegular, "", 42.f, 369.f, 65.f, 39.f, 19.5f, ThemeManager::current.bg),
-    //   mUpdateNewBox(mFontRegular, "", 138.f, 369.f, 65.f, 39.f, 19.5f, ThemeManager::current.bg),
       mUpdateInputText     (mFontRegular),
 
       // New expand
@@ -548,10 +533,8 @@ void HashVisualizer::renderNodes(sf::RenderWindow& window){
             valText.setPosition(sf::Vector2f(px + (nodeW - vb.size.x) * 0.5f - vb.position.x,
                                              py + (nodeH - vb.size.y) * 0.5f - vb.position.y));
             window.draw(valText);
-
-            // sf::Color arrowCol = isTarget ? ThemeManager::current.primary : sf::Color(140,170,210, alpha);
             arrowCol.a = alpha;
-            
+        
             if (realDepth == 0) drawArrowUp(window, sf::Vector2f(bx + nodeW*0.5f, by), sf::Vector2f(px + nodeW*0.5f, py + nodeH + 1.f), arrowCol);
             else drawArrowUp(window, sf::Vector2f(px + nodeW*0.5f, by - realDepth*gapY), sf::Vector2f(px + nodeW*0.5f, py + nodeH + 1.f), arrowCol);
         }
@@ -1030,7 +1013,7 @@ void HashVisualizer::computeHashLayout() {
     float totalW = (float)n * baseBucketGapX - (baseBucketGapX - baseBucketW);
 
     // ── Vis layout ──────────────────────────────────────────────
-    float visBucketRowY   = FOOTER_Y - baseBucketH - 55.f;
+    float visBucketRowY   = 882.f - baseBucketH - 55.f;
     float visBucketStartX = (1440.f - totalW) * 0.5f;
 
     float safeTop       = 150.f;
