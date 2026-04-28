@@ -248,7 +248,9 @@ void DLLVisualizer::update(const std::optional<sf::Event>& event) {
                         if (sf::FloatRect(sf::Vector2f(216.f, 369.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) && !mInputOld.empty() && !mInputNew.empty()) {
                             int oldVal = stoi(mInputOld); int newVal = stoi(mInputNew);
                             mList.backup(); 
+
                             mList.resetHistory("Update " + mInputOld + " to " + mInputNew);
+
                             mList.update(oldVal, newVal); mIsUpdateExpanded = false;
                             mInputOld = ""; mInputNew = ""; resetPlayUI();
                         }
@@ -324,7 +326,9 @@ void DLLVisualizer::update(const std::optional<sf::Event>& event) {
                 }
                 else if (mIsUpdateExpanded && !mInputOld.empty() && !mInputNew.empty()) {
                     int oldVal = stoi(mInputOld); int newVal = stoi(mInputNew); mList.backup(); 
+
                     mList.resetHistory("Update " + mInputOld + " to " + mInputNew);
+                    
                     mList.update(oldVal, newVal); mIsUpdateExpanded = false; mInputOld = ""; mInputNew = ""; resetPlayUI();
                 }
             }
