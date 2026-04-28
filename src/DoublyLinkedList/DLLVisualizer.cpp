@@ -60,7 +60,7 @@ DLLVisualizer::DLLVisualizer(sf::RenderWindow& window)
     mHideControlsBtn.refreshText(); mShowControlsBtn.refreshText();
 
     if (!mDiceTex.loadFromFile("assets/images/randomButton.png")) cerr << "Cannot load randomButton.png\n";
-    mDiceTex.setSmooth(true); mDiceTex.generateMipmap();
+    mDiceTex.setSmooth(true); (void)mDiceTex.generateMipmap();
 
     mInsertDiceBtn.setup(mDiceTex, 167.f, 211.f, 30.f, 30.f);
     mDeleteDiceBtn.setup(mDiceTex, 167.f, 265.f, 30.f, 30.f);
@@ -282,6 +282,17 @@ void DLLVisualizer::update(const std::optional<sf::Event>& event) {
             }
             else if (keyEvent->code == sf::Keyboard::Key::Space) {
                 mLayout.setPaused(!mLayout.isPaused());
+            }
+            else if (keyEvent->code == sf::Keyboard::Key::Left) {
+                int cur = mList.getCurrentStep();
+                if (cur > 0) mList.setCurrentStep(cur - 1);
+                mLayout.setPaused(true);
+            }
+            else if (keyEvent->code == sf::Keyboard::Key::Right) {
+                int cur = mList.getCurrentStep();
+                int total = static_cast<int>(mList.getStepHistory().size());
+                if (cur < total - 1) mList.setCurrentStep(cur + 1);
+                mLayout.setPaused(true);
             }
             else if (keyEvent->code == sf::Keyboard::Key::R) {
                 if (mIsInsertExpanded || mIsDeleteExpanded || mIsSearchExpanded) {

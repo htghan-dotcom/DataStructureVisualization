@@ -1,12 +1,15 @@
-# Data Structure Visualization
+# Data Structure Visualization (C++ SFML Application)
 
-An interactive data structure visualizer built with **C++17** and **SFML 3.0.2**, developed as a group project for the course **CS163 - Data Structures** at **Ho Chi Minh City University of Science (HCMUS)**.
+## 1. Project Overview
 
----
+**Data Structure Visualization** is an interactive, graphical application built with **C++17** and **SFML 3.0.2**, developed as a group project for the course **CS163 - Data Structures** at **Ho Chi Minh City University of Science (HCMUS)**.
 
-## Features
+The program helps users visualize and understand how core data structures and algorithms operate under the hood through step-by-step animations. The application heavily utilizes a custom **State Snapshot System**, ensuring that users can trace back their steps safely without breaking the data integrity.
 
-### Data Structures
+--- 
+## 2. Main Features
+
+### 2.1 Supported Data Structures
 | No | Structure | Operations |
 |---|-----------|------------|
 | 01 | **Doubly Linked List** | Init, Insert, Delete, Search, Update |
@@ -14,18 +17,71 @@ An interactive data structure visualizer built with **C++17** and **SFML 3.0.2**
 | 03 | **Red-Black Tree** | Init, Insert, Delete, Search, Auto-balance, Update |
 | 04 | **Graph (MST)** | Build Graph, Prim, Kruskal |
 
-### UI/UX
-- **Theme Engine** — Light & Dark mode with 4 palettes: Default (Green), Pinky, Navy, Golden
-- **Step-by-step animation** — play, pause, step forward/backward, skip to start/end, adjustable speed
-- **Snapshot-based rendering** — each animation step stores a full state snapshot, so skip-back correctly restores deleted nodes
-- **Expand-on-click sidebar** — inline input with dice (random) button for each operation
+### 2.2 Interactive UI/UX Engine
+* **Theme Manager:** Supports Light & Dark modes with 4 distinct color palettes (Default, Pinky, Navy, Golden).
+* **Expand-on-click Sidebar:** Inline input fields for clean and distraction-free interaction.
+* **Randomizer (Dice):** Quickly fill inputs with random values for rapid testing.
+
+### 2.3 Animation & Step-by-Step Execution
+* **Playback Controls:** Play, pause, step forward/backward, and skip to start/end.
+* **Adjustable Speed:** A dynamic slider to speed up or slow down animations in real-time.
+* **Code Tracing:** Real-time Pseudocode highlighting and descriptive text for each algorithmic step.
+
+### 2.4 State Persistence & Undo System
+* Every action triggers a state capture.
+* Users can instantly revert mistakes (like accidentally clearing the table) or step back through their operation history using the built-in Undo functionality.
 
 ---
 
-## Keyboard Shortcuts
+## 3. Technical Constraints & Implementation
 
-### Data Structures (Doubly Linked List, Hash Table, Red-Black Tree)
+* **Language:** C++17
+* **Graphics Library:** SFML 3.0.2 (Simple and Fast Multimedia Library)
+* **Build System:** CMake (3.16+)
+* **Architecture:** Object-Oriented Programming (OOP) with custom Snapshot-based history tracking.
+* **Interface:** Fully graphical GUI constructed from scratch using SFML shapes and textures.
 
+---
+
+## 4. Compilation & Execution
+### 4.1 Compilation
+#### Prerequisites
+- C++17 compiler (MinGW-w64 recommended on Windows)
+- [SFML 3.0.2](https://www.sfml-dev.org/download.php)
+- CMake 3.16+
+
+```bash
+git clone https://github.com/htghan-dotcom/DataStructureVisualization.git
+cd DataStructureVisualization
+
+cmake -S . -B build
+cmake --build build
+```
+
+*Note: By default, CMake looks for SFML at `C:/SFML/SFML-3.0.2/`. If yours is elsewhere, set the path manually during the config step:*
+```bash
+cmake -S . -B build -DSFML_DIR="C:/your/path/to/SFML/lib/cmake/SFML"
+```
+
+### 4.2 Running the Application
+The executable will be located in the `build/` directory. The `assets/` folder is automatically copied next to it.
+* On Windows:
+```bash
+./build/DataStructureVisualization.exe
+```
+
+---
+
+## 5. How to Use (Instructions)
+
+### 5.1 Mouse Interactions
+1. Launch the application and select a Data Structure from the Home Menu.
+2. Click **New** to generate a random structure or load data from a `.txt` file.
+3. Use the **Sidebar** to perform operations (Insert, Delete, Search, Update).
+4. Use the bottom **Playback Bar** to play, pause, or skip through the animation steps.
+
+### 5.2 Keyboard Shortcuts
+**Global Shortcuts (DLL, Hash, RBT):**
 | Key | Action |
 |-----|--------|
 | `I` | Open Insert input |
@@ -38,10 +94,10 @@ An interactive data structure visualizer built with **C++17** and **SFML 3.0.2**
 | `Enter` | Confirm current operation |
 | `Tab` | Switch between Old / New field (Update only) |
 | `Space` | Play / Pause animation |
+| `←` `→` | Step backward / forward |
 | `Ctrl + Z` | Undo last operation |
 
-### Graph — MST
-
+**Graph — MST Shortcuts:**
 | Key | Action |
 |-----|--------|
 | `N` | New graph |
@@ -56,37 +112,10 @@ An interactive data structure visualizer built with **C++17** and **SFML 3.0.2**
 | `Space` | Play / Pause animation |
 | `←` `→` | Step backward / forward |
 | `Escape` | Back to menu |
----
-## Build
-
-### Prerequisites
-- C++17 compiler (MinGW-w64 recommended on Windows)
-- [SFML 3.0.2](https://www.sfml-dev.org/download.php)
-- CMake 3.16+
-
-### Steps
-
-```bash
-git clone https://github.com/htghan-dotcom/DataStructureVisualization.git
-cd DataStructureVisualization
-
-cmake -S . -B build
-cmake --build build
-```
-
-The executable will be at `build/DataStructureVisualization.exe`. The `assets/` folder is automatically copied next to it by CMake.
-
-### SFML path
-
-By default CMake looks for SFML at `C:/SFML/SFML-3.0.2/`. If yours is elsewhere, set the path manually:
-
-```bash
-cmake -S . -B build -DSFML_DIR="C:/your/path/to/SFML/lib/cmake/SFML"
-```
 
 ---
 
-## Project Structure
+## 6. File Structure
 
 ```
 DataStructureVisualization/
@@ -124,9 +153,15 @@ DataStructureVisualization/
 
 ---
 
-## Contributors
+## 7. Limitations
+* The application runs purely on Desktop (Windows/Linux/macOS) and is not optimized for mobile platforms.
+* Requires exactly **SFML 3.0.2** and **C++17** to compile correctly due to the usage of `[[nodiscard]]` attributes and modern C++ features.
 
-Class **25A02** — HCMUS
+---
+
+## 8. Developers
+
+Developed by **Group 01 - Class 25A02** (HCMUS)
 
 | Name | Student ID | Role |
 |------|-----------|------|
