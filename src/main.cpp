@@ -336,10 +336,11 @@ int main(){
                 case 3:
                     mstVisualizer.draw(window, false);
                     break;
+                default:
+                    break;
             }
         }
         
-
         else if (currentState == AppState::VISUALIZER){
             sf::RectangleShape fullBg(fullScreenRect.size);
             fullBg.setFillColor(ThemeManager::current.bg);
@@ -357,6 +358,8 @@ int main(){
                     break;
                 case 3:
                     mstVisualizer.draw(window, true);
+                    break;
+                default:
                     break;
             }
         }

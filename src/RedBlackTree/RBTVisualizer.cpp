@@ -70,7 +70,7 @@ RBTVisualizer::RBTVisualizer(sf::RenderWindow& window)
     mShowControlsBtn.refreshText();
 
     if (!mDiceTex.loadFromFile("assets/images/randomButton.png")){cerr << "Cannot load randomButton.png" << endl;}
-    mDiceTex.setSmooth(true); (void)mDiceTex.generateMipmap();
+    mDiceTex.setSmooth(true); mDiceTex.generateMipmap();
     
     mInsertDiceBtn.setup(mDiceTex, 167.f, 211.f, 30.f, 30.f);
     mDeleteDiceBtn.setup(mDiceTex, 167.f, 265.f, 30.f, 30.f);
@@ -457,12 +457,12 @@ void RBTVisualizer::update(const optional<sf::Event>& event){
                     mTargetStep = cur - 1;
                     mStepAnimProgress = 0.0f;
                 }
-                mLayout.setPaused(true);
+                    mLayout.setPaused(true);
             }
-            else if (keyEvent->code == sf::Keyboard::Key::Right) {
+            else if (keyEvent->code == sf::Keyboard::Key::Right){
                 int cur = mTree.getCurrentStep();
                 int total = static_cast<int>(mTree.getStepHistory().size());
-                if (cur < total - 1) {
+                if (cur < total - 1){
                     mTargetStep = cur + 1;
                     mStepAnimProgress = 0.0f;
                 }

@@ -748,7 +748,7 @@ bool RedBlackTree::update(int oldVal, int newVal){
     saveStep("Node " + to_string(oldVal) + " removed! Proceeding to insert " + to_string(newVal) + ".", -1, 4, PSEUDO_UPDATE);
     insert(newVal);
     
-    saveStep("Update complete! " + to_string(oldVal) + " successfully updated to " + to_string(newVal) + ".", newVal, 4, PSEUDO_UPDATE);
+    saveStep("Update completed! " + to_string(oldVal) + " successfully updated to " + to_string(newVal) + ".", newVal, 4, PSEUDO_UPDATE);
     return true;
 }
 

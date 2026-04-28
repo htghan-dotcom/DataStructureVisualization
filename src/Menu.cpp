@@ -12,16 +12,9 @@ MainMenu::MainMenu(float w, float h)
     vector<string> nums = {"01", "02", "03", "04"};
     vector<string> names = {"Doubly\nLinked List", "Hash\nTable", "Red - Black\nTree", "Minimum\nSpanning\nTree"};
     
-    vector<sf::Color> colors = {
-        sf::Color(246, 247, 240),
-        sf::Color(246, 247, 240),
-        sf::Color(246, 247, 240),
-        sf::Color(246, 247, 240),
-    };
-    
     float defWidth = mWindowWidth / static_cast<float>(names.size());
     for (size_t i = 0; i < names.size(); i++){
-        mCards.emplace_back(nums[i], names[i], colors[i], defWidth, mWindowHeight, mFont);
+        mCards.emplace_back(nums[i], names[i], sf::Color(246, 247, 240), defWidth, mWindowHeight, mFont);
     }
     
     if (!mExitTex.loadFromFile("assets/images/exitButton.png")){cerr << "Cannot load exitButton.png" << endl;}

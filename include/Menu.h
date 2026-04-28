@@ -46,11 +46,6 @@ struct MenuCard {
         viewMoreText.setCharacterSize(25);
         viewMoreText.setFillColor(sf::Color::Black);
     }
-
-    MenuCard(MenuCard&&) noexcept = default;
-    MenuCard& operator=(MenuCard&&) noexcept = default;
-    MenuCard(const MenuCard&) = delete;
-    MenuCard& operator=(const MenuCard&) = delete;
 };
 
 class MainMenu {
