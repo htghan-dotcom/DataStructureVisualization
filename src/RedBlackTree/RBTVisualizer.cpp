@@ -1128,21 +1128,21 @@ std::map<int, sf::Vector2f> RBTVisualizer::computeLayout(const std::vector<NodeS
     float xOffset = menuX + (visX - menuX) * easeP;
     float yStart = menuY + (visY - menuY) * easeP;
     
-    function<void(int, int)> dfs = [&](int val, int depth){
+    auto dfs = [&](auto&& self, int val, int depth) -> void {
         const NodeSnapshot* n = byVal[val];
         if (n->leftVal != -1 and byVal.count(n->leftVal)){
-            dfs(n->leftVal, depth + 1);
+            self(self, n->leftVal, depth + 1);
         }
         
         pos[val] = {static_cast<float>(inorderIdx) * xSpacing + xOffset, yStart + static_cast<float>(depth) * ySpacing};
         inorderIdx++;
         
-        if (n->rightVal != -1 and byVal.count(n->rightVal)){
-            dfs(n->rightVal, depth + 1);
+        if (n->rightVal != -1 && byVal.count(n->rightVal)){
+            self(self, n->rightVal, depth + 1);
         }
     };
 
-    if (root != -1){dfs(root, 0);}
+    if (root != -1){dfs(dfs, root, 0);}
     return pos;
 }
 

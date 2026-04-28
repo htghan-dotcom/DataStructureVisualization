@@ -2,6 +2,7 @@
 
 #include <tuple>
 #include <unordered_set>
+#include <sstream>
 
 namespace {
 class DSU {

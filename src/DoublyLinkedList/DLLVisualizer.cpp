@@ -247,7 +247,9 @@ void DLLVisualizer::update(const std::optional<sf::Event>& event) {
                         clickedInsideAnyForm = true;
                         if (sf::FloatRect(sf::Vector2f(216.f, 369.f), sf::Vector2f(154.f, 39.f)).contains(worldPos) && !mInputOld.empty() && !mInputNew.empty()) {
                             int oldVal = stoi(mInputOld); int newVal = stoi(mInputNew);
-                            mList.backup(); mList.update(oldVal, newVal); mIsUpdateExpanded = false;
+                            mList.backup(); 
+                            mList.resetHistory("Update " + mInputOld + " to " + mInputNew);
+                            mList.update(oldVal, newVal); mIsUpdateExpanded = false;
                             mInputOld = ""; mInputNew = ""; resetPlayUI();
                         }
                         else if (sf::FloatRect(sf::Vector2f(35.f, 369.f), sf::Vector2f(70.f, 39.f)).contains(worldPos)) { mEditingOld = true; }
@@ -321,7 +323,9 @@ void DLLVisualizer::update(const std::optional<sf::Event>& event) {
                     int val = stoi(mInputValue); mList.resetHistory("Search for " + std::to_string(val)); mList.search(val); mIsSearchExpanded = false; mInputValue = ""; resetPlayUI();
                 }
                 else if (mIsUpdateExpanded && !mInputOld.empty() && !mInputNew.empty()) {
-                    int oldVal = stoi(mInputOld); int newVal = stoi(mInputNew); mList.backup(); mList.update(oldVal, newVal); mIsUpdateExpanded = false; mInputOld = ""; mInputNew = ""; resetPlayUI();
+                    int oldVal = stoi(mInputOld); int newVal = stoi(mInputNew); mList.backup(); 
+                    mList.resetHistory("Update " + mInputOld + " to " + mInputNew);
+                    mList.update(oldVal, newVal); mIsUpdateExpanded = false; mInputOld = ""; mInputNew = ""; resetPlayUI();
                 }
             }
             else if (keyEvent->code == sf::Keyboard::Key::Tab) {
