@@ -5,7 +5,7 @@
 namespace config {
 inline constexpr unsigned int kWindowWidth = 1280;
 inline constexpr unsigned int kWindowHeight = 720;
-inline constexpr float kNodeRadius = 18.0f;
+inline constexpr float kNodeRadius = 22.0f;
 inline const sf::Color kBackgroundColor(18, 20, 28);
 inline const sf::Color kNodeFillColor(48, 140, 210);
 inline const sf::Color kNodeOutlineColor(240, 240, 240);
@@ -318,8 +318,8 @@ void drawNode(sf::RenderWindow& window,
     circle.setOutlineThickness(2.4f);
     window.draw(circle);
 
-    sf::Text idText(font, std::to_string(node.id), 13);
-    idText.setFillColor(ThemeManager::current.bg);
+    sf::Text idText(font, std::to_string(node.id), 16);
+    idText.setFillColor(ThemeManager::current.textColor);
     idText.setPosition({circle.getPosition().x - 5.f, circle.getPosition().y - 9.f});
     window.draw(idText);
 }
@@ -433,7 +433,7 @@ void drawEdges(sf::RenderWindow& window,
             drawThickSegment(window, p0, p2, 2.8f, edgeColor);
         }
 
-        sf::Text weightText(font, std::to_string(e.weight), 12);
+        sf::Text weightText(font, std::to_string(e.weight), 20);
     weightText.setFillColor(ThemeManager::current.textColor);
 
         bool placed = false;
