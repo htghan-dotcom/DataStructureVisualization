@@ -37,6 +37,7 @@ private:
     vector<HashStepInfo> steps;
 
     int hashFunction(int key);
+    bool checkDuplicate(int key, int idx);
     void addInternal(int key, bool keepSteps);
     bool deleteInternal(int key, bool keepSteps);
     int  searchImpl(int key);
@@ -56,8 +57,9 @@ public:
     void clear();
     void generateRandom(int count);
     void loadFromFile(const string& filename);
-
+    
     void clearTableUI();
+
 
     vector<HashNode*> getTable() const;
     int getSize() const;
